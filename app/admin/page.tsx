@@ -183,8 +183,8 @@ export default function AdminPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Loading admin data...</p>
+      <div className="min-h-screen flex items-center justify-center bg-cafe-silver">
+        <p className="text-cafe-steel">Loading admin data...</p>
       </div>
     )
   }
@@ -201,11 +201,11 @@ export default function AdminPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-cafe-silver flex">
       <aside className="w-64 bg-white shadow-md flex flex-col">
         <div className="p-6 border-b">
-          <h1 className="text-xl font-semibold text-gray-900">Admin Panel</h1>
-          <p className="text-xs text-gray-500 mt-1">Coffee Repair Co.</p>
+          <h1 className="text-xl font-semibold text-cafe-navy">Admin Panel</h1>
+          <p className="text-xs text-cafe-steel mt-1">Coffee Repair Co.</p>
         </div>
 
         <nav className="flex-1 p-4 space-y-2">
@@ -215,8 +215,8 @@ export default function AdminPage() {
               onClick={() => setActiveNav(item.id)}
               className={`w-full text-left px-4 py-2 rounded-md transition ${
                 activeNav === item.id
-                  ? 'bg-indigo-100 text-indigo-900 font-medium'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  ? 'bg-cafe-bronze/10 text-cafe-bronze font-medium'
+                  : 'text-cafe-steel hover:bg-cafe-silver'
               }`}
             >
               <span className="mr-2">{item.icon}</span>
@@ -226,8 +226,8 @@ export default function AdminPage() {
         </nav>
 
         <div className="p-4 border-t">
-          <p className="text-xs text-gray-500">Signed in</p>
-          <p className="text-sm font-medium text-gray-900 truncate">{userEmail}</p>
+          <p className="text-xs text-cafe-steel">Signed in</p>
+          <p className="text-sm font-medium text-cafe-navy truncate">{userEmail}</p>
           <button
             onClick={handleSignOut}
             className="w-full mt-4 py-2 px-3 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
@@ -240,10 +240,10 @@ export default function AdminPage() {
       <main className="flex-1 p-8 overflow-auto">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
-            <h2 className="text-3xl font-semibold text-gray-900">
+            <h2 className="text-3xl font-semibold text-cafe-navy">
               {navItems.find((item) => item.id === activeNav)?.label || 'Dashboard'}
             </h2>
-            <p className="text-gray-500 mt-1">Manage your repair business operations</p>
+            <p className="text-cafe-steel mt-1">Manage your repair business operations</p>
           </div>
 
           {loadError ? (
@@ -253,16 +253,16 @@ export default function AdminPage() {
           {activeNav === 'dashboard' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-lg shadow">
-                <p className="text-sm text-gray-600">Total Customers</p>
-                <p className="text-3xl font-semibold text-gray-900 mt-2">{customers.length}</p>
+                <p className="text-sm text-cafe-steel">Total Customers</p>
+                <p className="text-3xl font-semibold text-cafe-navy mt-2">{customers.length}</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow">
-                <p className="text-sm text-gray-600">Total Repair Jobs</p>
-                <p className="text-3xl font-semibold text-gray-900 mt-2">{repairJobs.length}</p>
+                <p className="text-sm text-cafe-steel">Total Repair Jobs</p>
+                <p className="text-3xl font-semibold text-cafe-navy mt-2">{repairJobs.length}</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow">
-                <p className="text-sm text-gray-600">Active Maintenance Plans</p>
-                <p className="text-3xl font-semibold text-gray-900 mt-2">{activePlanCount}</p>
+                <p className="text-sm text-cafe-steel">Active Maintenance Plans</p>
+                <p className="text-3xl font-semibold text-cafe-navy mt-2">{activePlanCount}</p>
               </div>
             </div>
           )}
@@ -270,33 +270,33 @@ export default function AdminPage() {
           {activeNav === 'customers' && (
             <div className="bg-white rounded-lg shadow">
               <div className="p-6 border-b flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Customers</h3>
-                <button className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                <h3 className="text-lg font-semibold text-cafe-navy">Customers</h3>
+                <button className="px-4 py-2 bg-cafe-bronze text-white rounded-md hover:bg-[#a0632b]">
                   Add Customer
                 </button>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-gray-50 border-b">
+                  <thead className="bg-cafe-silver border-b">
                     <tr>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-900 uppercase">Name</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-900 uppercase">Email</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-900 uppercase">Phone</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-cafe-navy uppercase">Name</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-cafe-navy uppercase">Email</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-cafe-navy uppercase">Phone</th>
                     </tr>
                   </thead>
                   <tbody>
                     {customers.length > 0 ? (
                       customers.map((customer) => (
-                        <tr key={customer.id} className="border-b hover:bg-gray-50">
-                          <td className="px-6 py-4 text-sm text-gray-900">{customer.full_name}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{customer.email}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{customer.phone}</td>
+                        <tr key={customer.id} className="border-b hover:bg-cafe-silver">
+                          <td className="px-6 py-4 text-sm text-cafe-navy">{customer.full_name}</td>
+                          <td className="px-6 py-4 text-sm text-cafe-steel">{customer.email}</td>
+                          <td className="px-6 py-4 text-sm text-cafe-steel">{customer.phone}</td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
+                        <td colSpan={3} className="px-6 py-12 text-center text-cafe-steel">
                           No customers found.
                         </td>
                       </tr>
@@ -312,14 +312,14 @@ export default function AdminPage() {
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Repair Jobs</h3>
-                    <p className="text-sm text-gray-500">Add a new repair job and review current work.</p>
+                    <h3 className="text-lg font-semibold text-cafe-navy">Repair Jobs</h3>
+                    <p className="text-sm text-cafe-steel">Add a new repair job and review current work.</p>
                   </div>
                 </div>
 
                 <form onSubmit={handleCreateRepairJob} className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Customer</label>
+                    <label className="block text-sm font-medium text-cafe-navy">Customer</label>
                     <select
                       value={newJobCustomer}
                       onChange={(event) => setNewJobCustomer(event.target.value)}
@@ -335,7 +335,7 @@ export default function AdminPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Equipment type</label>
+                    <label className="block text-sm font-medium text-cafe-navy">Equipment type</label>
                     <input
                       type="text"
                       value={newJobEquipment}
@@ -346,7 +346,7 @@ export default function AdminPage() {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700">Issue description</label>
+                    <label className="block text-sm font-medium text-cafe-navy">Issue description</label>
                     <textarea
                       value={newJobIssue}
                       onChange={(event) => setNewJobIssue(event.target.value)}
@@ -356,7 +356,7 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Status</label>
+                    <label className="block text-sm font-medium text-cafe-navy">Status</label>
                     <select
                       value={newJobStatus}
                       onChange={(event) => setNewJobStatus(event.target.value)}
@@ -371,7 +371,7 @@ export default function AdminPage() {
                     <button
                       type="submit"
                       disabled={newJobSubmitting}
-                      className="inline-flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+                      className="inline-flex justify-center rounded-md bg-cafe-bronze px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] disabled:opacity-50"
                     >
                       {newJobSubmitting ? 'Saving…' : 'Create repair job'}
                     </button>
@@ -383,18 +383,18 @@ export default function AdminPage() {
 
               <div className="bg-white rounded-lg shadow overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-gray-50 border-b">
+                  <thead className="bg-cafe-silver border-b">
                     <tr>
-                      <th className="px-6 py-4 text-xs font-semibold uppercase text-gray-900">Equipment</th>
-                      <th className="px-6 py-4 text-xs font-semibold uppercase text-gray-900">Status</th>
-                      <th className="px-6 py-4 text-xs font-semibold uppercase text-gray-900">Created</th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase text-cafe-navy">Equipment</th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase text-cafe-navy">Status</th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase text-cafe-navy">Created</th>
                     </tr>
                   </thead>
                   <tbody>
                     {repairJobs.length > 0 ? (
                       repairJobs.map((job) => (
-                        <tr key={job.id} className="border-b hover:bg-gray-50">
-                          <td className="px-6 py-4 text-sm text-gray-900">{job.equipment_type}</td>
+                        <tr key={job.id} className="border-b hover:bg-cafe-silver">
+                          <td className="px-6 py-4 text-sm text-cafe-navy">{job.equipment_type}</td>
                           <td className="px-6 py-4">
                             <span
                               className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
@@ -402,20 +402,20 @@ export default function AdminPage() {
                                   ? 'bg-green-100 text-green-800'
                                   : job.status === 'in_progress'
                                   ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-gray-100 text-gray-800'
+                                  : 'bg-[#F5F7FA] text-cafe-steel'
                               }`}
                             >
                               {job.status.replace('_', ' ')}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">
+                          <td className="px-6 py-4 text-sm text-cafe-steel">
                             {job.created_at ? new Date(job.created_at).toLocaleDateString() : '—'}
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
+                        <td colSpan={3} className="px-6 py-12 text-center text-cafe-steel">
                           No repair jobs found.
                         </td>
                       </tr>
@@ -445,23 +445,23 @@ export default function AdminPage() {
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-gray-50 border-b">
+                  <thead className="bg-cafe-silver border-b">
                     <tr>
-                      <th className="px-6 py-4 text-xs font-semibold uppercase text-gray-900">Plan</th>
-                      <th className="px-6 py-4 text-xs font-semibold uppercase text-gray-900">Status</th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase text-cafe-navy">Plan</th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase text-cafe-navy">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {plans.length > 0 ? (
                       plans.map((plan) => (
-                        <tr key={plan.id} className="border-b hover:bg-gray-50">
-                          <td className="px-6 py-4 text-sm text-gray-900">{plan.plan_name ?? `Plan ${plan.id}`}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600 capitalize">{plan.status.replace('_', ' ')}</td>
+                        <tr key={plan.id} className="border-b hover:bg-cafe-silver">
+                          <td className="px-6 py-4 text-sm text-cafe-navy">{plan.plan_name ?? `Plan ${plan.id}`}</td>
+                          <td className="px-6 py-4 text-sm text-cafe-steel capitalize">{plan.status.replace('_', ' ')}</td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={2} className="px-6 py-12 text-center text-gray-500">
+                        <td colSpan={2} className="px-6 py-12 text-center text-cafe-steel">
                           No maintenance plans found.
                         </td>
                       </tr>

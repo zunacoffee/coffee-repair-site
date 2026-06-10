@@ -37,32 +37,32 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-cafe-silver px-4">
       <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-2xl font-semibold mb-2 text-gray-900">Create an account</h1>
-        <p className="text-sm text-gray-500 mb-6">Start your repair management with a free account.</p>
+        <h1 className="text-2xl font-semibold mb-2 text-cafe-navy">Create an account</h1>
+        <p className="text-sm text-cafe-steel mb-6">Start your repair management with a free account.</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-cafe-navy">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="mt-1 block w-full px-3 py-2 border border-[#D4D8DC] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-cafe-bronze"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <label className="block text-sm font-medium text-cafe-navy">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="mt-1 block w-full px-3 py-2 border border-[#D4D8DC] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-cafe-bronze"
             />
           </div>
 
@@ -71,15 +71,15 @@ export default function SignupPage() {
 
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+            className="w-full py-2 px-4 bg-cafe-bronze text-white rounded-md hover:bg-[#a0632b] disabled:opacity-50"
             disabled={loading}
           >
             {loading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account? <a href="/login" className="text-indigo-600 font-medium">Sign in</a>
+        <p className="mt-6 text-center text-sm text-cafe-steel">
+          Already have an account? <a href="/login" className="text-cafe-bronze font-medium">Sign in</a>
         </p>
       </div>
     </div>

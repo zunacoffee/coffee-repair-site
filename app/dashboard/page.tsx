@@ -38,18 +38,18 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-cafe-silver py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="bg-white p-6 rounded-lg shadow flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-            <p className="text-sm text-gray-500">Overview of your repairs and maintenance plan.</p>
+            <h1 className="text-2xl font-semibold text-cafe-navy">Dashboard</h1>
+            <p className="text-sm text-cafe-steel">Overview of your repairs and maintenance plan.</p>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm text-gray-600">Signed in as</p>
-              <p className="text-sm font-medium text-gray-900">{userEmail ?? '—'}</p>
+              <p className="text-sm text-cafe-steel">Signed in as</p>
+              <p className="text-sm font-medium text-cafe-navy">{userEmail ?? '—'}</p>
             </div>
             <button
               onClick={handleSignOut}
@@ -62,27 +62,27 @@ export default function DashboardPage() {
 
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow">
-            <h2 className="text-lg font-semibold text-gray-900">Repair history</h2>
-            <p className="text-sm text-gray-500 mt-1">Your past repairs and service tickets.</p>
+            <h2 className="text-lg font-semibold text-cafe-navy">Repair history</h2>
+            <p className="text-sm text-cafe-steel mt-1">Your past repairs and service tickets.</p>
 
-            <div className="mt-6 border-2 border-dashed border-gray-200 rounded-md p-8 text-center">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="mt-6 border-2 border-dashed border-[#D4D8DC] rounded-md p-8 text-center">
+              <svg className="mx-auto h-12 w-12 text-cafe-steel" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6" />
               </svg>
-              <p className="mt-4 text-gray-700 font-medium">No repair history yet</p>
-              <p className="mt-2 text-sm text-gray-500">When you complete repairs, they'll appear here for easy reference.</p>
+              <p className="mt-4 text-cafe-navy font-medium">No repair history yet</p>
+              <p className="mt-2 text-sm text-cafe-steel">When you complete repairs, they'll appear here for easy reference.</p>
             </div>
           </div>
 
           <aside className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-lg font-semibold text-gray-900">Maintenance plan</h2>
-            <p className="text-sm text-gray-500 mt-1">Status of your current plan.</p>
+            <h2 className="text-lg font-semibold text-cafe-navy">Maintenance plan</h2>
+            <p className="text-sm text-cafe-steel mt-1">Status of your current plan.</p>
 
             <div className="mt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Plan</p>
-                  <p className="text-base font-medium text-gray-900">Basic</p>
+                  <p className="text-sm text-cafe-steel">Plan</p>
+                  <p className="text-base font-medium text-cafe-navy">Basic</p>
                 </div>
 
                 <div>
@@ -90,11 +90,11 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="mt-4 text-sm text-gray-500">
-                <p>No actions required. Your plan renews on <span className="font-medium text-gray-800">—</span>.</p>
+              <div className="mt-4 text-sm text-cafe-steel">
+                <p>No actions required. Your plan renews on <span className="font-medium text-cafe-navy">—</span>.</p>
               </div>
 
-              <button className="mt-6 w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Manage plan</button>
+              <button className="mt-6 w-full py-2 px-4 bg-cafe-bronze text-white rounded-md hover:bg-[#a0632b]">Manage plan</button>
             </div>
           </aside>
         </div>

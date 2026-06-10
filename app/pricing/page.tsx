@@ -62,14 +62,14 @@ export default function PricingPage() {
   const isLoading = loadingPlan !== null
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-cafe-silver py-12 px-4">
       <PublicNavbar />
       <div className="mx-auto max-w-7xl">
         <div className="sm:flex sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">Maintenance plans</p>
-            <h1 className="mt-3 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Choose the best plan for your coffee equipment.</h1>
-            <p className="mt-4 max-w-2xl text-base text-gray-600">
+            <p className="text-sm font-semibold uppercase tracking-wide text-cafe-bronze">Maintenance plans</p>
+            <h1 className="mt-3 text-4xl font-bold tracking-tight text-cafe-navy sm:text-5xl">Choose the best plan for your coffee equipment.</h1>
+            <p className="mt-4 max-w-2xl text-base text-cafe-steel">
               Subscribe to a monthly maintenance plan and keep your coffee systems running smoothly with fast service and expert support.
             </p>
           </div>
@@ -77,23 +77,23 @@ export default function PricingPage() {
 
         <div className="mt-10 grid gap-6 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
           {plans.map((plan) => (
-            <div key={plan.id} className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
+            <div key={plan.id} className="rounded-3xl border border-[#D4D8DC] bg-white p-8 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">{plan.name}</h2>
-                  <p className="mt-2 text-sm text-gray-500">{plan.description}</p>
+                  <h2 className="text-xl font-semibold text-cafe-navy">{plan.name}</h2>
+                  <p className="mt-2 text-sm text-cafe-steel">{plan.description}</p>
                 </div>
               </div>
 
               <div className="mt-8">
-                <p className="text-5xl font-bold text-gray-900">{plan.price}</p>
-                <p className="mt-2 text-sm text-gray-500">per month</p>
+                <p className="text-5xl font-bold text-cafe-navy">{plan.price}</p>
+                <p className="mt-2 text-sm text-cafe-steel">per month</p>
               </div>
 
-              <ul className="mt-8 space-y-3 text-sm text-gray-600">
+              <ul className="mt-8 space-y-3 text-sm text-cafe-steel">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex gap-3">
-                    <span className="mt-1 text-indigo-600">•</span>
+                    <span className="mt-1 text-cafe-bronze">•</span>
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -103,7 +103,7 @@ export default function PricingPage() {
                 type="button"
                 disabled={isLoading}
                 onClick={() => handleSubscribe(plan.id)}
-                className="mt-10 inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                className="mt-10 inline-flex w-full items-center justify-center rounded-xl bg-cafe-bronze px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a0632b] disabled:cursor-not-allowed disabled:bg-[#D4D8DC]"
               >
                 {loadingPlan === plan.id ? 'Starting checkout...' : 'Subscribe'}
               </button>

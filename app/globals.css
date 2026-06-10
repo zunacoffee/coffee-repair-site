@@ -3,11 +3,19 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --cafe-navy: #0D1B2A;
+  --cafe-bronze: #B87333;
+  --cafe-silver: #E8ECF0;
+  --cafe-steel: #7A8898;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-cafe-navy: var(--cafe-navy);
+  --color-cafe-bronze: var(--cafe-bronze);
+  --color-cafe-silver: var(--cafe-silver);
+  --color-cafe-steel: var(--cafe-steel);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
