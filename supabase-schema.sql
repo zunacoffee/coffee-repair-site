@@ -12,3 +12,9 @@ CREATE TABLE IF NOT EXISTS equipment_list (
 );
 
 CREATE INDEX IF NOT EXISTS equipment_list_customer_id_idx ON equipment_list(customer_id);
+
+-- Add Stripe integration columns to maintenance_plans (if not already present)
+-- Run these ALTER TABLE statements if the columns don't exist:
+-- ALTER TABLE maintenance_plans ADD COLUMN stripe_subscription_id TEXT;
+-- ALTER TABLE maintenance_plans ADD COLUMN stripe_customer_id TEXT;
+-- CREATE INDEX IF NOT EXISTS maintenance_plans_stripe_subscription_id_idx ON maintenance_plans(stripe_subscription_id);
