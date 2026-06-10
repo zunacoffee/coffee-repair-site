@@ -83,7 +83,7 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-12">
+    <div className="py-8 px-4 sm:px-6 lg:px-10 max-w-7xl mx-auto w-full">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
           <div>

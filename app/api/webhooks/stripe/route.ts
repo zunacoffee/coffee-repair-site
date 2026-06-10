@@ -44,6 +44,16 @@ export async function POST(req: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
 
+        // Invoice payment via Payment Link
+        if (session.payment_link && session.metadata?.invoice_number) {
+          const { error } = await supabaseAdmin
+            .from('invoices')
+            .update({ status: 'paid' })
+            .eq('invoice_number', session.metadata.invoice_number)
+          if (error) console.error('Invoice paid update error:', error)
+          break
+        }
+
         // Get subscription details to find the price and plan type
         if (session.subscription) {
           const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription.id

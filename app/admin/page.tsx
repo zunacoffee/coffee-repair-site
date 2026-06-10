@@ -4,8 +4,6 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-type NavItem = 'dashboard' | 'customers' | 'repair-jobs' | 'maintenance-plans'
-
 type Customer = {
   id: number | string
   full_name: string
@@ -17,433 +15,341 @@ type RepairJob = {
   id: number | string
   equipment_type: string
   status: string
+  description: string
+  notes: string | null
   created_at: string | null
-  customer_id?: number | string
+  completed_at: string | null
+  customer_id: number | string
 }
 
 type MaintenancePlan = {
   id: number | string
   plan_name?: string
   status: string
+  renewal_date?: string | null
+}
+
+type ServiceRequest = {
+  id: number | string
+  full_name: string
+  email: string
+  equipment_type: string
+  brand: string
+  issue_description: string
+  status: string
+  contact_preference: string
+  created_at: string
+}
+
+function getGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 18) return 'Good afternoon'
+  return 'Good evening'
+}
+
+function todayLabel() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+}
+
+const STATUS_BADGE: Record<string, string> = {
+  pending:    'bg-gray-100 text-gray-700',
+  in_progress:'bg-amber-100 text-amber-800',
+  completed:  'bg-green-100 text-green-700',
+  new:        'bg-blue-100 text-blue-800',
+  contacted:  'bg-yellow-100 text-yellow-800',
+  scheduled:  'bg-purple-100 text-purple-800',
 }
 
 export default function AdminPage() {
   const router = useRouter()
-  const [activeNav, setActiveNav] = useState<NavItem>('dashboard')
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [customers, setCustomers] = useState<Customer[]>([])
   const [repairJobs, setRepairJobs] = useState<RepairJob[]>([])
   const [plans, setPlans] = useState<MaintenancePlan[]>([])
-  const [newJobEquipment, setNewJobEquipment] = useState('')
-  const [newJobCustomer, setNewJobCustomer] = useState<string>('')
-  const [newJobStatus, setNewJobStatus] = useState('pending')
-  const [newJobIssue, setNewJobIssue] = useState('')
-  const [newJobSubmitting, setNewJobSubmitting] = useState(false)
-  const [newJobError, setNewJobError] = useState<string | null>(null)
-  const [newJobSuccess, setNewJobSuccess] = useState<string | null>(null)
-
-  const fetchAdminData = async () => {
-    const response = await fetch('/api/admin-data')
-    if (response.status === 401) {
-      router.replace('/admin/login')
-      return null
-    }
-    const json = await response.json()
-    if (!response.ok) throw new Error(json.error ?? 'Failed to load admin data.')
-    return json
-  }
+  const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([])
 
   useEffect(() => {
     let mounted = true
 
-    async function loadData() {
-      try {
-        const json = await fetchAdminData()
-        if (!mounted || !json) return
-        setCustomers(json.customers ?? [])
-        setRepairJobs(json.repairJobs ?? [])
-        setPlans(json.plans ?? [])
-        setNewJobCustomer(json.customers?.[0]?.id?.toString() ?? '')
-      } catch (error) {
-        if (!mounted) return
-        setLoadError((error as Error).message)
-      } finally {
-        if (mounted) setIsLoading(false)
-      }
+    async function load() {
+      const res = await fetch('/api/admin-data')
+      if (res.status === 401) { router.replace('/admin/login'); return }
+      const json = await res.json()
+      if (!mounted) return
+      if (!res.ok) { setLoadError(json.error ?? 'Failed to load.'); setIsLoading(false); return }
+      setCustomers(json.customers ?? [])
+      setRepairJobs(json.repairJobs ?? [])
+      setPlans(json.plans ?? [])
+      setServiceRequests(json.serviceRequests ?? [])
+      setIsLoading(false)
     }
 
-    loadData()
-
+    load()
     return () => { mounted = false }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const refreshData = async () => {
-    const json = await fetchAdminData()
-    if (!json) return
-    setCustomers(json.customers ?? [])
-    setRepairJobs(json.repairJobs ?? [])
-    setPlans(json.plans ?? [])
-    if (!newJobCustomer && json.customers?.length) {
-      setNewJobCustomer(json.customers[0].id.toString())
-    }
-  }
+  const openRepairs = repairJobs.filter((j) => j.status !== 'completed')
+  const inProgressJobs = repairJobs.filter((j) => j.status === 'in_progress')
+  const activePlans = plans.filter((p) => p.status === 'active')
+  const newRequests = serviceRequests.filter((r) => r.status === 'new')
 
-  const handleSignOut = async () => {
-    await fetch('/api/admin/auth', { method: 'DELETE' })
-    router.push('/admin/login')
-  }
-
-  const handleCreateRepairJob = async (event: React.FormEvent) => {
-    event.preventDefault()
-    setNewJobError(null)
-    setNewJobSuccess(null)
-
-    if (!newJobEquipment.trim()) { setNewJobError('Equipment type is required.'); return }
-    if (!newJobCustomer) { setNewJobError('Please select a customer.'); return }
-
-    setNewJobSubmitting(true)
-
-    const response = await fetch('/api/admin-data', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customer_id: newJobCustomer,
-        equipment_type: newJobEquipment,
-        status: newJobStatus,
-        description: newJobIssue,
-      }),
-    })
-
-    const json = await response.json()
-    setNewJobSubmitting(false)
-
-    if (!response.ok) { setNewJobError(json.error ?? 'Unable to create repair job.'); return }
-
-    setNewJobSuccess('Repair job created successfully.')
-    setNewJobEquipment('')
-    setNewJobIssue('')
-    setNewJobStatus('pending')
-    await refreshData()
-  }
+  const customerMap = Object.fromEntries(customers.map((c) => [c.id.toString(), c.full_name]))
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cafe-silver">
-        <p className="text-cafe-steel">Loading admin data...</p>
+      <div className="flex flex-1 items-center justify-center py-24">
+        <div className="flex items-center gap-3 text-[#7A8898]">
+          <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <span className="text-sm">Loading…</span>
+        </div>
       </div>
     )
   }
 
-  const activePlanCount = plans.filter((plan) => plan.status === 'active').length
-  const expiringSoonCount = plans.filter((plan) => plan.status === 'expiring_soon').length
-  const inactivePlanCount = plans.filter((plan) => plan.status !== 'active' && plan.status !== 'expiring_soon').length
-
-  const navItems = [
-    { id: 'dashboard' as NavItem, label: 'Dashboard', icon: '📊' },
-    { id: 'customers' as NavItem, label: 'Customers', icon: '👥' },
-    { id: 'repair-jobs' as NavItem, label: 'Repair Jobs', icon: '🔧' },
-    { id: 'maintenance-plans' as NavItem, label: 'Maintenance Plans', icon: '📋' },
-  ]
-
   return (
-    <div className="min-h-screen bg-cafe-silver flex">
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+        <div className="px-4 py-6 sm:px-8 sm:py-8 max-w-7xl mx-auto space-y-8">
 
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-md flex flex-col transition-transform duration-200 md:relative md:translate-x-0 md:z-auto ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-6 border-b flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-cafe-navy">Admin Panel</h1>
-            <p className="text-xs text-cafe-steel mt-1">Coffee Repair Co.</p>
-          </div>
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="md:hidden p-1 rounded-md text-cafe-steel hover:bg-cafe-silver"
-            aria-label="Close menu"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+          {loadError && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">{loadError}</div>
+          )}
 
-        <nav className="flex-1 p-4 space-y-2">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => { setActiveNav(item.id); setIsSidebarOpen(false) }}
-              className={`w-full text-left px-4 py-2 rounded-md transition ${
-                activeNav === item.id
-                  ? 'bg-cafe-bronze/10 text-cafe-bronze font-medium'
-                  : 'text-cafe-steel hover:bg-cafe-silver'
-              }`}
+          {/* ── Greeting ── */}
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#B87333]">{todayLabel()}</p>
+              <h1 className="mt-1 text-2xl font-bold text-[#0D1B2A] sm:text-3xl">{getGreeting()} —</h1>
+            </div>
+            <Link
+              href="/admin/repair-jobs"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] transition self-start sm:self-auto"
             >
-              <span className="mr-2">{item.icon}</span>
-              {item.label}
-            </button>
-          ))}
-          <Link
-            href="/admin/service-requests"
-            onClick={() => setIsSidebarOpen(false)}
-            className="flex w-full items-center px-4 py-2 rounded-md text-cafe-steel hover:bg-cafe-silver transition"
-          >
-            <span className="mr-2">📋</span>
-            Service Requests
-          </Link>
-        </nav>
-
-        <div className="p-4 border-t">
-          <button
-            onClick={handleSignOut}
-            className="w-full py-2 px-3 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
-          >
-            Sign out
-          </button>
-        </div>
-      </aside>
-
-      <main className="flex-1 p-4 sm:p-8 overflow-auto min-w-0">
-        <div className="flex items-center gap-3 mb-6 md:hidden">
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="p-2 rounded-md bg-white shadow text-cafe-navy hover:bg-cafe-silver transition"
-            aria-label="Open menu"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <span className="text-lg font-semibold text-cafe-navy">
-            {navItems.find((item) => item.id === activeNav)?.label || 'Dashboard'}
-          </span>
-        </div>
-        <div className="max-w-7xl mx-auto">
-          <div className="hidden md:block mb-8">
-            <h2 className="text-3xl font-semibold text-cafe-navy">
-              {navItems.find((item) => item.id === activeNav)?.label || 'Dashboard'}
-            </h2>
-            <p className="text-cafe-steel mt-1">Manage your repair business operations</p>
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              New Repair Job
+            </Link>
           </div>
 
-          {loadError ? (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6">{loadError}</div>
-          ) : null}
+          {/* ── Quick Actions ── */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { label: 'New Repair', href: '/admin/repair-jobs', icon: 'M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z' },
+              { label: 'Add Customer', href: '/admin/customers', icon: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z' },
+              { label: 'Create Invoice', href: '/admin/repair-jobs', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+              { label: 'View Schedule', href: '/admin/calendar', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+            ].map((action) => (
+              <Link
+                key={action.label}
+                href={action.href}
+                className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-white border border-[#E8ECF0] px-4 py-5 text-center shadow-sm hover:border-[#B87333]/40 hover:shadow-md transition group"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B87333]/10 text-[#B87333] group-hover:bg-[#B87333]/20 transition">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d={action.icon} />
+                  </svg>
+                </span>
+                <span className="text-xs font-semibold text-[#0D1B2A]">{action.label}</span>
+              </Link>
+            ))}
+          </div>
 
-          {activeNav === 'dashboard' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow">
-                <p className="text-sm text-cafe-steel">Total Customers</p>
-                <p className="text-3xl font-semibold text-cafe-navy mt-2">{customers.length}</p>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <p className="text-sm text-cafe-steel">Total Repair Jobs</p>
-                <p className="text-3xl font-semibold text-cafe-navy mt-2">{repairJobs.length}</p>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <p className="text-sm text-cafe-steel">Active Maintenance Plans</p>
-                <p className="text-3xl font-semibold text-cafe-navy mt-2">{activePlanCount}</p>
-              </div>
-            </div>
-          )}
-
-          {activeNav === 'customers' && (
-            <div className="bg-white rounded-lg shadow">
-              <div className="p-6 border-b flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-cafe-navy">Customers</h3>
-                <button className="px-4 py-2 bg-cafe-bronze text-white rounded-md hover:bg-[#a0632b]">
-                  Add Customer
-                </button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-cafe-silver border-b">
-                    <tr>
-                      <th className="px-6 py-4 text-xs font-semibold text-cafe-navy uppercase">Name</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-cafe-navy uppercase">Email</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-cafe-navy uppercase">Phone</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {customers.length > 0 ? (
-                      customers.map((customer) => (
-                        <tr key={customer.id} className="border-b hover:bg-cafe-silver">
-                          <td className="px-6 py-4 text-sm text-cafe-navy">{customer.full_name}</td>
-                          <td className="px-6 py-4 text-sm text-cafe-steel">{customer.email}</td>
-                          <td className="px-6 py-4 text-sm text-cafe-steel">{customer.phone}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={3} className="px-6 py-12 text-center text-cafe-steel">No customers found.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {activeNav === 'repair-jobs' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-semibold text-cafe-navy">Repair Jobs</h3>
-                    <p className="text-sm text-cafe-steel">Add a new repair job and review current work.</p>
-                  </div>
+          {/* ── Stat Cards ── */}
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {[
+              {
+                label: 'Active Plans',
+                value: activePlans.length,
+                border: 'border-l-[#B87333]',
+                badge: activePlans.length > 0 ? `${activePlans.length} active` : null,
+                sub: 'Maintenance subscriptions',
+                href: '/admin/maintenance-plans',
+              },
+              {
+                label: 'Open Repairs',
+                value: openRepairs.length,
+                border: 'border-l-blue-500',
+                badge: inProgressJobs.length > 0 ? `${inProgressJobs.length} in progress` : null,
+                sub: 'Pending + in progress',
+                href: '/admin/repair-jobs',
+              },
+              {
+                label: 'New Requests',
+                value: newRequests.length,
+                border: 'border-l-orange-400',
+                badge: newRequests.length > 0 ? 'Needs follow-up' : null,
+                sub: 'Uncontacted service requests',
+                href: '/admin/service-requests',
+              },
+              {
+                label: 'Total Customers',
+                value: customers.length,
+                border: 'border-l-emerald-500',
+                badge: null,
+                sub: 'Registered customer accounts',
+                href: '/admin/customers',
+              },
+            ].map((card) => (
+              <Link
+                key={card.label}
+                href={card.href}
+                className={`group flex flex-col justify-between rounded-2xl border-l-4 bg-white px-5 py-5 shadow-sm hover:shadow-md transition ${card.border}`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">{card.label}</p>
+                  {card.badge && (
+                    <span className="shrink-0 rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-semibold text-[#B87333]">
+                      {card.badge}
+                    </span>
+                  )}
                 </div>
+                <p className="mt-3 text-4xl font-bold tracking-tight text-[#0D1B2A]">{card.value}</p>
+                <p className="mt-2 text-xs text-[#7A8898]">{card.sub}</p>
+              </Link>
+            ))}
+          </div>
 
-                <form onSubmit={handleCreateRepairJob} className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium text-cafe-navy">Customer</label>
-                    <select
-                      value={newJobCustomer}
-                      onChange={(event) => setNewJobCustomer(event.target.value)}
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    >
-                      <option value="">Select a customer</option>
-                      {customers.map((customer) => (
-                        <option key={customer.id} value={customer.id.toString()}>{customer.full_name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-cafe-navy">Equipment type</label>
-                    <input
-                      type="text"
-                      value={newJobEquipment}
-                      onChange={(event) => setNewJobEquipment(event.target.value)}
-                      placeholder="e.g. Espresso machine"
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-cafe-navy">Issue description</label>
-                    <textarea
-                      value={newJobIssue}
-                      onChange={(event) => setNewJobIssue(event.target.value)}
-                      rows={4}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                      placeholder="Describe the repair issue"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-cafe-navy">Status</label>
-                    <select
-                      value={newJobStatus}
-                      onChange={(event) => setNewJobStatus(event.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="in_progress">In progress</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                  </div>
-                  <div className="flex items-end">
-                    <button
-                      type="submit"
-                      disabled={newJobSubmitting}
-                      className="inline-flex justify-center rounded-md bg-cafe-bronze px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] disabled:opacity-50"
-                    >
-                      {newJobSubmitting ? 'Saving…' : 'Create repair job'}
-                    </button>
-                  </div>
-                </form>
-                {newJobError && <p className="mt-4 text-sm text-red-600">{newJobError}</p>}
-                {newJobSuccess && <p className="mt-4 text-sm text-green-600">{newJobSuccess}</p>}
-              </div>
+          {/* ── Main grid ── */}
+          <div className="grid gap-6 lg:grid-cols-2">
 
-              <div className="bg-white rounded-lg shadow overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-cafe-silver border-b">
-                    <tr>
-                      <th className="px-6 py-4 text-xs font-semibold uppercase text-cafe-navy">Equipment</th>
-                      <th className="px-6 py-4 text-xs font-semibold uppercase text-cafe-navy">Status</th>
-                      <th className="px-6 py-4 text-xs font-semibold uppercase text-cafe-navy">Created</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {repairJobs.length > 0 ? (
-                      repairJobs.map((job) => (
-                        <tr key={job.id} className="border-b hover:bg-cafe-silver">
-                          <td className="px-6 py-4 text-sm text-cafe-navy">{job.equipment_type}</td>
-                          <td className="px-6 py-4">
-                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
-                              job.status === 'completed' ? 'bg-green-100 text-green-800'
-                              : job.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-[#F5F7FA] text-cafe-steel'
-                            }`}>
-                              {job.status.replace('_', ' ')}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-cafe-steel">
-                            {job.created_at ? new Date(job.created_at).toLocaleDateString() : '—'}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={3} className="px-6 py-12 text-center text-cafe-steel">No repair jobs found.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+            {/* Today's Schedule — in-progress jobs */}
+            <section className="rounded-2xl bg-white shadow-sm border border-[#E8ECF0] overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8ECF0]">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">Today's Work</p>
+                  <h2 className="mt-0.5 text-sm font-bold text-[#0D1B2A]">Jobs In Progress</h2>
+                </div>
+                <Link href="/admin/repair-jobs" className="text-xs font-semibold text-[#B87333] hover:underline">View all</Link>
               </div>
-            </div>
-          )}
+              {inProgressJobs.length > 0 ? (
+                <ul className="divide-y divide-[#E8ECF0]">
+                  {inProgressJobs.slice(0, 5).map((job) => (
+                    <li key={job.id} className="flex items-center justify-between gap-4 px-6 py-3.5">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-[#0D1B2A]">{job.equipment_type}</p>
+                        <p className="truncate text-xs text-[#7A8898]">{customerMap[job.customer_id?.toString()] ?? 'Unknown'}</p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
+                        In progress
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="px-6 py-10 text-center">
+                  <p className="text-sm font-medium text-[#0D1B2A]">No jobs in progress</p>
+                  <p className="mt-1 text-xs text-[#7A8898]">Start a repair job to see it here.</p>
+                </div>
+              )}
+            </section>
 
-          {activeNav === 'maintenance-plans' && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="border rounded-lg p-4 text-center">
-                  <p className="text-sm text-gray-600">Active Plans</p>
-                  <p className="mt-3 text-3xl font-semibold text-gray-900">{activePlanCount}</p>
+            {/* Upcoming Maintenance */}
+            <section className="rounded-2xl bg-white shadow-sm border border-[#E8ECF0] overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8ECF0]">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">Maintenance</p>
+                  <h2 className="mt-0.5 text-sm font-bold text-[#0D1B2A]">Active Plans</h2>
                 </div>
-                <div className="border rounded-lg p-4 text-center">
-                  <p className="text-sm text-gray-600">Expiring Soon</p>
-                  <p className="mt-3 text-3xl font-semibold text-gray-900">{expiringSoonCount}</p>
-                </div>
-                <div className="border rounded-lg p-4 text-center">
-                  <p className="text-sm text-gray-600">Inactive Plans</p>
-                  <p className="mt-3 text-3xl font-semibold text-gray-900">{inactivePlanCount}</p>
-                </div>
+                <Link href="/admin/maintenance-plans" className="text-xs font-semibold text-[#B87333] hover:underline">View all</Link>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-cafe-silver border-b">
-                    <tr>
-                      <th className="px-6 py-4 text-xs font-semibold uppercase text-cafe-navy">Plan</th>
-                      <th className="px-6 py-4 text-xs font-semibold uppercase text-cafe-navy">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {plans.length > 0 ? (
-                      plans.map((plan) => (
-                        <tr key={plan.id} className="border-b hover:bg-cafe-silver">
-                          <td className="px-6 py-4 text-sm text-cafe-navy">{plan.plan_name ?? `Plan ${plan.id}`}</td>
-                          <td className="px-6 py-4 text-sm text-cafe-steel capitalize">{plan.status.replace('_', ' ')}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={2} className="px-6 py-12 text-center text-cafe-steel">No maintenance plans found.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              {activePlans.length > 0 ? (
+                <ul className="divide-y divide-[#E8ECF0]">
+                  {activePlans.slice(0, 5).map((plan) => (
+                    <li key={plan.id} className="flex items-center justify-between gap-4 px-6 py-3.5">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-[#0D1B2A]">{plan.plan_name ?? `Plan #${plan.id}`}</p>
+                        {plan.renewal_date && (
+                          <p className="text-xs text-[#7A8898]">
+                            Renews {new Date(plan.renewal_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </p>
+                        )}
+                      </div>
+                      <span className="shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold text-green-700">
+                        Active
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="px-6 py-10 text-center">
+                  <p className="text-sm font-medium text-[#0D1B2A]">No active plans</p>
+                  <p className="mt-1 text-xs text-[#7A8898]">Customers with active subscriptions appear here.</p>
+                </div>
+              )}
+            </section>
+
+            {/* Open Repairs */}
+            <section className="rounded-2xl bg-white shadow-sm border border-[#E8ECF0] overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8ECF0]">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">Queue</p>
+                  <h2 className="mt-0.5 text-sm font-bold text-[#0D1B2A]">Open Repairs</h2>
+                </div>
+                <Link href="/admin/repair-jobs" className="text-xs font-semibold text-[#B87333] hover:underline">View all</Link>
               </div>
-            </div>
-          )}
+              {openRepairs.length > 0 ? (
+                <ul className="divide-y divide-[#E8ECF0]">
+                  {openRepairs.slice(0, 6).map((job) => (
+                    <li key={job.id} className="flex items-center justify-between gap-4 px-6 py-3.5">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-[#0D1B2A]">{job.equipment_type}</p>
+                        <p className="truncate text-xs text-[#7A8898]">
+                          {customerMap[job.customer_id?.toString()] ?? 'Unknown'}
+                          {job.created_at ? ` · ${new Date(job.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}
+                        </p>
+                      </div>
+                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_BADGE[job.status] ?? 'bg-gray-100 text-gray-700'}`}>
+                        {job.status.replace('_', ' ')}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="px-6 py-10 text-center">
+                  <p className="text-sm font-medium text-[#0D1B2A]">All caught up!</p>
+                  <p className="mt-1 text-xs text-[#7A8898]">No open repairs at the moment.</p>
+                </div>
+              )}
+            </section>
+
+            {/* Recent Service Requests */}
+            <section className="rounded-2xl bg-white shadow-sm border border-[#E8ECF0] overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8ECF0]">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">Incoming</p>
+                  <h2 className="mt-0.5 text-sm font-bold text-[#0D1B2A]">Recent Service Requests</h2>
+                </div>
+                <Link href="/admin/service-requests" className="text-xs font-semibold text-[#B87333] hover:underline">View all</Link>
+              </div>
+              {serviceRequests.length > 0 ? (
+                <ul className="divide-y divide-[#E8ECF0]">
+                  {serviceRequests.slice(0, 6).map((req) => (
+                    <li key={req.id} className="flex items-center justify-between gap-4 px-6 py-3.5">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-[#0D1B2A]">{req.full_name}</p>
+                        <p className="truncate text-xs text-[#7A8898]">
+                          {req.equipment_type} · {req.brand}
+                        </p>
+                      </div>
+                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_BADGE[req.status] ?? 'bg-gray-100 text-gray-700'}`}>
+                        {req.status}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="px-6 py-10 text-center">
+                  <p className="text-sm font-medium text-[#0D1B2A]">No service requests yet</p>
+                  <p className="mt-1 text-xs text-[#7A8898]">Submissions from the public form appear here.</p>
+                </div>
+              )}
+            </section>
+
+          </div>
         </div>
-      </main>
-    </div>
   )
 }
