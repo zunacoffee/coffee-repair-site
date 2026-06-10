@@ -1,5 +1,6 @@
 "use client"
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../supabase'
@@ -248,11 +249,21 @@ export default function CustomersPage() {
                 ) : customers.length > 0 ? (
                   customers.map((customer) => (
                     <tr key={customer.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{customer.full_name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <Link href={`/admin/customers/${customer.id}`} className="text-indigo-600 hover:text-indigo-900">
+                          {customer.full_name}
+                        </Link>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{customer.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{customer.phone}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{customer.address}</td>
                       <td className="px-6 py-4 text-right text-sm font-medium">
+                        <Link
+                          href={`/admin/customers/${customer.id}`}
+                          className="mr-3 rounded-lg bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
+                        >
+                          View
+                        </Link>
                         <button
                           onClick={() => handleDelete(customer.id)}
                           className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"

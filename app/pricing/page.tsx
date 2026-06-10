@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import PublicNavbar from '../components/PublicNavbar'
 
 const plans = [
   {
@@ -62,6 +63,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <PublicNavbar />
       <div className="mx-auto max-w-7xl">
         <div className="sm:flex sm:items-end sm:justify-between">
           <div>
