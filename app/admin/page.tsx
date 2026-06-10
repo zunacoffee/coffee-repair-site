@@ -1,5 +1,6 @@
 "use client"
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -187,6 +188,14 @@ export default function AdminPage() {
               {item.label}
             </button>
           ))}
+          <Link
+            href="/admin/service-requests"
+            onClick={() => setIsSidebarOpen(false)}
+            className="flex w-full items-center px-4 py-2 rounded-md text-cafe-steel hover:bg-cafe-silver transition"
+          >
+            <span className="mr-2">📋</span>
+            Service Requests
+          </Link>
         </nav>
 
         <div className="p-4 border-t">

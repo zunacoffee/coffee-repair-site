@@ -20,6 +20,7 @@ export default function PublicNavbar() {
           <Link href="/" className="transition hover:opacity-70">Home</Link>
           <Link href="/#services" className="transition hover:opacity-70">Services</Link>
           <Link href="/pricing" className="transition hover:opacity-70">Pricing</Link>
+          <Link href="/service-request" className="transition hover:opacity-70">Book a Repair</Link>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -59,6 +60,9 @@ export default function PublicNavbar() {
           </Link>
           <Link href="/pricing" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-gray-50 transition" style={{ color: '#0D1B2A' }}>
             Pricing
+          </Link>
+          <Link href="/service-request" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-gray-50 transition" style={{ color: '#0D1B2A' }}>
+            Book a Repair
           </Link>
           <div className="mt-2 pt-3 border-t border-gray-100">
             <Link

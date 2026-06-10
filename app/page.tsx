@@ -19,7 +19,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <Link
-                href="/dashboard"
+                href="/service-request"
                 className="inline-flex items-center justify-center rounded-full bg-cafe-bronze px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#a0632b]"
               >
                 Book a Repair
