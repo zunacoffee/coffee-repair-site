@@ -66,7 +66,7 @@ export default function ResetPasswordPage() {
   if (linkInvalid && !sessionReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cafe-silver px-4">
-        <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-lg text-center">
+        <div className="max-w-md w-full bg-white p-6 sm:p-8 rounded-lg shadow-lg text-center">
           <h1 className="text-2xl font-semibold mb-2 text-cafe-navy">Link expired</h1>
           <p className="text-sm text-cafe-steel mb-6">
             This password reset link is invalid or has expired.
@@ -85,7 +85,7 @@ export default function ResetPasswordPage() {
   if (!sessionReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cafe-silver px-4">
-        <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-lg text-center">
+        <div className="max-w-md w-full bg-white p-6 sm:p-8 rounded-lg shadow-lg text-center">
           <p className="text-cafe-steel text-sm">Verifying reset link...</p>
         </div>
       </div>
@@ -94,7 +94,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-cafe-silver px-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
+      <div className="max-w-md w-full bg-white p-6 sm:p-8 rounded-lg shadow-lg">
         <h1 className="text-2xl font-semibold mb-2 text-cafe-navy">Choose a new password</h1>
         <p className="text-sm text-cafe-steel mb-6">Enter a new password for your account.</p>
 

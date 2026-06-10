@@ -33,7 +33,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-10">
+          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-8">
             <div className="space-y-4">
               <div className="rounded-3xl border border-white/10 bg-cafe-navy/80 p-6">
                 <p className="text-sm uppercase tracking-[0.24em] text-cafe-bronze">Express service</p>
@@ -57,7 +57,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="services" className="bg-cafe-silver text-cafe-navy px-6 py-24 sm:px-10 lg:px-16">
+      <section id="services" className="bg-cafe-silver text-cafe-navy px-6 py-14 sm:py-24 sm:px-10 lg:px-16">
         <div className="mx-auto max-w-7xl space-y-10">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cafe-bronze">What we repair</p>
@@ -93,7 +93,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-cafe-navy text-cafe-silver px-6 py-24 sm:px-10 lg:px-16">
+      <section className="bg-cafe-navy text-cafe-silver px-6 py-14 sm:py-24 sm:px-10 lg:px-16">
         <div className="mx-auto max-w-7xl grid gap-10 lg:grid-cols-[1.2fr,0.8fr] lg:items-end">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cafe-bronze">Why choose Cafe Works</p>
@@ -120,7 +120,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-cafe-silver text-cafe-navy px-6 py-24 sm:px-10 lg:px-16">
+      <section className="bg-cafe-silver text-cafe-navy px-6 py-14 sm:py-24 sm:px-10 lg:px-16">
         <div className="mx-auto max-w-7xl rounded-[2rem] border border-[#D4D8DC] bg-white/90 p-6 sm:p-10 shadow-2xl shadow-cafe-navy/10">
           <div className="grid gap-10 lg:grid-cols-[1.4fr,0.8fr] lg:items-center">
             <div>
@@ -157,7 +157,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-cafe-navy text-cafe-silver px-6 py-24 sm:px-10 lg:px-16">
+      <section className="bg-cafe-navy text-cafe-silver px-6 py-14 sm:py-24 sm:px-10 lg:px-16">
         <div className="mx-auto max-w-7xl grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cafe-bronze">Contact Cafe Works</p>
