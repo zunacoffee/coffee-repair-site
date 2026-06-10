@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../supabase'
 
@@ -14,7 +14,9 @@ type RepairJob = {
   equipment_type: string
   status: string
   description: string
+  notes: string | null
   created_at: string | null
+  completed_at: string | null
   customer_id: number | string
 }
 
@@ -32,6 +34,9 @@ export default function RepairJobsPage() {
   const [status, setStatus] = useState('pending')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [updatingJobId, setUpdatingJobId] = useState<string | number | null>(null)
+  const [notesDrafts, setNotesDrafts] = useState<Record<string, string>>({})
+  const notesOriginals = useRef<Record<string, string>>({})
 
   useEffect(() => {
     let mounted = true
@@ -63,9 +68,7 @@ export default function RepairJobsPage() {
     setError(null)
 
     const res = await fetch('/api/admin-data', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     })
     const json = await res.json()
 
@@ -109,12 +112,7 @@ export default function RepairJobsPage() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${sessionToken}`,
       },
-      body: JSON.stringify({
-        customer_id: customerId,
-        equipment_type: equipmentType,
-        status,
-        description,
-      }),
+      body: JSON.stringify({ customer_id: customerId, equipment_type: equipmentType, status, description }),
     })
 
     const json = await res.json()
@@ -133,9 +131,56 @@ export default function RepairJobsPage() {
     await refreshData()
   }
 
-  const findCustomerName = (id: number | string) => {
-    return customers.find((customer) => customer.id.toString() === id.toString())?.full_name ?? 'Unknown'
+  const patchJob = async (jobId: string | number, updates: { status?: string; notes?: string }) => {
+    if (!sessionToken) return
+    setUpdatingJobId(jobId)
+
+    const res = await fetch(`/api/admin/repair-jobs/${jobId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionToken}`,
+      },
+      body: JSON.stringify(updates),
+    })
+
+    const json = await res.json()
+    setUpdatingJobId(null)
+
+    if (!res.ok) {
+      setError(json.error ?? 'Failed to update repair job.')
+      return
+    }
+
+    setRepairJobs((prev) =>
+      prev.map((job) =>
+        job.id === jobId ? { ...job, ...json.job } : job
+      )
+    )
   }
+
+  const handleStatusChange = (job: RepairJob, newStatus: string) => {
+    patchJob(job.id, { status: newStatus })
+  }
+
+  const handleNotesFocus = (job: RepairJob) => {
+    const key = job.id.toString()
+    const val = job.notes ?? ''
+    notesOriginals.current[key] = val
+    setNotesDrafts((prev) => ({ ...prev, [key]: val }))
+  }
+
+  const handleNotesBlur = (job: RepairJob) => {
+    const key = job.id.toString()
+    const draft = notesDrafts[key] ?? ''
+    if (draft !== notesOriginals.current[key]) {
+      patchJob(job.id, { notes: draft })
+      notesOriginals.current[key] = draft
+    }
+  }
+
+  const findCustomerName = (id: number | string) =>
+    customers.find((c) => c.id.toString() === id.toString())?.full_name ?? 'Unknown'
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 lg:px-12">
@@ -231,43 +276,75 @@ export default function RepairJobsPage() {
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Equipment</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Description</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Status</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Notes</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Created</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Completed</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                       Loading repair jobs...
                     </td>
                   </tr>
                 ) : repairJobs.length > 0 ? (
-                  repairJobs.map((job) => (
-                    <tr key={job.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{findCustomerName(job.customer_id)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{job.equipment_type}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{job.description}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                            job.status === 'completed'
-                              ? 'bg-green-100 text-green-800'
-                              : job.status === 'in_progress'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          {job.status.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {job.created_at ? new Date(job.created_at).toLocaleDateString() : '—'}
-                      </td>
-                    </tr>
-                  ))
+                  repairJobs.map((job) => {
+                    const key = job.id.toString()
+                    const isUpdating = updatingJobId === job.id
+                    const noteValue = key in notesDrafts ? notesDrafts[key] : (job.notes ?? '')
+
+                    return (
+                      <tr key={job.id} className={`hover:bg-gray-50 ${isUpdating ? 'opacity-60' : ''}`}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {findCustomerName(job.customer_id)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{job.equipment_type}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">{job.description}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <select
+                            value={job.status}
+                            onChange={(e) => handleStatusChange(job, e.target.value)}
+                            disabled={isUpdating}
+                            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed ${
+                              job.status === 'completed'
+                                ? 'border-green-200 bg-green-50 text-green-800'
+                                : job.status === 'in_progress'
+                                ? 'border-yellow-200 bg-yellow-50 text-yellow-800'
+                                : 'border-gray-200 bg-gray-50 text-gray-800'
+                            }`}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="in_progress">In progress</option>
+                            <option value="completed">Completed</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 min-w-[180px]">
+                          <textarea
+                            rows={2}
+                            value={noteValue}
+                            placeholder="Add notes..."
+                            disabled={isUpdating}
+                            onFocus={() => handleNotesFocus(job)}
+                            onChange={(e) =>
+                              setNotesDrafts((prev) => ({ ...prev, [key]: e.target.value }))
+                            }
+                            onBlur={() => handleNotesBlur(job)}
+                            className="w-full resize-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-gray-50"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {job.created_at ? new Date(job.created_at).toLocaleDateString() : '—'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {job.completed_at ? new Date(job.completed_at).toLocaleDateString() : '—'}
+                        </td>
+                      </tr>
+                    )
+                  })
                 ) : (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                       No repair jobs found.
                     </td>
                   </tr>

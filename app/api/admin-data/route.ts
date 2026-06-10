@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
   const [customersRes, repairJobsRes, plansRes] = await Promise.all([
     supabaseAdmin.from('customers').select('id, full_name, email, phone'),
-    supabaseAdmin.from('repair_jobs').select('id, equipment_type, status, description, created_at, customer_id'),
+    supabaseAdmin.from('repair_jobs').select('id, equipment_type, status, description, notes, created_at, completed_at, customer_id'),
     supabaseAdmin.from('maintenance_plans').select('id, plan_name, status'),
   ])
 

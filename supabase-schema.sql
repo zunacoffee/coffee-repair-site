@@ -13,6 +13,10 @@ CREATE TABLE IF NOT EXISTS equipment_list (
 
 CREATE INDEX IF NOT EXISTS equipment_list_customer_id_idx ON equipment_list(customer_id);
 
+-- Add notes and completed_at to repair_jobs (if not already present)
+-- ALTER TABLE repair_jobs ADD COLUMN notes TEXT;
+-- ALTER TABLE repair_jobs ADD COLUMN completed_at TIMESTAMPTZ;
+
 -- Add Stripe integration columns to maintenance_plans (if not already present)
 -- Run these ALTER TABLE statements if the columns don't exist:
 -- ALTER TABLE maintenance_plans ADD COLUMN stripe_subscription_id TEXT;
