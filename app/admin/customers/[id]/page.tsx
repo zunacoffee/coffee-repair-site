@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '../../../supabase'
 
 type Customer = {
   id: number
@@ -44,7 +43,6 @@ export default function CustomerDetailPage() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [sessionToken, setSessionToken] = useState<string | null>(null)
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [equipment, setEquipment] = useState<Equipment[]>([])
   const [jobs, setJobs] = useState<RepairJob[]>([])
@@ -68,38 +66,15 @@ export default function CustomerDetailPage() {
   })
 
   useEffect(() => {
+    if (!customerId) return
     let mounted = true
 
     async function loadCustomer() {
-      if (!customerId) {
-        return
-      }
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      if (!mounted) return
-      if (!session?.user || !session.access_token) {
-        router.replace('/login')
-        return
-      }
-
-      setSessionToken(session.access_token)
-
-      const res = await fetch(`/api/admin/customers/${customerId}`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
+      const res = await fetch(`/api/admin/customers/${customerId}`)
+      if (res.status === 401) { router.replace('/admin/login'); return }
       const json = await res.json()
-
       if (!mounted) return
-      if (!res.ok) {
-        setError(json.error ?? 'Unable to load customer details.')
-        setLoading(false)
-        return
-      }
+      if (!res.ok) { setError(json.error ?? 'Unable to load customer details.'); setLoading(false); return }
 
       setCustomer(json.customer ?? null)
       setEquipment(json.equipment ?? [])
@@ -115,35 +90,24 @@ export default function CustomerDetailPage() {
     }
 
     loadCustomer()
-
-    return () => {
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [customerId, router])
 
   const handleSave = async () => {
-    if (!sessionToken || !customerId) return
-    if (!customer) return
-
+    if (!customerId || !customer) return
     setSaving(true)
     setError(null)
     setSaveMessage(null)
 
     const res = await fetch(`/api/admin/customers/${customerId}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${sessionToken}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(contactForm),
     })
     const json = await res.json()
     setSaving(false)
 
-    if (!res.ok) {
-      setError(json.error ?? 'Unable to update contact details.')
-      return
-    }
+    if (!res.ok) { setError(json.error ?? 'Unable to update contact details.'); return }
 
     setCustomer(json.customer)
     setEditing(false)
@@ -160,7 +124,7 @@ export default function CustomerDetailPage() {
 
   const handleAddEquipment = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!sessionToken || !customerId) return
+    if (!customerId) return
     if (!equipmentForm.equipment_type || !equipmentForm.brand || !equipmentForm.model || !equipmentForm.serial_number) {
       setError('All equipment fields are required.')
       return
@@ -172,26 +136,15 @@ export default function CustomerDetailPage() {
 
     const res = await fetch(`/api/admin/customers/${customerId}/equipment`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${sessionToken}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(equipmentForm),
     })
     const json = await res.json()
     setEquipmentSaving(false)
 
-    if (!res.ok) {
-      setError(json.error ?? 'Failed to add equipment.')
-      return
-    }
+    if (!res.ok) { setError(json.error ?? 'Failed to add equipment.'); return }
 
-    setEquipmentForm({
-      equipment_type: '',
-      brand: '',
-      model: '',
-      serial_number: '',
-    })
+    setEquipmentForm({ equipment_type: '', brand: '', model: '', serial_number: '' })
     setShowEquipmentForm(false)
     setSaveMessage('Equipment added successfully.')
     setEquipment((prev) => [...prev, json.equipment])
@@ -213,12 +166,7 @@ export default function CustomerDetailPage() {
             onClick={() => {
               setEditing((prev) => !prev)
               if (!editing && customer) {
-                setContactForm({
-                  full_name: customer.full_name,
-                  email: customer.email,
-                  phone: customer.phone,
-                  address: customer.address,
-                })
+                setContactForm({ full_name: customer.full_name, email: customer.email, phone: customer.phone, address: customer.address })
               }
             }}
             className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
@@ -238,11 +186,9 @@ export default function CustomerDetailPage() {
           <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]">
             <div className="space-y-8">
               <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                <div className="flex items-start justify-between gap-6">
-                  <div>
-                    <h2 className="text-xl font-semibold text-slate-900">Contact information</h2>
-                    <p className="mt-2 text-sm text-slate-600">Customer contact info and billing address.</p>
-                  </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Contact information</h2>
+                  <p className="mt-2 text-sm text-slate-600">Customer contact info and billing address.</p>
                 </div>
 
                 <div className="mt-8 grid gap-6 sm:grid-cols-2">
@@ -250,36 +196,19 @@ export default function CustomerDetailPage() {
                     <>
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Full name</label>
-                        <input
-                          value={contactForm.full_name}
-                          onChange={(event) => updateFormField('full_name', event.target.value)}
-                          className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                        />
+                        <input value={contactForm.full_name} onChange={(e) => updateFormField('full_name', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Email</label>
-                        <input
-                          type="email"
-                          value={contactForm.email}
-                          onChange={(event) => updateFormField('email', event.target.value)}
-                          className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                        />
+                        <input type="email" value={contactForm.email} onChange={(e) => updateFormField('email', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Phone</label>
-                        <input
-                          value={contactForm.phone}
-                          onChange={(event) => updateFormField('phone', event.target.value)}
-                          className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                        />
+                        <input value={contactForm.phone} onChange={(e) => updateFormField('phone', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
                       </div>
                       <div className="sm:col-span-2">
                         <label className="block text-sm font-medium text-slate-700">Address</label>
-                        <input
-                          value={contactForm.address}
-                          onChange={(event) => updateFormField('address', event.target.value)}
-                          className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                        />
+                        <input value={contactForm.address} onChange={(e) => updateFormField('address', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
                       </div>
                     </>
                   ) : (
@@ -306,19 +235,10 @@ export default function CustomerDetailPage() {
 
                 {editing ? (
                   <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
-                    <button
-                      type="button"
-                      onClick={handleSave}
-                      disabled={saving}
-                      className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
-                    >
+                    <button type="button" onClick={handleSave} disabled={saving} className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50">
                       {saving ? 'Saving...' : 'Save changes'}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditing(false)}
-                      className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
-                    >
+                    <button type="button" onClick={() => setEditing(false)} className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300">
                       Cancel
                     </button>
                   </div>
@@ -331,11 +251,7 @@ export default function CustomerDetailPage() {
                     <h2 className="text-xl font-semibold text-slate-900">Equipment</h2>
                     <p className="mt-2 text-sm text-slate-600">Equipment registered for this customer.</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowEquipmentForm((prev) => !prev)}
-                    className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
-                  >
+                  <button type="button" onClick={() => setShowEquipmentForm((prev) => !prev)} className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500">
                     {showEquipmentForm ? 'Hide form' : 'Add equipment'}
                   </button>
                 </div>
@@ -345,56 +261,24 @@ export default function CustomerDetailPage() {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Equipment type</label>
-                        <input
-                          value={equipmentForm.equipment_type}
-                          onChange={(event) => updateEquipmentField('equipment_type', event.target.value)}
-                          placeholder="e.g., Espresso Machine"
-                          className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                        />
+                        <input value={equipmentForm.equipment_type} onChange={(e) => updateEquipmentField('equipment_type', e.target.value)} placeholder="e.g., Espresso Machine" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Brand</label>
-                        <input
-                          value={equipmentForm.brand}
-                          onChange={(event) => updateEquipmentField('brand', event.target.value)}
-                          placeholder="e.g., La Marzocco"
-                          className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                        />
+                        <input value={equipmentForm.brand} onChange={(e) => updateEquipmentField('brand', e.target.value)} placeholder="e.g., La Marzocco" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Model</label>
-                        <input
-                          value={equipmentForm.model}
-                          onChange={(event) => updateEquipmentField('model', event.target.value)}
-                          placeholder="e.g., Linea Mini"
-                          className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                        />
+                        <input value={equipmentForm.model} onChange={(e) => updateEquipmentField('model', e.target.value)} placeholder="e.g., Linea Mini" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Serial number</label>
-                        <input
-                          value={equipmentForm.serial_number}
-                          onChange={(event) => updateEquipmentField('serial_number', event.target.value)}
-                          placeholder="e.g., LM-12345"
-                          className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                        />
+                        <input value={equipmentForm.serial_number} onChange={(e) => updateEquipmentField('serial_number', e.target.value)} placeholder="e.g., LM-12345" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
                       </div>
                     </div>
                     <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-end">
-                      <button
-                        type="button"
-                        onClick={() => setShowEquipmentForm(false)}
-                        className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={equipmentSaving}
-                        className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
-                      >
-                        {equipmentSaving ? 'Saving...' : 'Save equipment'}
-                      </button>
+                      <button type="button" onClick={() => setShowEquipmentForm(false)} className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300">Cancel</button>
+                      <button type="submit" disabled={equipmentSaving} className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50">{equipmentSaving ? 'Saving...' : 'Save equipment'}</button>
                     </div>
                   </form>
                 ) : null}
@@ -409,21 +293,16 @@ export default function CustomerDetailPage() {
                       </div>
                     ))
                   ) : (
-                    <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">
-                      No equipment records found for this customer.
-                    </div>
+                    <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">No equipment records found for this customer.</div>
                   )}
                 </div>
               </section>
 
               <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <h2 className="text-xl font-semibold text-slate-900">Repair history</h2>
-                    <p className="mt-2 text-sm text-slate-600">Recent repair jobs for this customer.</p>
-                  </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Repair history</h2>
+                  <p className="mt-2 text-sm text-slate-600">Recent repair jobs for this customer.</p>
                 </div>
-
                 <div className="mt-6 space-y-4">
                   {jobs.length > 0 ? (
                     jobs.map((job) => (
@@ -433,17 +312,13 @@ export default function CustomerDetailPage() {
                             <p className="text-sm font-semibold text-slate-900">{job.equipment_type}</p>
                             <p className="mt-1 text-sm text-slate-600">{job.description}</p>
                           </div>
-                          <div className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
-                            {job.status}
-                          </div>
+                          <div className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">{job.status}</div>
                         </div>
                         <p className="mt-3 text-xs uppercase tracking-[0.24em] text-slate-500">{new Date(job.created_at).toLocaleDateString()}</p>
                       </div>
                     ))
                   ) : (
-                    <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">
-                      No repair jobs found for this customer.
-                    </div>
+                    <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">No repair jobs found for this customer.</div>
                   )}
                 </div>
               </section>

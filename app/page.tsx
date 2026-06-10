@@ -6,12 +6,12 @@ export default function Home() {
   return (
     <main className="bg-cafe-navy text-cafe-silver">
       <PublicNavbar />
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0D1B2A] via-[#0D1B2A] to-[#1a2d3d] px-6 py-24 sm:px-10 lg:px-16">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0D1B2A] via-[#0D1B2A] to-[#1a2d3d] px-6 py-16 sm:px-10 sm:py-24 lg:px-16">
         <div className="absolute inset-x-0 top-0 h-1/2 bg-cafe-navy opacity-80" />
-        <div className="relative mx-auto flex max-w-7xl flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-2xl space-y-8">
+        <div className="relative mx-auto flex max-w-7xl flex-col gap-10 sm:gap-12 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl space-y-6 sm:space-y-8">
             <p className="inline-flex rounded-full bg-cafe-bronze/20 px-4 py-1 text-sm font-semibold uppercase tracking-[0.24em] text-[#D4A574]">Cafe Works</p>
-            <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-6xl">
+            <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
               Fast coffee equipment repair for shops that demand uptime.
             </h1>
             <p className="max-w-xl text-lg leading-8 text-[#A8B8C8]">
@@ -121,7 +121,7 @@ export default function Home() {
       </section>
 
       <section className="bg-cafe-silver text-cafe-navy px-6 py-24 sm:px-10 lg:px-16">
-        <div className="mx-auto max-w-7xl rounded-[2rem] border border-[#D4D8DC] bg-white/90 p-10 shadow-2xl shadow-cafe-navy/10">
+        <div className="mx-auto max-w-7xl rounded-[2rem] border border-[#D4D8DC] bg-white/90 p-6 sm:p-10 shadow-2xl shadow-cafe-navy/10">
           <div className="grid gap-10 lg:grid-cols-[1.4fr,0.8fr] lg:items-center">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cafe-bronze">Maintenance plans</p>

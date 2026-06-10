@@ -70,7 +70,7 @@ export default function PricingPage() {
         <div className="sm:flex sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-cafe-bronze">Maintenance plans</p>
-            <h1 className="mt-3 text-4xl font-bold tracking-tight text-cafe-navy sm:text-5xl">Choose the best plan for your coffee equipment.</h1>
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-cafe-navy sm:text-4xl lg:text-5xl">Choose the best plan for your coffee equipment.</h1>
             <p className="mt-4 max-w-2xl text-base text-cafe-steel">
               Subscribe to a monthly maintenance plan and keep your coffee systems running smoothly with fast service and expert support.
             </p>

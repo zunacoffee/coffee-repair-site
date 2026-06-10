@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../supabase'
 
 type Customer = {
   id: number | string
@@ -18,7 +17,6 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [sessionToken, setSessionToken] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -27,66 +25,19 @@ export default function CustomersPage() {
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
 
+  const fetchCustomers = async () => {
+    const res = await fetch('/api/admin/customers')
+    if (res.status === 401) { router.replace('/admin/login'); return }
+    const json = await res.json()
+    if (!res.ok) { setError(json.error ?? 'Unable to load customers.'); return }
+    setCustomers(json.customers ?? [])
+  }
+
   useEffect(() => {
     let mounted = true
-
-    async function loadSession() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      if (!mounted) return
-      if (!session?.user || !session.access_token) {
-        router.replace('/login')
-        return
-      }
-
-      setSessionToken(session.access_token)
-      await fetchCustomers(session.access_token)
-    }
-
-    async function fetchCustomers(token: string) {
-      setIsLoading(true)
-      setError(null)
-
-      const res = await fetch('/api/admin/customers', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const json = await res.json()
-
-      if (!res.ok) {
-        setError(json.error ?? 'Unable to load customers.')
-        setIsLoading(false)
-        return
-      }
-
-      setCustomers(json.customers ?? [])
-      setIsLoading(false)
-    }
-
-    loadSession()
-
-    return () => {
-      mounted = false
-    }
-  }, [router])
-
-  const refreshCustomers = async () => {
-    if (!sessionToken) return
-
-    const res = await fetch('/api/admin/customers', {
-      headers: {
-        Authorization: `Bearer ${sessionToken}`,
-      },
-    })
-    const json = await res.json()
-
-    if (res.ok) {
-      setCustomers(json.customers ?? [])
-    }
-  }
+    fetchCustomers().finally(() => { if (mounted) setIsLoading(false) })
+    return () => { mounted = false }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAddCustomer = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -98,27 +49,16 @@ export default function CustomersPage() {
       return
     }
 
-    if (!sessionToken) {
-      setError('Authentication missing.')
-      return
-    }
-
     setSaving(true)
     const res = await fetch('/api/admin/customers', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${sessionToken}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ full_name: fullName, email, phone, address }),
     })
     const json = await res.json()
     setSaving(false)
 
-    if (!res.ok) {
-      setError(json.error ?? 'Failed to add customer.')
-      return
-    }
+    if (!res.ok) { setError(json.error ?? 'Failed to add customer.'); return }
 
     setFullName('')
     setEmail('')
@@ -126,29 +66,20 @@ export default function CustomersPage() {
     setAddress('')
     setShowForm(false)
     setSaveMessage('Customer added successfully.')
-    await refreshCustomers()
+    await fetchCustomers()
   }
 
   const handleDelete = async (id: number | string) => {
-    if (!sessionToken) return
     const confirmed = confirm('Delete this customer?')
     if (!confirmed) return
 
-    const res = await fetch(`/api/admin/customers/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${sessionToken}`,
-      },
-    })
+    const res = await fetch(`/api/admin/customers/${id}`, { method: 'DELETE' })
     const json = await res.json()
 
-    if (!res.ok) {
-      setError(json.error ?? 'Unable to delete customer.')
-      return
-    }
+    if (!res.ok) { setError(json.error ?? 'Unable to delete customer.'); return }
 
     setSaveMessage('Customer deleted successfully.')
-    await refreshCustomers()
+    await fetchCustomers()
   }
 
   return (
@@ -241,11 +172,7 @@ export default function CustomersPage() {
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                      Loading customers...
-                    </td>
-                  </tr>
+                  <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">Loading customers...</td></tr>
                 ) : customers.length > 0 ? (
                   customers.map((customer) => (
                     <tr key={customer.id} className="hover:bg-gray-50">
@@ -274,11 +201,7 @@ export default function CustomersPage() {
                     </tr>
                   ))
                 ) : (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                      No customers found.
-                    </td>
-                  </tr>
+                  <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">No customers found.</td></tr>
                 )}
               </tbody>
             </table>

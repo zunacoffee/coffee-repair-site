@@ -1,23 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../../../lib/supabaseAdmin'
-
-async function authenticateRequest(req: NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  const token = authHeader?.replace('Bearer ', '')
-  if (!token) return null
-  const {
-    data: { user },
-    error,
-  } = await supabaseAdmin.auth.getUser(token)
-  if (error || !user) return null
-  return user
-}
+import { authenticateAdminRequest } from '../../../../../lib/adminAuth'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
-  const user = await authenticateRequest(req)
-
-  if (!user) {
+  if (!authenticateAdminRequest(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

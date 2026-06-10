@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../supabase'
 
 type Customer = {
   id: number | string
@@ -20,7 +19,6 @@ type MaintenancePlan = {
 
 export default function MaintenancePlansPage() {
   const router = useRouter()
-  const [sessionToken, setSessionToken] = useState<string | null>(null)
   const [customers, setCustomers] = useState<Customer[]>([])
   const [plans, setPlans] = useState<MaintenancePlan[]>([])
   const [loading, setLoading] = useState(true)
@@ -33,69 +31,33 @@ export default function MaintenancePlansPage() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
-  useEffect(() => {
-    let mounted = true
-
-    async function loadData() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      if (!mounted) return
-      if (!session?.user || !session.access_token) {
-        router.replace('/login')
-        return
-      }
-
-      setSessionToken(session.access_token)
-      await fetchData(session.access_token)
-    }
-
-    loadData()
-
-    return () => {
-      mounted = false
-    }
-  }, [router])
-
-  const fetchData = async (token: string) => {
-    setLoading(true)
-    setError(null)
-
+  const fetchData = async () => {
     const [customersRes, plansRes] = await Promise.all([
-      fetch('/api/admin/customers', {
-        headers: { Authorization: `Bearer ${token}` },
-      }),
-      fetch('/api/admin/maintenance-plans', {
-        headers: { Authorization: `Bearer ${token}` },
-      }),
+      fetch('/api/admin/customers'),
+      fetch('/api/admin/maintenance-plans'),
     ])
+
+    if (customersRes.status === 401 || plansRes.status === 401) {
+      router.replace('/admin/login')
+      return
+    }
 
     const customersJson = await customersRes.json()
     const plansJson = await plansRes.json()
 
-    if (!customersRes.ok) {
-      setError(customersJson.error ?? 'Unable to load customers.')
-      setLoading(false)
-      return
-    }
-
-    if (!plansRes.ok) {
-      setError(plansJson.error ?? 'Unable to load plans.')
-      setLoading(false)
-      return
-    }
+    if (!customersRes.ok) { setError(customersJson.error ?? 'Unable to load customers.'); return }
+    if (!plansRes.ok) { setError(plansJson.error ?? 'Unable to load plans.'); return }
 
     setCustomers(customersJson.customers ?? [])
     setPlans(plansJson.plans ?? [])
     setCustomerId((customersJson.customers?.[0]?.id?.toString() as string) ?? '')
-    setLoading(false)
   }
 
-  const refreshData = async () => {
-    if (!sessionToken) return
-    await fetchData(sessionToken)
-  }
+  useEffect(() => {
+    let mounted = true
+    fetchData().finally(() => { if (mounted) setLoading(false) })
+    return () => { mounted = false }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreatePlan = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -104,11 +66,6 @@ export default function MaintenancePlansPage() {
 
     if (!customerId || !planName.trim() || !status || !price.trim()) {
       setError('Please fill in all fields.')
-      return
-    }
-
-    if (!sessionToken) {
-      setError('Authentication required.')
       return
     }
 
@@ -121,36 +78,24 @@ export default function MaintenancePlansPage() {
     setSaving(true)
     const res = await fetch('/api/admin/maintenance-plans', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${sessionToken}`,
-      },
-      body: JSON.stringify({
-        customer_id: customerId,
-        plan_name: planName,
-        status,
-        price: numericPrice,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customer_id: customerId, plan_name: planName, status, price: numericPrice }),
     })
     const json = await res.json()
     setSaving(false)
 
-    if (!res.ok) {
-      setError(json.error ?? 'Failed to create maintenance plan.')
-      return
-    }
+    if (!res.ok) { setError(json.error ?? 'Failed to create maintenance plan.'); return }
 
     setPlanName('')
     setStatus('active')
     setPrice('')
     setMessage('Maintenance plan created successfully.')
     setShowForm(false)
-    await refreshData()
+    await fetchData()
   }
 
-  const findCustomerName = (id: number | string) => {
-    return customers.find((customer) => customer.id.toString() === id.toString())?.full_name ?? 'Unknown'
-  }
+  const findCustomerName = (id: number | string) =>
+    customers.find((c) => c.id.toString() === id.toString())?.full_name ?? 'Unknown'
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 lg:px-12">
@@ -184,13 +129,10 @@ export default function MaintenancePlansPage() {
                 >
                   <option value="">Select a customer</option>
                   {customers.map((customer) => (
-                    <option key={customer.id} value={customer.id.toString()}>
-                      {customer.full_name}
-                    </option>
+                    <option key={customer.id} value={customer.id.toString()}>{customer.full_name}</option>
                   ))}
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700">Plan name</label>
                 <input
@@ -200,7 +142,6 @@ export default function MaintenancePlansPage() {
                   placeholder="Premium maintenance"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700">Status</label>
                 <select
@@ -213,7 +154,6 @@ export default function MaintenancePlansPage() {
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700">Price</label>
                 <div className="mt-2 flex rounded-xl border border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20">
@@ -229,7 +169,6 @@ export default function MaintenancePlansPage() {
                   />
                 </div>
               </div>
-
               <div className="lg:col-span-2 flex items-center justify-end">
                 <button
                   type="submit"
@@ -260,26 +199,18 @@ export default function MaintenancePlansPage() {
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {loading ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                      Loading maintenance plans...
-                    </td>
-                  </tr>
+                  <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">Loading maintenance plans...</td></tr>
                 ) : plans.length > 0 ? (
                   plans.map((plan) => (
                     <tr key={plan.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{findCustomerName(plan.customer_id)}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{plan.plan_name}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                            plan.status === 'active'
-                              ? 'bg-green-100 text-green-800'
-                              : plan.status === 'inactive'
-                              ? 'bg-gray-100 text-gray-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
+                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                          plan.status === 'active' ? 'bg-green-100 text-green-800'
+                          : plan.status === 'inactive' ? 'bg-gray-100 text-gray-800'
+                          : 'bg-red-100 text-red-800'
+                        }`}>
                           {plan.status}
                         </span>
                       </td>
@@ -290,11 +221,7 @@ export default function MaintenancePlansPage() {
                     </tr>
                   ))
                 ) : (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                      No maintenance plans found.
-                    </td>
-                  </tr>
+                  <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">No maintenance plans found.</td></tr>
                 )}
               </tbody>
             </table>

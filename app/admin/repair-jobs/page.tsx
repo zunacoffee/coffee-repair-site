@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../supabase'
 
 type Customer = {
   id: number | string
@@ -22,7 +21,6 @@ type RepairJob = {
 
 export default function RepairJobsPage() {
   const router = useRouter()
-  const [sessionToken, setSessionToken] = useState<string | null>(null)
   const [customers, setCustomers] = useState<Customer[]>([])
   const [repairJobs, setRepairJobs] = useState<RepairJob[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,56 +36,21 @@ export default function RepairJobsPage() {
   const [notesDrafts, setNotesDrafts] = useState<Record<string, string>>({})
   const notesOriginals = useRef<Record<string, string>>({})
 
-  useEffect(() => {
-    let mounted = true
-
-    async function loadData() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      if (!mounted) return
-      if (!session?.user || !session.access_token) {
-        router.replace('/login')
-        return
-      }
-
-      setSessionToken(session.access_token)
-      await fetchRepairData(session.access_token)
-    }
-
-    loadData()
-
-    return () => {
-      mounted = false
-    }
-  }, [router])
-
-  const fetchRepairData = async (token: string) => {
-    setLoading(true)
-    setError(null)
-
-    const res = await fetch('/api/admin-data', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+  const fetchRepairData = async () => {
+    const res = await fetch('/api/admin-data')
+    if (res.status === 401) { router.replace('/admin/login'); return }
     const json = await res.json()
-
-    if (!res.ok) {
-      setError(json.error ?? 'Unable to load repair jobs.')
-      setLoading(false)
-      return
-    }
-
+    if (!res.ok) { setError(json.error ?? 'Unable to load repair jobs.'); return }
     setCustomers(json.customers ?? [])
     setRepairJobs(json.repairJobs ?? [])
     setCustomerId((json.customers?.[0]?.id?.toString() as string) ?? '')
-    setLoading(false)
   }
 
-  const refreshData = async () => {
-    if (!sessionToken) return
-    await fetchRepairData(sessionToken)
-  }
+  useEffect(() => {
+    let mounted = true
+    fetchRepairData().finally(() => { if (mounted) setLoading(false) })
+    return () => { mounted = false }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreateJob = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -99,64 +62,36 @@ export default function RepairJobsPage() {
       return
     }
 
-    if (!sessionToken) {
-      setError('Authentication required.')
-      return
-    }
-
     setSaving(true)
-
     const res = await fetch('/api/admin-data', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${sessionToken}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ customer_id: customerId, equipment_type: equipmentType, status, description }),
     })
-
     const json = await res.json()
     setSaving(false)
 
-    if (!res.ok) {
-      setError(json.error ?? 'Failed to create repair job.')
-      return
-    }
+    if (!res.ok) { setError(json.error ?? 'Failed to create repair job.'); return }
 
     setMessage('Repair job created successfully.')
     setEquipmentType('')
     setDescription('')
     setStatus('pending')
     setShowForm(false)
-    await refreshData()
+    await fetchRepairData()
   }
 
   const patchJob = async (jobId: string | number, updates: { status?: string; notes?: string }) => {
-    if (!sessionToken) return
     setUpdatingJobId(jobId)
-
     const res = await fetch(`/api/admin/repair-jobs/${jobId}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${sessionToken}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     })
-
     const json = await res.json()
     setUpdatingJobId(null)
-
-    if (!res.ok) {
-      setError(json.error ?? 'Failed to update repair job.')
-      return
-    }
-
-    setRepairJobs((prev) =>
-      prev.map((job) =>
-        job.id === jobId ? { ...job, ...json.job } : job
-      )
-    )
+    if (!res.ok) { setError(json.error ?? 'Failed to update repair job.'); return }
+    setRepairJobs((prev) => prev.map((job) => job.id === jobId ? { ...job, ...json.job } : job))
   }
 
   const handleStatusChange = (job: RepairJob, newStatus: string) => {
@@ -214,9 +149,7 @@ export default function RepairJobsPage() {
                 >
                   <option value="">Select a customer</option>
                   {customers.map((customer) => (
-                    <option key={customer.id} value={customer.id.toString()}>
-                      {customer.full_name}
-                    </option>
+                    <option key={customer.id} value={customer.id.toString()}>{customer.full_name}</option>
                   ))}
                 </select>
               </div>
@@ -283,11 +216,7 @@ export default function RepairJobsPage() {
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {loading ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                      Loading repair jobs...
-                    </td>
-                  </tr>
+                  <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-500">Loading repair jobs...</td></tr>
                 ) : repairJobs.length > 0 ? (
                   repairJobs.map((job) => {
                     const key = job.id.toString()
@@ -296,9 +225,7 @@ export default function RepairJobsPage() {
 
                     return (
                       <tr key={job.id} className={`hover:bg-gray-50 ${isUpdating ? 'opacity-60' : ''}`}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {findCustomerName(job.customer_id)}
-                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{findCustomerName(job.customer_id)}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{job.equipment_type}</td>
                         <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">{job.description}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -307,11 +234,9 @@ export default function RepairJobsPage() {
                             onChange={(e) => handleStatusChange(job, e.target.value)}
                             disabled={isUpdating}
                             className={`rounded-lg border px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed ${
-                              job.status === 'completed'
-                                ? 'border-green-200 bg-green-50 text-green-800'
-                                : job.status === 'in_progress'
-                                ? 'border-yellow-200 bg-yellow-50 text-yellow-800'
-                                : 'border-gray-200 bg-gray-50 text-gray-800'
+                              job.status === 'completed' ? 'border-green-200 bg-green-50 text-green-800'
+                              : job.status === 'in_progress' ? 'border-yellow-200 bg-yellow-50 text-yellow-800'
+                              : 'border-gray-200 bg-gray-50 text-gray-800'
                             }`}
                           >
                             <option value="pending">Pending</option>
@@ -326,9 +251,7 @@ export default function RepairJobsPage() {
                             placeholder="Add notes..."
                             disabled={isUpdating}
                             onFocus={() => handleNotesFocus(job)}
-                            onChange={(e) =>
-                              setNotesDrafts((prev) => ({ ...prev, [key]: e.target.value }))
-                            }
+                            onChange={(e) => setNotesDrafts((prev) => ({ ...prev, [key]: e.target.value }))}
                             onBlur={() => handleNotesBlur(job)}
                             className="w-full resize-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-gray-50"
                           />
@@ -343,11 +266,7 @@ export default function RepairJobsPage() {
                     )
                   })
                 ) : (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                      No repair jobs found.
-                    </td>
-                  </tr>
+                  <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-500">No repair jobs found.</td></tr>
                 )}
               </tbody>
             </table>
