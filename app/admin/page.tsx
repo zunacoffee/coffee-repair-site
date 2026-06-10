@@ -162,7 +162,7 @@ export default function AdminPage() {
         customer_id: newJobCustomer,
         equipment_type: newJobEquipment,
         status: newJobStatus,
-        issue_description: newJobIssue,
+        description: newJobIssue,
       }),
     })
 

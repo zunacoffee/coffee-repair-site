@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
   const [customersRes, repairJobsRes, plansRes] = await Promise.all([
     supabaseAdmin.from('customers').select('id, full_name, email, phone'),
-    supabaseAdmin.from('repair_jobs').select('id, equipment_type, status, created_at, customer_id'),
+    supabaseAdmin.from('repair_jobs').select('id, equipment_type, status, description, created_at, customer_id'),
     supabaseAdmin.from('maintenance_plans').select('id, plan_name, status'),
   ])
 
@@ -54,9 +54,9 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { customer_id, equipment_type, status, issue_description } = body
+  const { customer_id, equipment_type, status, description } = body
 
-  if (!customer_id || !equipment_type || !status) {
+  if (!customer_id || !equipment_type || !status || !description) {
     return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
   }
 
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     customer_id: parseInt(customer_id, 10),
     equipment_type,
     status,
-    issue_description,
+    description,
     created_at: new Date().toISOString(),
   })
 
