@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import PublicNavbar from './components/PublicNavbar'
+import PublicFooter from './components/PublicFooter'
 
 export default function Home() {
   return (
@@ -177,6 +178,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <PublicFooter />
     </main>
   )
 }

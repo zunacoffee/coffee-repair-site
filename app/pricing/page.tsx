@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import PublicNavbar from '../components/PublicNavbar'
+import PublicFooter from '../components/PublicFooter'
 
 const plans = [
   {
@@ -62,8 +63,9 @@ export default function PricingPage() {
   const isLoading = loadingPlan !== null
 
   return (
-    <div className="min-h-screen bg-cafe-silver py-12 px-4">
+    <div className="min-h-screen bg-cafe-silver flex flex-col">
       <PublicNavbar />
+      <div className="flex-1 px-4 py-12">
       <div className="mx-auto max-w-7xl">
         <div className="sm:flex sm:items-end sm:justify-between">
           <div>
@@ -117,6 +119,8 @@ export default function PricingPage() {
           </div>
         ) : null}
       </div>
+      </div>
+      <PublicFooter />
     </div>
   )
 }
