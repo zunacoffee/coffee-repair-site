@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import PublicNavbar from '../components/PublicNavbar'
 import PublicFooter from '../components/PublicFooter'
+import DateSlotPicker from '../components/DateSlotPicker'
 
 const EQUIPMENT_TYPES = ['Espresso Machine', 'Grinder', 'Brewer', 'Other']
 
@@ -15,6 +16,7 @@ type FormState = {
   model: string
   issue_description: string
   contact_preference: 'email' | 'phone' | ''
+  notes: string
 }
 
 const EMPTY: FormState = {
@@ -26,13 +28,16 @@ const EMPTY: FormState = {
   model: '',
   issue_description: '',
   contact_preference: '',
+  notes: '',
 }
 
 export default function ServiceRequestPage() {
-  const [form, setForm] = useState<FormState>(EMPTY)
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [submitted, setSubmitted] = useState(false)
+  const [form,          setForm]          = useState<FormState>(EMPTY)
+  const [selectedDate,  setSelectedDate]  = useState<string | null>(null)
+  const [selectedSlot,  setSelectedSlot]  = useState<'morning' | 'afternoon' | null>(null)
+  const [submitting,    setSubmitting]    = useState(false)
+  const [error,         setError]         = useState<string | null>(null)
+  const [submitted,     setSubmitted]     = useState(false)
 
   const set = (field: keyof FormState) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -41,12 +46,22 @@ export default function ServiceRequestPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    if (!selectedDate || !selectedSlot) {
+      setError('Please select a preferred appointment date and time slot.')
+      return
+    }
+
     setSubmitting(true)
 
     const res = await fetch('/api/service-requests', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        ...form,
+        scheduled_date: selectedDate,
+        time_slot: selectedSlot,
+      }),
     })
 
     const data = await res.json()
@@ -60,8 +75,13 @@ export default function ServiceRequestPage() {
     setSubmitted(true)
   }
 
-  const inputClass = 'mt-1 block w-full px-3 py-2 border border-[#D4D8DC] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-cafe-bronze text-cafe-navy bg-white'
-  const labelClass = 'block text-sm font-medium text-cafe-navy'
+  const inputClass  = 'mt-1 block w-full px-3 py-2 border border-[#D4D8DC] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-cafe-bronze text-cafe-navy bg-white'
+  const labelClass  = 'block text-sm font-medium text-cafe-navy'
+
+  const slotDateLabel = selectedDate
+    ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+    : null
+  const slotTimeLabel = selectedSlot === 'morning' ? 'Morning (8am–12pm)' : selectedSlot === 'afternoon' ? 'Afternoon (12pm–5pm)' : null
 
   return (
     <div className="min-h-screen bg-cafe-silver flex flex-col">
@@ -73,7 +93,7 @@ export default function ServiceRequestPage() {
             <p className="text-sm font-semibold uppercase tracking-wide text-cafe-bronze">Get help fast</p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight text-cafe-navy sm:text-4xl">Request a service visit</h1>
             <p className="mt-3 text-base text-cafe-steel">
-              Fill out the form below and our team will be in touch within one business day to schedule your repair.
+              Fill out the form below and choose your preferred appointment time. We'll confirm within one business day.
             </p>
           </div>
 
@@ -86,128 +106,113 @@ export default function ServiceRequestPage() {
               </div>
               <h2 className="text-xl font-semibold text-green-800">Request submitted!</h2>
               <p className="mt-2 text-sm text-green-700">
-                Thanks for reaching out. We'll contact you within one business day to confirm your appointment.
+                Thanks for booking. A confirmation has been sent to <strong>{form.email}</strong>.
+                {slotDateLabel && slotTimeLabel && (
+                  <> Your preferred appointment is <strong>{slotDateLabel}</strong> in the <strong>{slotTimeLabel}</strong>.</>
+                )}
               </p>
               <button
-                onClick={() => { setForm(EMPTY); setSubmitted(false) }}
+                onClick={() => { setForm(EMPTY); setSelectedDate(null); setSelectedSlot(null); setSubmitted(false) }}
                 className="mt-6 inline-flex items-center justify-center rounded-full bg-cafe-bronze px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
               >
                 Submit another request
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-[#D4D8DC] p-6 sm:p-8 space-y-5">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label className={labelClass}>Full name</label>
-                  <input
-                    type="text"
-                    value={form.full_name}
-                    onChange={set('full_name')}
-                    required
-                    placeholder="Jane Smith"
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Email</label>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={set('email')}
-                    required
-                    placeholder="jane@example.com"
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Phone</label>
-                  <input
-                    type="tel"
-                    value={form.phone}
-                    onChange={set('phone')}
-                    required
-                    placeholder="(555) 000-0000"
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Equipment type</label>
-                  <select
-                    value={form.equipment_type}
-                    onChange={set('equipment_type')}
-                    required
-                    className={inputClass}
-                  >
-                    <option value="" disabled>Select type…</option>
-                    {EQUIPMENT_TYPES.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelClass}>Brand</label>
-                  <input
-                    type="text"
-                    value={form.brand}
-                    onChange={set('brand')}
-                    required
-                    placeholder="e.g. La Marzocco"
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Model</label>
-                  <input
-                    type="text"
-                    value={form.model}
-                    onChange={set('model')}
-                    required
-                    placeholder="e.g. Linea Mini"
-                    className={inputClass}
-                  />
+            <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-[#D4D8DC] p-6 sm:p-8 space-y-6">
+
+              {/* Contact info */}
+              <div>
+                <h2 className="text-base font-semibold text-cafe-navy mb-4">Your information</h2>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>Full name</label>
+                    <input type="text" value={form.full_name} onChange={set('full_name')} required placeholder="Jane Smith" className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Email</label>
+                    <input type="email" value={form.email} onChange={set('email')} required placeholder="jane@example.com" className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Phone</label>
+                    <input type="tel" value={form.phone} onChange={set('phone')} required placeholder="(555) 000-0000" className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Preferred contact method</label>
+                    <div className="mt-2 flex gap-6">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="contact_preference" value="email" checked={form.contact_preference === 'email'} onChange={set('contact_preference')} required className="accent-cafe-bronze" />
+                        <span className="text-sm text-cafe-navy">Email</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="contact_preference" value="phone" checked={form.contact_preference === 'phone'} onChange={set('contact_preference')} className="accent-cafe-bronze" />
+                        <span className="text-sm text-cafe-navy">Phone</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className={labelClass}>Description of the issue</label>
-                <textarea
-                  value={form.issue_description}
-                  onChange={set('issue_description')}
-                  required
-                  rows={4}
-                  placeholder="Describe the problem in as much detail as possible…"
-                  className={inputClass}
+              {/* Equipment */}
+              <div className="border-t border-[#D4D8DC] pt-6">
+                <h2 className="text-base font-semibold text-cafe-navy mb-4">Equipment details</h2>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>Equipment type</label>
+                    <select value={form.equipment_type} onChange={set('equipment_type')} required className={inputClass}>
+                      <option value="" disabled>Select type…</option>
+                      {EQUIPMENT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Brand</label>
+                    <input type="text" value={form.brand} onChange={set('brand')} required placeholder="e.g. La Marzocco" className={inputClass} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className={labelClass}>Model</label>
+                    <input type="text" value={form.model} onChange={set('model')} required placeholder="e.g. Linea Mini" className={inputClass} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Issue */}
+              <div className="border-t border-[#D4D8DC] pt-6">
+                <h2 className="text-base font-semibold text-cafe-navy mb-4">Describe the issue</h2>
+                <div>
+                  <label className={labelClass}>Issue description</label>
+                  <textarea value={form.issue_description} onChange={set('issue_description')} required rows={4} placeholder="Describe the problem in as much detail as possible…" className={inputClass} />
+                </div>
+              </div>
+
+              {/* Appointment */}
+              <div className="border-t border-[#D4D8DC] pt-6">
+                <h2 className="text-base font-semibold text-cafe-navy mb-1">Preferred appointment</h2>
+                <p className="text-sm text-cafe-steel mb-4">
+                  Choose a weekday and time slot. We'll confirm availability when we follow up.
+                </p>
+                <DateSlotPicker
+                  selectedDate={selectedDate}
+                  selectedSlot={selectedSlot}
+                  onDateChange={(d) => { setSelectedDate(d); setSelectedSlot(null) }}
+                  onSlotChange={setSelectedSlot}
                 />
+                {selectedDate && selectedSlot && (
+                  <p className="mt-2 text-xs text-green-700 font-medium">
+                    ✓ {slotDateLabel} · {slotTimeLabel}
+                  </p>
+                )}
               </div>
 
-              <div>
-                <label className={labelClass}>Preferred contact method</label>
-                <div className="mt-2 flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="contact_preference"
-                      value="email"
-                      checked={form.contact_preference === 'email'}
-                      onChange={set('contact_preference')}
-                      required
-                      className="accent-cafe-bronze"
-                    />
-                    <span className="text-sm text-cafe-navy">Email</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="contact_preference"
-                      value="phone"
-                      checked={form.contact_preference === 'phone'}
-                      onChange={set('contact_preference')}
-                      className="accent-cafe-bronze"
-                    />
-                    <span className="text-sm text-cafe-navy">Phone</span>
-                  </label>
-                </div>
+              {/* Notes */}
+              <div className="border-t border-[#D4D8DC] pt-6">
+                <label className={labelClass}>Additional notes <span className="text-cafe-steel font-normal">(optional)</span></label>
+                <textarea
+                  value={form.notes}
+                  onChange={set('notes')}
+                  rows={2}
+                  placeholder="Any access instructions, parking info, or other details…"
+                  className={`${inputClass} mt-1`}
+                />
               </div>
 
               {error && <p className="text-sm text-red-600">{error}</p>}

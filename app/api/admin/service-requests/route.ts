@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('service_requests')
-    .select('id, full_name, email, phone, equipment_type, brand, model, issue_description, contact_preference, status, created_at')
+    .select('id, full_name, email, phone, equipment_type, brand, model, issue_description, contact_preference, status, scheduled_date, time_slot, notes, created_at')
     .order('created_at', { ascending: false })
 
   if (error) {

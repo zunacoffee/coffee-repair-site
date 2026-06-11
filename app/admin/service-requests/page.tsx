@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 type ServiceRequest = {
@@ -15,25 +15,38 @@ type ServiceRequest = {
   issue_description: string
   contact_preference: string
   status: string
+  scheduled_date: string | null
+  time_slot: string | null
+  notes: string | null
   created_at: string
 }
 
 const STATUS_STYLES: Record<string, string> = {
   new:       'border-blue-200 bg-blue-50 text-blue-800',
   contacted: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-  scheduled: 'border-purple-200 bg-purple-50 text-purple-800',
+  scheduled: 'border-[#B87333]/30 bg-[#B87333]/5 text-[#B87333]',
   completed: 'border-green-200 bg-green-50 text-green-800',
+}
+
+const SLOT_LABEL: Record<string, string> = {
+  morning:   'Morning (8am–12pm)',
+  afternoon: 'Afternoon (12pm–5pm)',
+}
+
+function fmtDate(d: string) {
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export default function ServiceRequestsPage() {
   const router = useRouter()
-  const [requests, setRequests] = useState<ServiceRequest[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [requests,   setRequests]   = useState<ServiceRequest[]>([])
+  const [loading,    setLoading]    = useState(true)
+  const [error,      setError]      = useState<string | null>(null)
   const [updatingId, setUpdatingId] = useState<number | null>(null)
+  const [expandedId, setExpandedId] = useState<number | null>(null)
 
   const fetchRequests = async () => {
-    const res = await fetch('/api/admin/service-requests')
+    const res  = await fetch('/api/admin/service-requests')
     if (res.status === 401) { router.replace('/admin/login'); return }
     const json = await res.json()
     if (!res.ok) { setError(json.error ?? 'Unable to load service requests.'); return }
@@ -48,7 +61,7 @@ export default function ServiceRequestsPage() {
 
   const handleStatusChange = async (id: number, newStatus: string) => {
     setUpdatingId(id)
-    const res = await fetch(`/api/admin/service-requests/${id}`, {
+    const res  = await fetch(`/api/admin/service-requests/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus }),
@@ -88,12 +101,12 @@ export default function ServiceRequestsPage() {
               <thead className="bg-white">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Name</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Email</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Equipment</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Brand / Model</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Appointment</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Issue</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Status</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Submitted</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
@@ -104,38 +117,89 @@ export default function ServiceRequestsPage() {
                 ) : requests.length > 0 ? (
                   requests.map((req) => {
                     const isUpdating = updatingId === req.id
+                    const isExpanded = expandedId === req.id
                     return (
-                      <tr key={req.id} className={`hover:bg-gray-50 ${isUpdating ? 'opacity-60' : ''}`}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <p className="text-sm font-medium text-gray-900">{req.full_name}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{req.phone}</p>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{req.email}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{req.equipment_type}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <p className="text-sm text-gray-900">{req.brand}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{req.model}</p>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">
-                          <p className="line-clamp-2">{req.issue_description}</p>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <select
-                            value={req.status}
-                            onChange={(e) => handleStatusChange(req.id, e.target.value)}
-                            disabled={isUpdating}
-                            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed ${STATUS_STYLES[req.status] ?? 'border-gray-200 bg-gray-50 text-gray-800'}`}
-                          >
-                            <option value="new">New</option>
-                            <option value="contacted">Contacted</option>
-                            <option value="scheduled">Scheduled</option>
-                            <option value="completed">Completed</option>
-                          </select>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {new Date(req.created_at).toLocaleDateString()}
-                        </td>
-                      </tr>
+                      <Fragment key={req.id}>
+                        <tr className={`hover:bg-gray-50 ${isUpdating ? 'opacity-60' : ''}`}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <p className="text-sm font-medium text-gray-900">{req.full_name}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{req.email}</p>
+                            <p className="text-xs text-gray-400">{req.phone}</p>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <p className="text-sm text-gray-900">{req.equipment_type}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{req.brand} {req.model}</p>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {req.scheduled_date ? (
+                              <>
+                                <p className="text-sm font-medium text-[#0D1B2A]">{fmtDate(req.scheduled_date)}</p>
+                                {req.time_slot && (
+                                  <span className="mt-0.5 inline-flex items-center rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-semibold text-[#B87333]">
+                                    {req.time_slot === 'morning' ? 'AM' : 'PM'}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-xs text-gray-400">Not scheduled</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                            <p className="line-clamp-2">{req.issue_description}</p>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <select
+                              value={req.status}
+                              onChange={(e) => handleStatusChange(req.id, e.target.value)}
+                              disabled={isUpdating}
+                              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#B87333]/20 disabled:cursor-not-allowed ${STATUS_STYLES[req.status] ?? 'border-gray-200 bg-gray-50 text-gray-800'}`}
+                            >
+                              <option value="new">New</option>
+                              <option value="contacted">Contacted</option>
+                              <option value="scheduled">Scheduled</option>
+                              <option value="completed">Completed</option>
+                            </select>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {new Date(req.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            {(req.notes || req.scheduled_date) && (
+                              <button
+                                onClick={() => setExpandedId(isExpanded ? null : req.id)}
+                                className="text-xs text-[#B87333] hover:text-[#a0632b] font-semibold"
+                              >
+                                {isExpanded ? 'Less' : 'Details'}
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="bg-[#F9FAFB]">
+                            <td colSpan={7} className="px-6 py-4">
+                              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 text-sm">
+                                {req.scheduled_date && (
+                                  <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Appointment</p>
+                                    <p className="font-medium text-gray-900">{fmtDate(req.scheduled_date)}</p>
+                                    {req.time_slot && <p className="text-gray-600">{SLOT_LABEL[req.time_slot] ?? req.time_slot}</p>}
+                                  </div>
+                                )}
+                                <div>
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Contact preference</p>
+                                  <p className="capitalize text-gray-900">{req.contact_preference}</p>
+                                </div>
+                                {req.notes && (
+                                  <div className="sm:col-span-2 lg:col-span-1">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Notes</p>
+                                    <p className="text-gray-700 whitespace-pre-wrap">{req.notes}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
                     )
                   })
                 ) : (

@@ -114,7 +114,9 @@ export default function PartsPage() {
     else alert('Failed to delete part.')
   }
 
-  const lowStockCount = parts.filter((p) => p.quantity <= p.low_stock_threshold).length
+  const lowStockCount   = parts.filter((p) => p.quantity <= p.low_stock_threshold).length
+  const totalCostValue  = parts.reduce((sum, p) => sum + Number(p.cost_price)  * p.quantity, 0)
+  const totalRetailValue = parts.reduce((sum, p) => sum + Number(p.sell_price) * p.quantity, 0)
 
   if (loading) {
     return (
@@ -158,6 +160,85 @@ export default function PartsPage() {
           </svg>
           Add Part
         </button>
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+
+        {/* Total Parts */}
+        <div className="rounded-2xl border border-[#E8ECF0] border-l-4 border-l-[#0D1B2A] bg-white px-5 py-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-[#7A8898]">Total Parts</p>
+              <p className="mt-2 text-3xl font-bold text-[#0D1B2A] tabular-nums">{parts.length}</p>
+              <p className="mt-1 text-xs text-[#7A8898]">unique SKUs</p>
+            </div>
+            <div className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-[#0D1B2A]/8">
+              <svg className="h-5 w-5 text-[#0D1B2A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 10V7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Inventory Value */}
+        <div className="rounded-2xl border border-[#E8ECF0] border-l-4 border-l-[#7A8898] bg-white px-5 py-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-[#7A8898]">Inventory Value</p>
+              <p className="mt-2 text-3xl font-bold text-[#0D1B2A] tabular-nums">${totalCostValue.toFixed(2)}</p>
+              <p className="mt-1 text-xs text-[#7A8898]">cost × qty</p>
+            </div>
+            <div className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-[#7A8898]/10">
+              <svg className="h-5 w-5 text-[#7A8898]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Retail Value */}
+        <div className="rounded-2xl border border-[#E8ECF0] border-l-4 border-l-[#B87333] bg-white px-5 py-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-[#7A8898]">Retail Value</p>
+              <p className="mt-2 text-3xl font-bold text-[#B87333] tabular-nums">${totalRetailValue.toFixed(2)}</p>
+              <p className="mt-1 text-xs text-[#7A8898]">sell price × qty</p>
+            </div>
+            <div className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-[#B87333]/10">
+              <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Low Stock */}
+        <div className={`rounded-2xl border border-l-4 px-5 py-5 shadow-sm ${
+          lowStockCount > 0
+            ? 'border-red-200 border-l-red-500 bg-red-50/60'
+            : 'border-[#E8ECF0] border-l-red-300 bg-white'
+        }`}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-[#7A8898]">Low Stock</p>
+              <p className={`mt-2 text-3xl font-bold tabular-nums ${lowStockCount > 0 ? 'text-red-600' : 'text-[#0D1B2A]'}`}>
+                {lowStockCount}
+              </p>
+              <p className="mt-1 text-xs text-[#7A8898]">
+                {lowStockCount === 0 ? 'all stocked' : `item${lowStockCount !== 1 ? 's' : ''} need restocking`}
+              </p>
+            </div>
+            <div className={`shrink-0 flex h-10 w-10 items-center justify-center rounded-xl ${
+              lowStockCount > 0 ? 'bg-red-100' : 'bg-red-50'
+            }`}>
+              <svg className={`h-5 w-5 ${lowStockCount > 0 ? 'text-red-600' : 'text-red-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {error && (

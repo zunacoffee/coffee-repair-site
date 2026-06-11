@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import AddCustomerModal from '../components/AddCustomerModal'
 
 type Invoice = {
   id: number
@@ -25,8 +26,9 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState<string | null>(null)
-  const [sending,  setSending]  = useState<number | null>(null)
-  const [sendMsg,  setSendMsg]  = useState<{ id: number; msg: string; ok: boolean } | null>(null)
+  const [sending,        setSending]        = useState<number | null>(null)
+  const [sendMsg,        setSendMsg]        = useState<{ id: number; msg: string; ok: boolean } | null>(null)
+  const [showAddCustomer, setShowAddCustomer] = useState(false)
 
   useEffect(() => {
     fetch('/api/admin/invoices')
@@ -86,16 +88,32 @@ export default function InvoicesPage() {
           <h1 className="text-2xl font-bold text-[#0D1B2A]">Invoices</h1>
           <p className="mt-0.5 text-sm text-[#7A8898]">{invoices.length} total</p>
         </div>
-        <Link
-          href="/admin/invoices/new"
-          className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition self-start sm:self-auto"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          New Invoice
-        </Link>
+        <div className="flex gap-2 flex-wrap self-start sm:self-auto">
+          <button
+            onClick={() => setShowAddCustomer(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            Add Customer
+          </button>
+          <Link
+            href="/admin/invoices/new"
+            className="inline-flex items-center gap-2 rounded-xl border border-[#E8ECF0] bg-white px-5 py-2.5 text-sm font-semibold text-[#0D1B2A] hover:border-[#B87333]/40 transition"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            New Invoice
+          </Link>
+        </div>
       </div>
+
+      <AddCustomerModal
+        open={showAddCustomer}
+        onClose={() => setShowAddCustomer(false)}
+      />
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">{error}</div>

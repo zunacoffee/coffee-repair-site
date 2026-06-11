@@ -4,13 +4,14 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../supabase'
+import DateSlotPicker from '../components/DateSlotPicker'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Customer = { id: number; full_name: string; email: string; phone: string; address: string }
 type Equipment = { id: number; equipment_type: string; brand: string; model: string; serial_number: string }
 type RepairJob = { id: number; equipment_type: string; status: string; description: string; created_at: string; completed_at: string | null }
-type Plan      = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null }
+type Plan      = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null; next_visit_date?: string | null; next_visit_slot?: string | null }
 type Invoice   = { id: number; amount: number; status: string; due_date: string | null; description: string; created_at: string }
 type Tab = 'schedule' | 'repairs' | 'equipment' | 'plan' | 'invoices' | 'profile'
 
@@ -86,6 +87,24 @@ export default function DashboardPage() {
   const [portalLoading, setPortalLoading] = useState(false)
   const [portalError,   setPortalError]   = useState<string | null>(null)
 
+  // Equipment form state
+  const [showEqForm, setShowEqForm] = useState(false)
+  const [eqType,     setEqType]     = useState('')
+  const [eqBrand,    setEqBrand]    = useState('')
+  const [eqModel,    setEqModel]    = useState('')
+  const [eqSerial,   setEqSerial]   = useState('')
+  const [eqSaving,   setEqSaving]   = useState(false)
+  const [eqError,    setEqError]    = useState<string | null>(null)
+  const [eqSuccess,  setEqSuccess]  = useState<string | null>(null)
+
+  // PM scheduling state
+  const [showSchedulePicker, setShowSchedulePicker] = useState(false)
+  const [pmDate,             setPmDate]             = useState<string | null>(null)
+  const [pmSlot,             setPmSlot]             = useState<'morning' | 'afternoon' | null>(null)
+  const [pmSaving,           setPmSaving]           = useState(false)
+  const [pmError,            setPmError]            = useState<string | null>(null)
+  const [pmSuccess,          setPmSuccess]          = useState<string | null>(null)
+
   // Profile form state
   const [profileName,    setProfileName]    = useState('')
   const [profilePhone,   setProfilePhone]   = useState('')
@@ -154,6 +173,44 @@ export default function DashboardPage() {
     setPortalLoading(false)
     if (!res.ok) { setPortalError(data.error || 'Unable to open billing portal.'); return }
     window.location.href = data.url
+  }
+
+  const handleAddEquipment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setEqError(null)
+    setEqSaving(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { router.push('/login'); return }
+    const res  = await fetch('/api/customer/equipment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ equipment_type: eqType, brand: eqBrand, model: eqModel, serial_number: eqSerial }),
+    })
+    const data = await res.json()
+    setEqSaving(false)
+    if (!res.ok) { setEqError(data.error ?? 'Failed to add equipment.'); return }
+    setEquipment((prev) => [...prev, data.equipment])
+    setShowEqForm(false)
+    setEqType(''); setEqBrand(''); setEqModel(''); setEqSerial('')
+    setEqSuccess('Equipment added successfully.')
+  }
+
+  const handleSchedulePM = async () => {
+    if (!pmDate || !pmSlot) { setPmError('Please select a date and time slot.'); return }
+    setPmSaving(true); setPmError(null); setPmSuccess(null)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { router.push('/login'); return }
+    const res  = await fetch('/api/customer/pm-visit', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ next_visit_date: pmDate, next_visit_slot: pmSlot }),
+    })
+    const data = await res.json()
+    setPmSaving(false)
+    if (!res.ok) { setPmError(data.error ?? 'Failed to schedule visit.'); return }
+    setPlan((prev) => prev ? { ...prev, next_visit_date: pmDate, next_visit_slot: pmSlot } : prev)
+    setShowSchedulePicker(false)
+    setPmSuccess('Visit scheduled! A confirmation email has been sent to you.')
   }
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -320,14 +377,14 @@ export default function DashboardPage() {
             {/* Next PM Visit */}
             <div className="rounded-2xl border-l-4 border-l-blue-500 bg-white px-5 py-5 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Next PM Visit</p>
-              {plan?.renewal_date ? (
+              {plan?.next_visit_date ? (
                 <>
                   <p className="mt-2 text-xl font-bold text-[#0D1B2A] leading-tight">
-                    {new Date(plan.renewal_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {new Date(plan.next_visit_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </p>
                   <p className="mt-1 text-sm text-[#7A8898]">
                     {(() => {
-                      const d = daysUntil(plan.renewal_date)
+                      const d = daysUntil(plan.next_visit_date!)
                       if (d < 0) return 'Past due'
                       if (d === 0) return 'Today'
                       return `in ${d} day${d !== 1 ? 's' : ''}`
@@ -337,7 +394,13 @@ export default function DashboardPage() {
               ) : (
                 <>
                   <p className="mt-2 text-xl font-bold text-[#0D1B2A]">—</p>
-                  <p className="mt-1 text-xs text-[#7A8898]">No visit scheduled</p>
+                  <p className="mt-1 text-xs text-[#7A8898]">
+                    {plan ? (
+                      <button onClick={() => { switchTab('schedule'); setShowSchedulePicker(true) }} className="text-[#B87333] hover:underline">
+                        Schedule visit
+                      </button>
+                    ) : 'No plan active'}
+                  </p>
                 </>
               )}
             </div>
@@ -416,27 +479,90 @@ export default function DashboardPage() {
                           </span>
                         </div>
 
-                        {plan.renewal_date && (
+                            {/* Scheduled visit */}
+                        {plan.next_visit_date ? (
                           <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4">
-                            <div className="flex items-start gap-3">
-                              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500 text-white">
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-start gap-3">
+                                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500 text-white">
+                                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-blue-900">Next scheduled visit</p>
+                                  <p className="text-lg font-bold text-blue-800">{fmt(plan.next_visit_date)}</p>
+                                  {plan.next_visit_slot && (
+                                    <p className="text-xs text-blue-700 font-semibold mt-0.5">
+                                      {plan.next_visit_slot === 'morning' ? 'Morning (8am–12pm)' : 'Afternoon (12pm–5pm)'}
+                                    </p>
+                                  )}
+                                  <p className="text-xs text-blue-600 mt-0.5">
+                                    {(() => {
+                                      const d = daysUntil(plan.next_visit_date!)
+                                      if (d < 0) return `${Math.abs(d)} days overdue`
+                                      if (d === 0) return 'Scheduled for today'
+                                      return `${d} day${d !== 1 ? 's' : ''} away`
+                                    })()}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-sm font-bold text-blue-900">Next maintenance visit</p>
-                                <p className="text-lg font-bold text-blue-800">{fmt(plan.renewal_date)}</p>
-                                <p className="text-xs text-blue-600 mt-0.5">
-                                  {(() => {
-                                    const d = daysUntil(plan.renewal_date!)
-                                    if (d < 0) return `${Math.abs(d)} days overdue`
-                                    if (d === 0) return 'Scheduled for today'
-                                    return `${d} day${d !== 1 ? 's' : ''} away`
-                                  })()}
-                                </p>
-                              </div>
+                              <button
+                                onClick={() => { setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
+                                className="shrink-0 rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition"
+                              >
+                                Reschedule
+                              </button>
                             </div>
+                          </div>
+                        ) : (
+                          <div className="mt-6 rounded-xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-5 text-center">
+                            <p className="text-sm font-semibold text-[#0D1B2A]">No visit scheduled yet</p>
+                            <p className="mt-1 text-xs text-[#7A8898]">Pick a date and time slot for your next PM visit.</p>
+                            <button
+                              onClick={() => { setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
+                              className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:bg-[#a0632b] transition"
+                            >
+                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              Schedule Visit
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Success message */}
+                        {pmSuccess && (
+                          <div className="mt-4 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                            {pmSuccess}
+                          </div>
+                        )}
+
+                        {/* Inline scheduler */}
+                        {showSchedulePicker && (
+                          <div className="mt-4 rounded-xl border border-[#E8ECF0] bg-[#F9FAFB] p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <p className="text-sm font-bold text-[#0D1B2A]">Choose appointment</p>
+                              <button onClick={() => setShowSchedulePicker(false)} className="text-[#7A8898] hover:text-[#0D1B2A]">
+                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                            <DateSlotPicker
+                              selectedDate={pmDate}
+                              selectedSlot={pmSlot}
+                              onDateChange={(d) => { setPmDate(d); setPmSlot(null) }}
+                              onSlotChange={setPmSlot}
+                            />
+                            {pmError && <p className="mt-2 text-xs text-red-600">{pmError}</p>}
+                            <button
+                              onClick={handleSchedulePM}
+                              disabled={pmSaving || !pmDate || !pmSlot}
+                              className="mt-3 w-full rounded-xl bg-[#B87333] py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                            >
+                              {pmSaving ? 'Saving…' : 'Confirm appointment'}
+                            </button>
                           </div>
                         )}
                       </div>
@@ -518,29 +644,147 @@ export default function DashboardPage() {
               {/* Equipment */}
               {activeTab === 'equipment' && (
                 <div>
-                  <h2 className="text-base font-bold text-[#0D1B2A] mb-4">Registered Equipment</h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-base font-bold text-[#0D1B2A]">Registered Equipment</h2>
+                    <button
+                      onClick={() => { setShowEqForm((v) => !v); setEqError(null); setEqSuccess(null) }}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-[#B87333] px-3 py-2 text-xs font-semibold text-[#B87333] hover:bg-[#B87333]/5 transition"
+                    >
+                      {showEqForm ? (
+                        <>
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Cancel
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add Equipment
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {eqSuccess && (
+                    <div className="mb-4 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                      {eqSuccess}
+                    </div>
+                  )}
+
+                  {showEqForm && (
+                    <form onSubmit={handleAddEquipment} className="mb-5 rounded-2xl border border-[#E8ECF0] bg-[#F9FAFB] p-5">
+                      <p className="text-sm font-semibold text-[#0D1B2A] mb-4">Add new equipment</p>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Equipment type</label>
+                          <select
+                            value={eqType}
+                            onChange={(e) => setEqType(e.target.value)}
+                            required
+                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                          >
+                            <option value="" disabled>Select type…</option>
+                            <option value="Espresso Machine">Espresso Machine</option>
+                            <option value="Grinder">Grinder</option>
+                            <option value="Brewer">Brewer</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Brand</label>
+                          <input
+                            type="text"
+                            value={eqBrand}
+                            onChange={(e) => setEqBrand(e.target.value)}
+                            required
+                            placeholder="e.g. La Marzocco"
+                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Model</label>
+                          <input
+                            type="text"
+                            value={eqModel}
+                            onChange={(e) => setEqModel(e.target.value)}
+                            required
+                            placeholder="e.g. Linea Mini"
+                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">
+                            Serial number <span className="text-[#7A8898] font-normal">(optional)</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={eqSerial}
+                            onChange={(e) => setEqSerial(e.target.value)}
+                            placeholder="e.g. SN123456"
+                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                          />
+                        </div>
+                      </div>
+                      {eqError && <p className="mt-3 text-xs text-red-600">{eqError}</p>}
+                      <div className="mt-4 flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => { setShowEqForm(false); setEqError(null) }}
+                          className="rounded-xl border border-[#E8ECF0] px-4 py-2 text-sm font-semibold text-[#7A8898] hover:bg-[#F4F6F9] transition"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={eqSaving}
+                          className="rounded-xl bg-[#B87333] px-5 py-2 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                        >
+                          {eqSaving ? 'Saving…' : 'Save equipment'}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
                   {equipment.length > 0 ? (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {equipment.map((eq) => (
                         <div key={eq.id} className="rounded-2xl border border-[#E8ECF0] bg-[#F9FAFB] p-5">
                           <p className="text-xs font-semibold uppercase tracking-wide text-[#B87333]">{eq.equipment_type}</p>
                           <p className="mt-2 text-base font-bold text-[#0D1B2A]">{eq.brand} {eq.model}</p>
-                          <div className="mt-3 space-y-1">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-[#7A8898]">Serial number</span>
-                              <span className="text-xs font-mono font-medium text-[#0D1B2A]">{eq.serial_number}</span>
+                          {eq.serial_number && (
+                            <div className="mt-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-[#7A8898]">Serial number</span>
+                                <span className="text-xs font-mono font-medium text-[#0D1B2A]">{eq.serial_number}</span>
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <EmptyState
-                      icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18" /></svg>}
-                      title="No equipment registered"
-                      body="Your coffee equipment will appear here once added by the Cafe Works team."
-                    />
-                  )}
+                  ) : !showEqForm ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center px-4 rounded-2xl border-2 border-dashed border-[#E8ECF0]">
+                      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E8ECF0] text-[#7A8898]">
+                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18" />
+                        </svg>
+                      </div>
+                      <p className="text-sm font-semibold text-[#0D1B2A]">No equipment yet</p>
+                      <p className="mt-1 text-xs text-[#7A8898] max-w-xs">Add your coffee equipment to track service history and maintenance.</p>
+                      <button
+                        onClick={() => { setShowEqForm(true); setEqError(null) }}
+                        className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:bg-[#a0632b] transition"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Equipment
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               )}
 

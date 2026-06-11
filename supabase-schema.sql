@@ -91,3 +91,26 @@ CREATE TABLE IF NOT EXISTS invoice_line_items (
 );
 
 CREATE INDEX IF NOT EXISTS invoice_line_items_invoice_id_idx ON invoice_line_items(invoice_id);
+
+-- ─── Scheduling & Availability System ───────────────────────────────────────
+
+-- Dates blocked by admin (customers cannot book these)
+CREATE TABLE IF NOT EXISTS blocked_dates (
+  id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  date       DATE NOT NULL UNIQUE,
+  reason     TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Add scheduling fields to service_requests
+ALTER TABLE service_requests ADD COLUMN IF NOT EXISTS scheduled_date DATE;
+ALTER TABLE service_requests ADD COLUMN IF NOT EXISTS time_slot TEXT CHECK (time_slot IN ('morning', 'afternoon'));
+ALTER TABLE service_requests ADD COLUMN IF NOT EXISTS notes TEXT;
+
+-- Add scheduling/notes fields to maintenance_plans
+ALTER TABLE maintenance_plans ADD COLUMN IF NOT EXISTS next_visit_date DATE;
+ALTER TABLE maintenance_plans ADD COLUMN IF NOT EXISTS next_visit_slot TEXT CHECK (next_visit_slot IN ('morning', 'afternoon'));
+ALTER TABLE maintenance_plans ADD COLUMN IF NOT EXISTS notes TEXT;
+
+-- Add notes to repair_jobs
+ALTER TABLE repair_jobs ADD COLUMN IF NOT EXISTS notes TEXT;

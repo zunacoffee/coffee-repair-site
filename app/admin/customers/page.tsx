@@ -92,7 +92,7 @@ export default function CustomersPage() {
           </div>
           <button
             onClick={() => setShowForm((prev) => !prev)}
-            className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+            className="inline-flex items-center justify-center rounded-md bg-[#B87333] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b]"
           >
             {showForm ? 'Hide form' : 'Add customer'}
           </button>
@@ -110,7 +110,7 @@ export default function CustomersPage() {
                 <input
                   value={fullName}
                   onChange={(event) => setFullName(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   placeholder="Jane Doe"
                 />
               </div>
@@ -120,7 +120,7 @@ export default function CustomersPage() {
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   placeholder="jane@example.com"
                 />
               </div>
@@ -129,7 +129,7 @@ export default function CustomersPage() {
                 <input
                   value={phone}
                   onChange={(event) => setPhone(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   placeholder="(123) 456-7890"
                 />
               </div>
@@ -138,7 +138,7 @@ export default function CustomersPage() {
                 <input
                   value={address}
                   onChange={(event) => setAddress(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   placeholder="123 Main St, Anytown"
                 />
               </div>
@@ -146,7 +146,7 @@ export default function CustomersPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-xl bg-[#B87333] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : 'Save customer'}
                 </button>
@@ -177,7 +177,7 @@ export default function CustomersPage() {
                   customers.map((customer) => (
                     <tr key={customer.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        <Link href={`/admin/customers/${customer.id}`} className="text-indigo-600 hover:text-indigo-900">
+                        <Link href={`/admin/customers/${customer.id}`} className="text-[#B87333] hover:text-[#a0632b]">
                           {customer.full_name}
                         </Link>
                       </td>
@@ -187,7 +187,7 @@ export default function CustomersPage() {
                       <td className="px-6 py-4 text-right text-sm font-medium">
                         <Link
                           href={`/admin/customers/${customer.id}`}
-                          className="mr-3 rounded-lg bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
+                          className="mr-3 rounded-lg bg-[#B87333]/10 px-3 py-2 text-xs font-semibold text-[#B87333] hover:bg-[#B87333]/20"
                         >
                           View
                         </Link>

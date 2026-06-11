@@ -6,10 +6,17 @@ export type CalendarEvent = {
   id: string
   title: string
   date: string        // YYYY-MM-DD
-  type: 'repair' | 'maintenance' | 'emergency'
+  type: 'repair' | 'maintenance' | 'emergency' | 'service_request'
   status: string
   customerName: string
   detail: string
+  time_slot?: 'morning' | 'afternoon' | null
+}
+
+export type BlockedDate = {
+  id: number
+  date: string
+  reason: string | null
 }
 
 export async function GET(req: NextRequest) {
@@ -32,10 +39,9 @@ export async function GET(req: NextRequest) {
   const startDate = `${year}-${mm}-01`
   const endDate   = `${year}-${mm}-${String(lastDay).padStart(2, '0')}`
 
-  const [jobsRes, customersRes, plansRes] = await Promise.all([
+  const [jobsRes, customersRes, plansRes, serviceReqRes, blockedRes] = await Promise.all([
     supabaseAdmin
       .from('repair_jobs')
-      // scheduled_date is optional — added via migration; falls back to created_at below
       .select('id, equipment_type, status, description, customer_id, created_at, scheduled_date, priority')
       .or(`created_at.gte.${startISO},scheduled_date.gte.${startDate}`)
       .or(`created_at.lte.${endISO},scheduled_date.lte.${endDate}`),
@@ -46,10 +52,25 @@ export async function GET(req: NextRequest) {
       .gte('renewal_date', startDate)
       .lte('renewal_date', endDate)
       .not('renewal_date', 'is', null),
+    supabaseAdmin
+      .from('service_requests')
+      .select('id, full_name, equipment_type, issue_description, status, scheduled_date, time_slot')
+      .gte('scheduled_date', startDate)
+      .lte('scheduled_date', endDate)
+      .not('scheduled_date', 'is', null)
+      .then((r) => ({ data: r.data ?? [], error: r.error })),
+    supabaseAdmin
+      .from('blocked_dates')
+      .select('id, date, reason')
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .then((r) => ({ data: r.data ?? [], error: r.error })),
   ])
 
+  let jobsData: Record<string, unknown>[] = (jobsRes.data ?? []) as Record<string, unknown>[]
+  let customersData: Record<string, unknown>[] = (customersRes.data ?? []) as Record<string, unknown>[]
+
   if (jobsRes.error || customersRes.error) {
-    // Fall back: fetch without optional columns if migration hasn't been run
     const [fallbackJobs, fallbackCustomers] = await Promise.all([
       supabaseAdmin
         .from('repair_jobs')
@@ -61,16 +82,25 @@ export async function GET(req: NextRequest) {
     if (fallbackJobs.error) {
       return NextResponse.json({ error: fallbackJobs.error.message }, { status: 500 })
     }
-    return buildResponse(fallbackJobs.data ?? [], fallbackCustomers.data ?? [], plansRes.data ?? [])
+    jobsData = (fallbackJobs.data ?? []) as Record<string, unknown>[]
+    customersData = fallbackCustomers.data ?? []
   }
 
-  return buildResponse(jobsRes.data ?? [], customersRes.data ?? [], plansRes.data ?? [])
+  return buildResponse(
+    jobsData,
+    customersData,
+    plansRes.data ?? [],
+    serviceReqRes.data ?? [],
+    blockedRes.data ?? [],
+  )
 }
 
 function buildResponse(
   jobs: Record<string, unknown>[],
   customers: Record<string, unknown>[],
   plans: Record<string, unknown>[],
+  serviceRequests: Record<string, unknown>[],
+  blockedDates: Record<string, unknown>[],
 ): NextResponse {
   const customerMap: Record<string, string> = {}
   for (const c of customers) {
@@ -80,7 +110,6 @@ function buildResponse(
   const events: CalendarEvent[] = []
 
   for (const job of jobs) {
-    // Use scheduled_date if present, otherwise created_at date portion
     const rawDate = (job.scheduled_date as string | null)
       ?? (job.created_at as string).split('T')[0]
 
@@ -110,5 +139,25 @@ function buildResponse(
     })
   }
 
-  return NextResponse.json({ events })
+  for (const sr of serviceRequests) {
+    if (!sr.scheduled_date) continue
+    events.push({
+      id: `sr-${sr.id}`,
+      title: String(sr.equipment_type ?? 'Service Request'),
+      date: String(sr.scheduled_date),
+      type: 'service_request',
+      status: String(sr.status),
+      customerName: String(sr.full_name ?? ''),
+      detail: String(sr.issue_description ?? ''),
+      time_slot: (sr.time_slot as 'morning' | 'afternoon' | null) ?? null,
+    })
+  }
+
+  const blocked: BlockedDate[] = blockedDates.map((b) => ({
+    id: Number(b.id),
+    date: String(b.date),
+    reason: (b.reason as string | null) ?? null,
+  }))
+
+  return NextResponse.json({ events, blockedDates: blocked })
 }

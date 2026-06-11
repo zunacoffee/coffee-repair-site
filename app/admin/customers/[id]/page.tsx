@@ -125,8 +125,8 @@ export default function CustomerDetailPage() {
   const handleAddEquipment = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!customerId) return
-    if (!equipmentForm.equipment_type || !equipmentForm.brand || !equipmentForm.model || !equipmentForm.serial_number) {
-      setError('All equipment fields are required.')
+    if (!equipmentForm.equipment_type || !equipmentForm.brand || !equipmentForm.model) {
+      setError('Equipment type, brand, and model are required.')
       return
     }
 
@@ -155,7 +155,7 @@ export default function CustomerDetailPage() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <Link href="/admin/customers" className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+            <Link href="/admin/customers" className="text-sm font-medium text-[#B87333] hover:text-[#a0632b]">
               ← Back to customers
             </Link>
             <h1 className="mt-3 text-3xl font-semibold text-slate-900">Customer details</h1>
@@ -169,7 +169,7 @@ export default function CustomerDetailPage() {
                 setContactForm({ full_name: customer.full_name, email: customer.email, phone: customer.phone, address: customer.address })
               }
             }}
-            className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+            className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a0632b]"
           >
             {editing ? 'Cancel edit' : 'Edit contact'}
           </button>
@@ -196,19 +196,19 @@ export default function CustomerDetailPage() {
                     <>
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Full name</label>
-                        <input value={contactForm.full_name} onChange={(e) => updateFormField('full_name', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                        <input value={contactForm.full_name} onChange={(e) => updateFormField('full_name', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Email</label>
-                        <input type="email" value={contactForm.email} onChange={(e) => updateFormField('email', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                        <input type="email" value={contactForm.email} onChange={(e) => updateFormField('email', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Phone</label>
-                        <input value={contactForm.phone} onChange={(e) => updateFormField('phone', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                        <input value={contactForm.phone} onChange={(e) => updateFormField('phone', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div className="sm:col-span-2">
                         <label className="block text-sm font-medium text-slate-700">Address</label>
-                        <input value={contactForm.address} onChange={(e) => updateFormField('address', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                        <input value={contactForm.address} onChange={(e) => updateFormField('address', e.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                     </>
                   ) : (
@@ -235,7 +235,7 @@ export default function CustomerDetailPage() {
 
                 {editing ? (
                   <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
-                    <button type="button" onClick={handleSave} disabled={saving} className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50">
+                    <button type="button" onClick={handleSave} disabled={saving} className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] disabled:opacity-50">
                       {saving ? 'Saving...' : 'Save changes'}
                     </button>
                     <button type="button" onClick={() => setEditing(false)} className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300">
@@ -251,8 +251,22 @@ export default function CustomerDetailPage() {
                     <h2 className="text-xl font-semibold text-slate-900">Equipment</h2>
                     <p className="mt-2 text-sm text-slate-600">Equipment registered for this customer.</p>
                   </div>
-                  <button type="button" onClick={() => setShowEquipmentForm((prev) => !prev)} className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500">
-                    {showEquipmentForm ? 'Hide form' : 'Add equipment'}
+                  <button type="button" onClick={() => setShowEquipmentForm((prev) => !prev)} className="inline-flex items-center gap-2 justify-center rounded-full bg-[#B87333] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a0632b]">
+                    {showEquipmentForm ? (
+                      <>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Cancel
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Equipment
+                      </>
+                    )}
                   </button>
                 </div>
 
@@ -261,24 +275,24 @@ export default function CustomerDetailPage() {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Equipment type</label>
-                        <input value={equipmentForm.equipment_type} onChange={(e) => updateEquipmentField('equipment_type', e.target.value)} placeholder="e.g., Espresso Machine" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                        <input value={equipmentForm.equipment_type} onChange={(e) => updateEquipmentField('equipment_type', e.target.value)} placeholder="e.g., Espresso Machine" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Brand</label>
-                        <input value={equipmentForm.brand} onChange={(e) => updateEquipmentField('brand', e.target.value)} placeholder="e.g., La Marzocco" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                        <input value={equipmentForm.brand} onChange={(e) => updateEquipmentField('brand', e.target.value)} placeholder="e.g., La Marzocco" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Model</label>
-                        <input value={equipmentForm.model} onChange={(e) => updateEquipmentField('model', e.target.value)} placeholder="e.g., Linea Mini" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                        <input value={equipmentForm.model} onChange={(e) => updateEquipmentField('model', e.target.value)} placeholder="e.g., Linea Mini" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700">Serial number</label>
-                        <input value={equipmentForm.serial_number} onChange={(e) => updateEquipmentField('serial_number', e.target.value)} placeholder="e.g., LM-12345" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                        <label className="block text-sm font-medium text-slate-700">Serial number <span className="text-slate-400 font-normal">(optional)</span></label>
+                        <input value={equipmentForm.serial_number} onChange={(e) => updateEquipmentField('serial_number', e.target.value)} placeholder="e.g., LM-12345" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                     </div>
                     <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-end">
                       <button type="button" onClick={() => setShowEquipmentForm(false)} className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300">Cancel</button>
-                      <button type="submit" disabled={equipmentSaving} className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50">{equipmentSaving ? 'Saving...' : 'Save equipment'}</button>
+                      <button type="submit" disabled={equipmentSaving} className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] disabled:opacity-50">{equipmentSaving ? 'Saving...' : 'Save equipment'}</button>
                     </div>
                   </form>
                 ) : null}
@@ -293,7 +307,27 @@ export default function CustomerDetailPage() {
                       </div>
                     ))
                   ) : (
-                    <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">No equipment records found for this customer.</div>
+                    <div className="rounded-3xl border-2 border-dashed border-[#B87333]/30 bg-[#B87333]/5 p-8 text-center">
+                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#B87333]/10">
+                        <svg className="h-6 w-6 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18" />
+                        </svg>
+                      </div>
+                      <p className="text-sm font-semibold text-slate-700">No equipment on file</p>
+                      <p className="mt-1 text-xs text-slate-500">Add this customer's equipment to start tracking repairs.</p>
+                      {!showEquipmentForm && (
+                        <button
+                          type="button"
+                          onClick={() => setShowEquipmentForm(true)}
+                          className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a0632b]"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add Equipment
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               </section>

@@ -107,7 +107,7 @@ export default function MaintenancePlansPage() {
           </div>
           <button
             onClick={() => setShowForm((prev) => !prev)}
-            className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+            className="inline-flex items-center justify-center rounded-md bg-[#B87333] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b]"
           >
             {showForm ? 'Close form' : 'Create maintenance plan'}
           </button>
@@ -125,7 +125,7 @@ export default function MaintenancePlansPage() {
                 <select
                   value={customerId}
                   onChange={(event) => setCustomerId(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                 >
                   <option value="">Select a customer</option>
                   {customers.map((customer) => (
@@ -138,7 +138,7 @@ export default function MaintenancePlansPage() {
                 <input
                   value={planName}
                   onChange={(event) => setPlanName(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   placeholder="Premium maintenance"
                 />
               </div>
@@ -147,7 +147,7 @@ export default function MaintenancePlansPage() {
                 <select
                   value={status}
                   onChange={(event) => setStatus(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
@@ -156,7 +156,7 @@ export default function MaintenancePlansPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Price</label>
-                <div className="mt-2 flex rounded-xl border border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20">
+                <div className="mt-2 flex rounded-xl border border-gray-300 bg-white shadow-sm focus-within:border-[#B87333] focus-within:ring-2 focus-within:ring-[#B87333]/20">
                   <span className="inline-flex items-center px-3 text-sm text-gray-500">$</span>
                   <input
                     type="number"
@@ -173,7 +173,7 @@ export default function MaintenancePlansPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-xl bg-[#B87333] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : 'Create plan'}
                 </button>

@@ -49,10 +49,9 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false }),
     supabaseAdmin
       .from('maintenance_plans')
-      .select('id, plan_name, status, price, renewal_date')
+      .select('id, plan_name, status, price, renewal_date, next_visit_date, next_visit_slot, notes')
       .eq('customer_id', customer.id)
       .maybeSingle(),
-    // invoices table — gracefully returns empty if table does not exist yet
     supabaseAdmin
       .from('invoices')
       .select('id, amount, status, due_date, description, created_at')
