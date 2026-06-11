@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin'
+import { getSiteSettings } from '../../../../lib/siteSettings'
 
 async function getAuthUser(req: NextRequest) {
   const token = req.headers.get('authorization')?.replace('Bearer ', '') ?? null
@@ -50,6 +51,8 @@ export async function PATCH(req: NextRequest) {
 
   if (process.env.RESEND_API_KEY) {
     const resend = new Resend(process.env.RESEND_API_KEY)
+    const settings = await getSiteSettings()
+    const adminEmail = settings.notify_email || 'tyson@zunacoffee.com'
     const slotLabel = next_visit_slot === 'morning' ? 'Morning (8am–12pm)' : 'Afternoon (12pm–5pm)'
     const dateLabel = new Date(next_visit_date + 'T00:00:00').toLocaleDateString('en-US', {
       weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
@@ -76,7 +79,7 @@ export async function PATCH(req: NextRequest) {
       }).catch(() => {}),
       resend.emails.send({
         from: 'Cafe Works <onboarding@resend.dev>',
-        to: 'tyson@zunacoffee.com',
+        to: adminEmail,
         subject: `PM Visit Scheduled – ${custRecord.full_name} (${dateLabel})`,
         html: `
           <p>A customer has scheduled a PM visit.</p>

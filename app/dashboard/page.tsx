@@ -10,8 +10,9 @@ import DateSlotPicker from '../components/DateSlotPicker'
 
 type Customer = { id: number; full_name: string; email: string; phone: string; address: string }
 type Equipment = { id: number; equipment_type: string; brand: string; model: string; serial_number: string }
-type RepairJob = { id: number; equipment_type: string; status: string; description: string; created_at: string; completed_at: string | null }
-type Plan      = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null; next_visit_date?: string | null; next_visit_slot?: string | null }
+type RepairJob  = { id: number; equipment_type: string; status: string; description: string; created_at: string; completed_at: string | null }
+type WorkOrder  = { id: number; work_order_number: string; status: string; problem_description: string; grand_total: number; created_at: string; completed_at: string | null; equipment_list: { equipment_type: string; brand: string; model: string } | null }
+type Plan       = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null; next_visit_date?: string | null; next_visit_slot?: string | null }
 type Invoice   = { id: number; amount: number; status: string; due_date: string | null; description: string; created_at: string }
 type Tab = 'schedule' | 'repairs' | 'equipment' | 'plan' | 'invoices' | 'profile'
 
@@ -30,6 +31,12 @@ const JOB_STATUS: Record<string, string> = {
   pending:     'bg-gray-100 text-gray-700',
   in_progress: 'bg-amber-100 text-amber-800',
   completed:   'bg-green-100 text-green-700',
+}
+const WO_STATUS: Record<string, string> = {
+  open:        'bg-blue-100 text-blue-700',
+  in_progress: 'bg-amber-100 text-amber-800',
+  completed:   'bg-green-100 text-green-700',
+  cancelled:   'bg-gray-100 text-gray-500',
 }
 
 const INV_STATUS: Record<string, string> = {
@@ -81,6 +88,7 @@ export default function DashboardPage() {
   const [customer,      setCustomer]      = useState<Customer | null>(null)
   const [equipment,     setEquipment]     = useState<Equipment[]>([])
   const [repairJobs,    setRepairJobs]    = useState<RepairJob[]>([])
+  const [workOrders,    setWorkOrders]    = useState<WorkOrder[]>([])
   const [plan,          setPlan]          = useState<Plan | null>(null)
   const [invoices,      setInvoices]      = useState<Invoice[]>([])
   const [activeTab,     setActiveTab]     = useState<Tab>('schedule')
@@ -142,6 +150,7 @@ export default function DashboardPage() {
       setCustomer(json.customer ?? null)
       setEquipment(json.equipment ?? [])
       setRepairJobs(json.repairJobs ?? [])
+      setWorkOrders(json.workOrders ?? [])
       setPlan(json.plan ?? null)
       setInvoices(json.invoices ?? [])
 
@@ -239,7 +248,7 @@ export default function DashboardPage() {
     }, 0)
   }
 
-  const openRepairs  = repairJobs.filter((j) => j.status !== 'completed')
+  const openRepairs  = workOrders.filter((wo) => wo.status !== 'completed' && wo.status !== 'cancelled')
   const openInvoices = invoices.filter((i) => i.status !== 'paid')
   const displayName  = customer?.full_name ?? userEmail ?? 'there'
 
@@ -593,7 +602,7 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {/* Repairs */}
+              {/* Repairs / Work Orders */}
               {activeTab === 'repairs' && (
                 <div>
                   <div className="flex items-center justify-between mb-4">
@@ -603,7 +612,42 @@ export default function DashboardPage() {
                       Request Repair
                     </Link>
                   </div>
-                  {repairJobs.length > 0 ? (
+                  {workOrders.length > 0 ? (
+                    <div className="overflow-x-auto -mx-5 sm:-mx-7">
+                      <table className="min-w-full">
+                        <thead>
+                          <tr className="border-b border-[#E8ECF0]">
+                            <th className="px-5 sm:px-7 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">WO #</th>
+                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Equipment</th>
+                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Problem</th>
+                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Status</th>
+                            <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Total</th>
+                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Date</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#E8ECF0]">
+                          {workOrders.map((wo) => (
+                            <tr key={wo.id} className="hover:bg-[#F9FAFB]">
+                              <td className="px-5 sm:px-7 py-3.5 text-sm font-mono font-semibold text-[#B87333] whitespace-nowrap">{wo.work_order_number}</td>
+                              <td className="px-4 py-3.5 text-sm text-[#0D1B2A] whitespace-nowrap">
+                                {wo.equipment_list ? `${wo.equipment_list.brand} ${wo.equipment_list.model}` : '—'}
+                              </td>
+                              <td className="px-4 py-3.5 text-sm text-[#7A8898] max-w-[200px]">
+                                <span className="block truncate">{wo.problem_description || '—'}</span>
+                              </td>
+                              <td className="px-4 py-3.5 whitespace-nowrap"><StatusBadge status={wo.status} map={WO_STATUS} /></td>
+                              <td className="px-4 py-3.5 text-sm font-semibold text-[#0D1B2A] text-right whitespace-nowrap">
+                                ${Number(wo.grand_total).toFixed(2)}
+                              </td>
+                              <td className="px-4 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">
+                                {wo.created_at ? fmt(wo.created_at) : '—'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : repairJobs.length > 0 ? (
                     <div className="overflow-x-auto -mx-5 sm:-mx-7">
                       <table className="min-w-full">
                         <thead>

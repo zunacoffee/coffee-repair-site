@@ -2,6 +2,26 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../../../lib/supabaseAdmin'
 import { authenticateAdminRequest } from '../../../../../lib/adminAuth'
 
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  if (!authenticateAdminRequest(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const { id } = await params
+  const body = await req.json() as Record<string, unknown>
+  if (body.status !== 'paid') {
+    return NextResponse.json({ error: 'Only status:paid is supported.' }, { status: 400 })
+  }
+  const { error } = await supabaseAdmin
+    .from('invoices')
+    .update({ status: 'paid' })
+    .eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

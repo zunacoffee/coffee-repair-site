@@ -245,83 +245,120 @@ export default function PartsPage() {
         <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">{error}</div>
       )}
 
-      {/* Add / Edit form */}
+      {/* Add / Edit modal */}
       {showForm && (
-        <div className="rounded-2xl border border-[#E8ECF0] bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-base font-bold text-[#0D1B2A]">
-            {editingId ? 'Edit Part' : 'Add New Part'}
-          </h2>
-          <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="sm:col-span-2 lg:col-span-1">
-              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Part Name *</label>
-              <input
-                required value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-2.5 text-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Part Number</label>
-              <input
-                value={form.part_number}
-                onChange={(e) => setForm((f) => ({ ...f, part_number: e.target.value }))}
-                placeholder="e.g. P-001"
-                className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-2.5 text-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Cost Price ($)</label>
-              <input
-                type="number" min="0" step="0.01" value={form.cost_price}
-                onChange={(e) => handleCostChange(e.target.value)}
-                className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-2.5 text-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">
-                Sell Price ($)
-                <span className="ml-1 text-[10px] font-normal text-[#7A8898]">auto = cost × 1.30</span>
-              </label>
-              <input
-                type="number" min="0" step="0.01" value={form.sell_price}
-                onChange={(e) => setForm((f) => ({ ...f, sell_price: e.target.value }))}
-                className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-2.5 text-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Quantity</label>
-              <input
-                type="number" min="0" value={form.quantity}
-                onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
-                className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-2.5 text-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Low Stock Threshold</label>
-              <input
-                type="number" min="0" value={form.low_stock_threshold}
-                onChange={(e) => setForm((f) => ({ ...f, low_stock_threshold: e.target.value }))}
-                className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-2.5 text-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-              />
-            </div>
-            {saveError && (
-              <p className="sm:col-span-2 lg:col-span-3 text-sm text-red-600">{saveError}</p>
-            )}
-            <div className="sm:col-span-2 lg:col-span-3 flex gap-3">
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40" onClick={cancelForm} />
+
+          {/* Sheet / Dialog */}
+          <div className="relative z-10 w-full sm:max-w-lg bg-white sm:rounded-2xl shadow-xl flex flex-col max-h-[92dvh] sm:max-h-[90vh] rounded-t-2xl">
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8ECF0] shrink-0">
+              <h2 className="text-base font-bold text-[#0D1B2A]">
+                {editingId ? 'Edit Part' : 'Add New Part'}
+              </h2>
               <button
-                type="submit" disabled={saving}
-                className="rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                type="button"
+                onClick={cancelForm}
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#7A8898] hover:bg-[#F4F6F9] hover:text-[#0D1B2A] transition"
+                aria-label="Close"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto flex-1 px-5 py-5">
+              <form id="part-form" onSubmit={handleSubmit} className="grid gap-4 grid-cols-2">
+                <div className="col-span-2">
+                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Part Name *</label>
+                  <input
+                    required value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Part Number</label>
+                  <input
+                    value={form.part_number}
+                    onChange={(e) => setForm((f) => ({ ...f, part_number: e.target.value }))}
+                    placeholder="e.g. P-001"
+                    className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Cost Price ($)</label>
+                  <input
+                    type="number" min="0" step="0.01" value={form.cost_price}
+                    onChange={(e) => handleCostChange(e.target.value)}
+                    inputMode="decimal"
+                    className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">
+                    Sell Price ($)
+                    <span className="ml-1 text-[10px] font-normal text-[#7A8898]">auto = cost × 1.30</span>
+                  </label>
+                  <input
+                    type="number" min="0" step="0.01" value={form.sell_price}
+                    onChange={(e) => setForm((f) => ({ ...f, sell_price: e.target.value }))}
+                    inputMode="decimal"
+                    className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Quantity</label>
+                  <input
+                    type="number" min="0" value={form.quantity}
+                    onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
+                    inputMode="numeric"
+                    className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Low Stock Threshold</label>
+                  <input
+                    type="number" min="0" value={form.low_stock_threshold}
+                    onChange={(e) => setForm((f) => ({ ...f, low_stock_threshold: e.target.value }))}
+                    inputMode="numeric"
+                    className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  />
+                </div>
+                {saveError && (
+                  <p className="col-span-2 text-sm text-red-600">{saveError}</p>
+                )}
+              </form>
+            </div>
+
+            {/* Footer */}
+            <div className="shrink-0 flex gap-3 px-5 py-4 border-t border-[#E8ECF0]">
+              <button
+                type="submit"
+                form="part-form"
+                disabled={saving}
+                className="flex-1 rounded-xl bg-[#B87333] px-5 py-3 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
               >
                 {saving ? 'Saving…' : editingId ? 'Save Changes' : 'Add Part'}
               </button>
               <button
-                type="button" onClick={cancelForm}
-                className="rounded-xl border border-[#E8ECF0] px-5 py-2.5 text-sm font-semibold text-[#0D1B2A] hover:bg-[#F4F6F9] transition"
+                type="button"
+                onClick={cancelForm}
+                className="flex-1 rounded-xl border border-[#E8ECF0] px-5 py-3 text-sm font-semibold text-[#0D1B2A] hover:bg-[#F4F6F9] transition"
               >
                 Cancel
               </button>
             </div>
-          </form>
+          </div>
         </div>
       )}
 

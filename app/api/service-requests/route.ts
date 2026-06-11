@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { supabaseAdmin } from '../../../lib/supabaseAdmin'
+import { getSiteSettings, getBool } from '../../../lib/siteSettings'
 
 export async function POST(req: NextRequest) {
   let body: unknown
@@ -63,11 +64,16 @@ export async function POST(req: NextRequest) {
         })
       : null
 
-    await Promise.all([
-      // Admin notification
-      resend.emails.send({
+    const settings = await getSiteSettings()
+    const sendAdminNotif = getBool(settings, 'notify_new_service_request')
+    const adminEmail = settings.notify_email || 'tyson@zunacoffee.com'
+
+    const emailTasks: Promise<unknown>[] = []
+
+    if (sendAdminNotif) {
+      emailTasks.push(resend.emails.send({
         from: 'Cafe Works <onboarding@resend.dev>',
-        to: 'tyson@zunacoffee.com',
+        to: adminEmail,
         subject: `New service request – ${equipment_type} (${full_name})`,
         html: `
           <p>A new service request was submitted.</p>
@@ -86,9 +92,11 @@ export async function POST(req: NextRequest) {
           ${notes ? `<p style="margin-top:8px;"><strong>Notes:</strong></p><p style="white-space:pre-wrap;background:#f5f5f5;padding:12px;border-radius:6px;">${notes}</p>` : ''}
           <p style="margin-top:24px;font-size:12px;color:#999;">View all requests in the <a href="https://cafeworks.com/admin/service-requests">admin dashboard</a>.</p>
         `,
-      }).catch(() => {}),
-      // Customer confirmation
-      resend.emails.send({
+      }).catch(() => {}))
+    }
+
+    // Customer confirmation
+    emailTasks.push(resend.emails.send({
         from: 'Cafe Works <onboarding@resend.dev>',
         to: email,
         subject: 'We received your service request – Cafe Works',
@@ -103,8 +111,9 @@ export async function POST(req: NextRequest) {
           ${dateLabel ? '<p style="margin-top:16px;">We\'ll confirm your appointment shortly.</p>' : '<p style="margin-top:16px;">We\'ll be in touch to schedule your visit.</p>'}
           <p>— The Cafe Works Team</p>
         `,
-      }).catch(() => {}),
-    ])
+      }).catch(() => {}))
+
+    await Promise.all(emailTasks)
   }
 
   return NextResponse.json({ ok: true }, { status: 201 })

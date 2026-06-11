@@ -33,10 +33,11 @@ export async function GET(req: NextRequest) {
       repairJobs: [],
       plan: null,
       invoices: [],
+      workOrders: [],
     })
   }
 
-  const [equipmentRes, repairJobsRes, planRes, invoicesRes] = await Promise.all([
+  const [equipmentRes, repairJobsRes, planRes, invoicesRes, workOrdersRes] = await Promise.all([
     supabaseAdmin
       .from('equipment_list')
       .select('id, equipment_type, brand, model, serial_number')
@@ -58,6 +59,12 @@ export async function GET(req: NextRequest) {
       .eq('customer_id', customer.id)
       .order('created_at', { ascending: false })
       .then((r) => ({ data: r.data ?? [], error: r.error })),
+    supabaseAdmin
+      .from('work_orders')
+      .select('id, work_order_number, status, problem_description, grand_total, created_at, completed_at, equipment_list(equipment_type, brand, model)')
+      .eq('customer_id', customer.id)
+      .order('created_at', { ascending: false })
+      .then((r) => ({ data: r.data ?? [], error: r.error })),
   ])
 
   return NextResponse.json({
@@ -67,5 +74,6 @@ export async function GET(req: NextRequest) {
     repairJobs: repairJobsRes.data ?? [],
     plan: planRes.data ?? null,
     invoices: invoicesRes.data ?? [],
+    workOrders: workOrdersRes.data ?? [],
   })
 }

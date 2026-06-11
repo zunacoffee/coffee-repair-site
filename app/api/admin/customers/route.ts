@@ -33,6 +33,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'All fields are required.' }, { status: 400 })
   }
 
+  const { data: existing } = await supabaseAdmin
+    .from('customers')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle()
+
+  if (existing) {
+    return NextResponse.json({ error: 'A customer with this email already exists.' }, { status: 409 })
+  }
+
   const { data, error } = await supabaseAdmin
     .from('customers')
     .insert([{ full_name, email, phone, address }])

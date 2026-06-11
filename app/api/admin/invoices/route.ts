@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin'
 import { authenticateAdminRequest } from '../../../../lib/adminAuth'
 import { Resend } from 'resend'
+import { getSiteSettings, getBool } from '../../../../lib/siteSettings'
 
 // Low-stock alert helper (re-used after inventory deduction)
 async function maybeSendLowStockAlert(part: {
@@ -9,10 +10,13 @@ async function maybeSendLowStockAlert(part: {
 }) {
   if (part.quantity > part.low_stock_threshold) return
   if (!process.env.RESEND_API_KEY) return
+  const settings = await getSiteSettings()
+  if (!getBool(settings, 'notify_low_stock')) return
+  const toEmail = settings.notify_email || 'tyson@zunacoffee.com'
   const resend = new Resend(process.env.RESEND_API_KEY)
   await resend.emails.send({
     from: 'Cafe Works <onboarding@resend.dev>',
-    to: 'tyson@zunacoffee.com',
+    to: toEmail,
     subject: `⚠️ Low stock: ${part.name}`,
     html: `
       <div style="font-family:sans-serif;max-width:480px">

@@ -23,9 +23,6 @@ type LineItem = {
   part_id?: number | null
 }
 
-const WEEKDAY_RATE = 80
-const WEEKEND_RATE = 120
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function newLocalId() {
@@ -39,15 +36,17 @@ function calcTotal(qty: number, price: number) {
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function LaborRow({
-  item, parts: _parts, onChange, onRemove,
+  item, parts: _parts, onChange, onRemove, weekdayRate, weekendRate,
 }: {
   item: LineItem
   parts: Part[]
   onChange: (localId: string, patch: Partial<LineItem>) => void
   onRemove: (localId: string) => void
+  weekdayRate: number
+  weekendRate: number
 }) {
   const handleRateChange = (rateType: 'weekday' | 'weekend') => {
-    const rate = rateType === 'weekday' ? WEEKDAY_RATE : WEEKEND_RATE
+    const rate = rateType === 'weekday' ? weekdayRate : weekendRate
     const desc = `Labor (${rateType === 'weekday' ? 'Weekday' : 'Weekend'})`
     onChange(item.localId, {
       rate_type:  rateType,
@@ -92,8 +91,8 @@ function LaborRow({
             onChange={(e) => handleRateChange(e.target.value as 'weekday' | 'weekend')}
             className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm focus:border-[#B87333] focus:outline-none"
           >
-            <option value="weekday">Weekday — ${WEEKDAY_RATE}/hr</option>
-            <option value="weekend">Weekend — ${WEEKEND_RATE}/hr</option>
+            <option value="weekday">Weekday — ${weekdayRate}/hr</option>
+            <option value="weekend">Weekend — ${weekendRate}/hr</option>
           </select>
         </div>
         <div>
@@ -233,6 +232,8 @@ export default function NewInvoicePage() {
   const [repairJobs,  setRepairJobs]  = useState<RepairJob[]>([])
   const [loading,     setLoading]     = useState(true)
   const [loadError,   setLoadError]   = useState<string | null>(null)
+  const [weekdayRate, setWeekdayRate] = useState(80)
+  const [weekendRate, setWeekendRate] = useState(120)
 
   const [customerId,  setCustomerId]  = useState<number | null>(null)
   const [repairJobId, setRepairJobId] = useState<number | null>(null)
@@ -243,16 +244,21 @@ export default function NewInvoicePage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/admin/customers'),
-      fetch('/api/admin/parts'),
-      fetch('/api/admin/repair-jobs'),
+      fetch('/api/admin/customers', { credentials: 'include' }),
+      fetch('/api/admin/parts', { credentials: 'include' }),
+      fetch('/api/admin/repair-jobs', { credentials: 'include' }),
+      fetch('/api/admin/site-settings', { credentials: 'include' }),
     ])
-      .then(async ([cRes, pRes, rRes]) => {
+      .then(async ([cRes, pRes, rRes, sRes]) => {
         if (cRes.status === 401) { router.replace('/admin/login'); return }
-        const [cData, pData, rData] = await Promise.all([cRes.json(), pRes.json(), rRes.json()])
+        const [cData, pData, rData, sData] = await Promise.all([cRes.json(), pRes.json(), rRes.json(), sRes.json()])
         setCustomers(cData.customers ?? [])
         setParts(pData.parts ?? [])
         setRepairJobs(rData.repairJobs ?? [])
+        if (sData.settings) {
+          setWeekdayRate(Number(sData.settings.labor_rate_weekday) || 80)
+          setWeekendRate(Number(sData.settings.labor_rate_weekend) || 120)
+        }
       })
       .catch(() => setLoadError('Failed to load form data'))
       .finally(() => setLoading(false))
@@ -272,8 +278,8 @@ export default function NewInvoicePage() {
       type:       'labor',
       description: 'Labor (Weekday)',
       quantity:   1,
-      unit_price: WEEKDAY_RATE,
-      total:      WEEKDAY_RATE,
+      unit_price: weekdayRate,
+      total:      weekdayRate,
       rate_type:  'weekday',
     }])
   }
@@ -463,7 +469,7 @@ export default function NewInvoicePage() {
           ) : (
             lineItems.map((item) =>
               item.type === 'labor' ? (
-                <LaborRow key={item.localId} item={item} parts={parts} onChange={updateItem} onRemove={removeItem} />
+                <LaborRow key={item.localId} item={item} parts={parts} onChange={updateItem} onRemove={removeItem} weekdayRate={weekdayRate} weekendRate={weekendRate} />
               ) : (
                 <PartRow key={item.localId} item={item} parts={parts} onChange={updateItem} onRemove={removeItem} />
               )

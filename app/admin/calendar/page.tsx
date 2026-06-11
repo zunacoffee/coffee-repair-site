@@ -305,16 +305,16 @@ export default function CalendarPage() {
                         {/* Day number */}
                         <span className={`mb-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
                           todayCell && !isBlocked ? 'bg-[#B87333] text-white'
-                          : isBlocked ? 'text-gray-400'
+                          : isBlocked ? 'text-[#7A8898]'
                           : inMonth   ? 'text-[#0D1B2A]'
-                          : 'text-[#B0B8C1]'
+                          : 'text-[#7A8898]'
                         }`}>
                           {date.getDate()}
                         </span>
 
                         {/* Blocked badge */}
                         {isBlocked && (
-                          <span className="hidden sm:block text-[9px] font-bold uppercase tracking-wide text-gray-400 mb-0.5">Blocked</span>
+                          <span className="hidden sm:block text-[9px] font-bold uppercase tracking-wide text-[#7A8898] mb-0.5">Blocked</span>
                         )}
 
                         {/* Event pills — sm+ */}
