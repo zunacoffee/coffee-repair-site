@@ -52,20 +52,42 @@ export default function EquipmentPage() {
   const [selectedEq, setSelectedEq] = useState<Equipment | null>(null)
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/admin/equipment'),
-      fetch('/api/admin/customers'),
-      fetch('/api/admin-data'),
-    ]).then(async ([eqRes, custRes, jobsRes]) => {
+    async function load() {
+      let eqRes: Response
+      try {
+        eqRes = await fetch('/api/admin/equipment')
+      } catch {
+        setError('Network error — could not reach server.')
+        setLoading(false)
+        return
+      }
+
       if (eqRes.status === 401) { router.replace('/admin/login'); return }
-      const [eqJson, custJson, jobsJson] = await Promise.all([eqRes.json(), custRes.json(), jobsRes.json()])
-      if (eqRes.ok) setEquipment(eqJson.equipment ?? [])
-      else setError(eqJson.error ?? 'Failed to load equipment')
-      if (custRes.ok) setCustomers(custJson.customers ?? [])
-      if (jobsRes.ok) setAllJobs(jobsJson.repairJobs ?? [])
-    })
-    .catch(() => setError('Network error'))
-    .finally(() => setLoading(false))
+
+      const eqJson = await eqRes.json().catch(() => ({}))
+      if (!eqRes.ok) {
+        setError(eqJson.error ?? 'Failed to load equipment.')
+        setLoading(false)
+        return
+      }
+      setEquipment(eqJson.equipment ?? [])
+
+      // Supplemental data — failures are non-fatal
+      await Promise.allSettled([
+        fetch('/api/admin/customers')
+          .then(r => r.ok ? r.json() : null)
+          .then(j => { if (j) setCustomers(j.customers ?? []) })
+          .catch(() => {}),
+        fetch('/api/admin-data')
+          .then(r => r.ok ? r.json() : null)
+          .then(j => { if (j) setAllJobs(j.repairJobs ?? []) })
+          .catch(() => {}),
+      ])
+
+      setLoading(false)
+    }
+
+    load()
   }, [router])
 
   const equipmentTypes = useMemo(

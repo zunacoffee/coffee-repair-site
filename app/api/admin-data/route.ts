@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
 
   const [customersRes, repairJobsRes, plansRes, serviceRequestsRes] = await Promise.all([
     supabaseAdmin.from('customers').select('id, full_name, email, phone'),
-    supabaseAdmin.from('repair_jobs').select('id, equipment_type, status, description, notes, created_at, completed_at, customer_id').order('created_at', { ascending: false }),
+    supabaseAdmin.from('repair_jobs').select('id, equipment_type, status, description, notes, created_at, completed_at, customer_id, scheduled_date, scheduled_time').order('created_at', { ascending: false }),
     supabaseAdmin.from('maintenance_plans').select('id, plan_name, status, renewal_date').order('created_at', { ascending: false }),
     supabaseAdmin.from('service_requests').select('id, full_name, email, equipment_type, brand, issue_description, status, contact_preference, created_at').order('created_at', { ascending: false }).limit(20),
   ])
@@ -33,18 +33,20 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { customer_id, equipment_type, status, description } = body
+  const { customer_id, equipment_type, status, description, scheduled_date, scheduled_time } = body
 
   if (!customer_id || !equipment_type || !status || !description) {
     return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
   }
 
   const { data, error } = await supabaseAdmin.from('repair_jobs').insert({
-    customer_id: parseInt(customer_id, 10),
+    customer_id:    parseInt(customer_id, 10),
     equipment_type,
     status,
     description,
-    created_at: new Date().toISOString(),
+    scheduled_date: scheduled_date || null,
+    scheduled_time: scheduled_time || null,
+    created_at:     new Date().toISOString(),
   })
 
   if (error) {

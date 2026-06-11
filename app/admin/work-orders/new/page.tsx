@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import TimePickerSelect from '../../../components/ui/TimePickerSelect'
 
 interface Customer {
   id: number
@@ -38,6 +39,8 @@ export default function NewWorkOrderPage() {
   const [problem, setProblem]       = useState('')
   const [laborType, setLaborType]   = useState<'weekday' | 'weekend'>('weekday')
   const [laborHours, setLaborHours] = useState('')
+  const [scheduledDate, setScheduledDate] = useState('')
+  const [scheduledTime, setScheduledTime] = useState('')
   const [selectedParts, setSelectedParts] = useState<PartEntry[]>([])
   const [addPartId, setAddPartId]   = useState('')
   const [addPartQty, setAddPartQty] = useState('1')
@@ -117,6 +120,8 @@ export default function NewWorkOrderPage() {
           labor_type:          laborType,
           labor_hours:         parseFloat(laborHours) || 0,
           parts:               selectedParts.map(p => ({ part_id: p.part_id, quantity_used: p.quantity_used })),
+          scheduled_date:      scheduledDate || null,
+          scheduled_time:      scheduledTime || null,
         }),
       })
       const data = await res.json()
@@ -186,7 +191,7 @@ export default function NewWorkOrderPage() {
           {/* Labor */}
           <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
             <h2 className="font-semibold text-[#0D1B2A] text-base">Labor</h2>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
               {(['weekday', 'weekend'] as const).map(t => (
                 <label key={t} className={`flex-1 flex items-center gap-3 border rounded-xl px-4 py-3 cursor-pointer transition-colors ${laborType === t ? 'border-[#B87333] bg-[#B87333]/5' : 'border-[#E8ECF0]'}`}>
                   <input type="radio" name="laborType" value={t} checked={laborType === t} onChange={() => setLaborType(t)} className="accent-[#B87333]" />
@@ -217,7 +222,7 @@ export default function NewWorkOrderPage() {
           {/* Parts */}
           <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
             <h2 className="font-semibold text-[#0D1B2A] text-base">Parts</h2>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <select
                 value={addPartId}
                 onChange={e => setAddPartId(e.target.value)}
@@ -228,23 +233,26 @@ export default function NewWorkOrderPage() {
                   <option key={p.id} value={p.id}>{p.name} ({p.part_number}) — ${Number(p.sell_price).toFixed(2)} — {p.quantity} in stock</option>
                 ))}
               </select>
-              <input
-                type="number"
-                value={addPartQty}
-                onChange={e => setAddPartQty(e.target.value)}
-                min="1"
-                className="w-20 border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-center text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]"
-              />
-              <button
-                type="button"
-                onClick={addPart}
-                disabled={!addPartId}
-                className="bg-[#E8ECF0] hover:bg-[#0D1B2A] hover:text-white text-[#0D1B2A] font-semibold px-4 rounded-xl text-sm transition-colors disabled:opacity-40"
-              >
-                Add
-              </button>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  value={addPartQty}
+                  onChange={e => setAddPartQty(e.target.value)}
+                  min="1"
+                  className="w-20 border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-center text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]"
+                />
+                <button
+                  type="button"
+                  onClick={addPart}
+                  disabled={!addPartId}
+                  className="flex-1 sm:flex-none bg-[#E8ECF0] hover:bg-[#0D1B2A] hover:text-white text-[#0D1B2A] font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-40"
+                >
+                  Add
+                </button>
+              </div>
             </div>
             {selectedParts.length > 0 && (
+              <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-[#7A8898] text-xs uppercase">
@@ -269,7 +277,35 @@ export default function NewWorkOrderPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
+          </div>
+
+          {/* Schedule */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
+            <div>
+              <h2 className="font-semibold text-[#0D1B2A] text-base">Schedule <span className="text-sm font-normal text-[#7A8898]">(optional)</span></h2>
+              <p className="text-xs text-[#7A8898] mt-0.5">Set a date and time now or schedule later.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Date</label>
+                <input
+                  type="date"
+                  value={scheduledDate}
+                  onChange={e => setScheduledDate(e.target.value)}
+                  className="w-full border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Time</label>
+                <TimePickerSelect
+                  value={scheduledTime}
+                  onChange={e => setScheduledTime(e.target.value)}
+                  className="w-full border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Summary */}

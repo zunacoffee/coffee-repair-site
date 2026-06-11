@@ -12,10 +12,12 @@ async function maybeSendLowStockAlert(part: {
   if (!process.env.RESEND_API_KEY) return
   const settings = await getSiteSettings()
   if (!getBool(settings, 'notify_low_stock')) return
-  const toEmail = settings.notify_email || 'tyson@zunacoffee.com'
+  const toEmail = settings.notify_email
+  if (!toEmail) return
+  const businessName = settings.public_business_name || settings.business_name || 'Coffee Service'
   const resend = new Resend(process.env.RESEND_API_KEY)
   await resend.emails.send({
-    from: 'Cafe Works <onboarding@resend.dev>',
+    from: `${businessName} <onboarding@resend.dev>`,
     to: toEmail,
     subject: `⚠️ Low stock: ${part.name}`,
     html: `

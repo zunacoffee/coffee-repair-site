@@ -24,8 +24,20 @@ export async function PATCH(req: NextRequest) {
 
   const updates: Record<string, unknown> = {}
   if (typeof body.full_name === 'string' && body.full_name.trim()) updates.full_name = body.full_name.trim()
-  if (typeof body.phone   === 'string') updates.phone   = body.phone.trim()
-  if (typeof body.address === 'string') updates.address = body.address.trim()
+  if (typeof body.phone     === 'string') updates.phone  = body.phone.trim()
+  if (typeof body.street    === 'string') updates.street = body.street.trim() || null
+  if (typeof body.city      === 'string') updates.city   = body.city.trim()   || null
+  if (typeof body.state     === 'string') updates.state  = body.state.trim()  || null
+  if (typeof body.zip       === 'string') updates.zip    = body.zip.trim()    || null
+
+  if (body.street !== undefined || body.city !== undefined || body.state !== undefined || body.zip !== undefined) {
+    const s  = (typeof body.street === 'string' ? body.street : '').trim()
+    const c  = (typeof body.city   === 'string' ? body.city   : '').trim()
+    const st = (typeof body.state  === 'string' ? body.state  : '').trim()
+    const z  = (typeof body.zip    === 'string' ? body.zip    : '').trim()
+    const locality = [st, z].filter(Boolean).join(' ')
+    updates.address = [s, c, locality].filter(Boolean).join(', ')
+  }
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'No valid fields to update.' }, { status: 400 })
@@ -35,7 +47,7 @@ export async function PATCH(req: NextRequest) {
     .from('customers')
     .update(updates)
     .eq('email', user.email)
-    .select('id, full_name, email, phone, address')
+    .select('id, full_name, email, phone, address, street, city, state, zip')
     .maybeSingle()
 
   if (error) {

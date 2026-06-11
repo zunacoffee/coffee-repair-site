@@ -33,6 +33,8 @@ export async function POST(req: NextRequest) {
     labor_type?: 'weekday' | 'weekend'
     labor_hours?: number
     parts?: { part_id: number; quantity_used: number }[]
+    scheduled_date?: string | null
+    scheduled_time?: string | null
   }
 
   if (!body.customer_id || !body.problem_description?.trim()) {
@@ -76,6 +78,8 @@ export async function POST(req: NextRequest) {
       labor_total:         laborTotal,
       parts_total:         0,
       grand_total:         laborTotal,
+      scheduled_date:      body.scheduled_date || null,
+      scheduled_time:      body.scheduled_time || null,
     }])
     .select('id, work_order_number, status, created_at')
     .single()

@@ -12,7 +12,7 @@ interface Props {
   onAdded?: (customer: NewCustomer) => void
 }
 
-const EMPTY_CUSTOMER = { full_name: '', email: '', phone: '', address: '' }
+const EMPTY_CUSTOMER = { full_name: '', email: '', phone: '', street: '', city: '', state: '', zip: '' }
 const EMPTY_EQ = (): EquipmentRow => ({ equipment_type: '', brand: '', model: '', serial_number: '' })
 
 export default function AddCustomerModal({ open, onClose, onAdded }: Props) {
@@ -186,8 +186,22 @@ export default function AddCustomerModal({ open, onClose, onAdded }: Props) {
                 <input required type="tel" value={form.phone} onChange={setField('phone')} placeholder="(555) 000-0000" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Address <span className="text-red-500">*</span></label>
-                <input required value={form.address} onChange={setField('address')} placeholder="123 Main St, City, State" className={inputCls} />
+                <label className={labelCls}>Street Address <span className="text-red-500">*</span></label>
+                <input required value={form.street} onChange={setField('street')} placeholder="123 Main St" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>City <span className="text-red-500">*</span></label>
+                <input required value={form.city} onChange={setField('city')} placeholder="Portland" className={inputCls} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={labelCls}>State</label>
+                  <input value={form.state} onChange={setField('state')} placeholder="OR" maxLength={2} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>ZIP</label>
+                  <input value={form.zip} onChange={setField('zip')} placeholder="97201" maxLength={10} className={inputCls} />
+                </div>
               </div>
 
               {/* Equipment section */}

@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('maintenance_plans')
-    .select('id, customer_id, plan_name, status, price, renewal_date')
+    .select('id, customer_id, plan_name, status, price, renewal_date, is_custom')
     .order('plan_name', { ascending: true })
 
   if (error) {

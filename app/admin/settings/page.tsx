@@ -144,7 +144,7 @@ export default function SettingsPage() {
         {/* ── Business Info ── */}
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-[#0D1B2A] text-base">Business Information</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Business Name">
               <Input value={settings.business_name} onChange={v => set('business_name', v)} placeholder="Cafe Works" />
             </Field>
@@ -171,7 +171,7 @@ export default function SettingsPage() {
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-[#0D1B2A] text-base">Labor Rates</h2>
           <p className="text-xs text-[#7A8898]">These rates are used when calculating work order labor costs.</p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Weekday Rate ($/hr)">
               <Input value={settings.labor_rate_weekday} onChange={v => set('labor_rate_weekday', v)} type="number" min="0" step="0.01" placeholder="80" />
             </Field>
@@ -190,7 +190,7 @@ export default function SettingsPage() {
         {/* ── Parts Settings ── */}
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-[#0D1B2A] text-base">Parts Settings</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Default Markup (%)" hint="Applied when sell price is left blank on a new part.">
               <Input value={settings.parts_markup_pct} onChange={v => set('parts_markup_pct', v)} type="number" min="0" step="1" placeholder="30" />
             </Field>
@@ -204,12 +204,12 @@ export default function SettingsPage() {
         {/* ── Scheduling ── */}
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-[#0D1B2A] text-base">Scheduling</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Max Bookings Per Day" hint="Limits service requests that can be scheduled on the same day.">
               <Input value={settings.max_bookings_per_day} onChange={v => set('max_bookings_per_day', v)} type="number" min="1" step="1" placeholder="2" />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-2">Morning Slot</p>
               <div className="flex items-center gap-2">

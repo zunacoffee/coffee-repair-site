@@ -10,6 +10,10 @@ type Customer = {
   email: string
   phone: string
   address: string
+  street: string | null
+  city: string | null
+  state: string | null
+  zip: string | null
 }
 
 export default function CustomersPage() {
@@ -21,7 +25,10 @@ export default function CustomersPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
-  const [address, setAddress] = useState('')
+  const [street, setStreet] = useState('')
+  const [city, setCity] = useState('')
+  const [addrState, setAddrState] = useState('')
+  const [zip, setZip] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
 
@@ -44,8 +51,8 @@ export default function CustomersPage() {
     setError(null)
     setSaveMessage(null)
 
-    if (!fullName || !email || !phone || !address) {
-      setError('All fields are required.')
+    if (!fullName || !email || !phone || !street || !city) {
+      setError('Name, email, phone, street address, and city are required.')
       return
     }
 
@@ -53,7 +60,7 @@ export default function CustomersPage() {
     const res = await fetch('/api/admin/customers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ full_name: fullName, email, phone, address }),
+      body: JSON.stringify({ full_name: fullName, email, phone, street, city, state: addrState, zip }),
     })
     const json = await res.json()
     setSaving(false)
@@ -63,7 +70,10 @@ export default function CustomersPage() {
     setFullName('')
     setEmail('')
     setPhone('')
-    setAddress('')
+    setStreet('')
+    setCity('')
+    setAddrState('')
+    setZip('')
     setShowForm(false)
     setSaveMessage('Customer added successfully.')
     await fetchCustomers()
@@ -133,14 +143,45 @@ export default function CustomersPage() {
                   placeholder="(123) 456-7890"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Address</label>
+              <div className="lg:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Street Address</label>
                 <input
-                  value={address}
-                  onChange={(event) => setAddress(event.target.value)}
+                  value={street}
+                  onChange={(event) => setStreet(event.target.value)}
                   className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                  placeholder="123 Main St, Anytown"
+                  placeholder="123 Main St"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">City</label>
+                <input
+                  value={city}
+                  onChange={(event) => setCity(event.target.value)}
+                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  placeholder="Portland"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">State</label>
+                  <input
+                    value={addrState}
+                    onChange={(event) => setAddrState(event.target.value)}
+                    maxLength={2}
+                    className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                    placeholder="OR"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">ZIP Code</label>
+                  <input
+                    value={zip}
+                    onChange={(event) => setZip(event.target.value)}
+                    maxLength={10}
+                    className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                    placeholder="97201"
+                  />
+                </div>
               </div>
               <div className="lg:col-span-2 flex items-center justify-end">
                 <button
@@ -183,7 +224,11 @@ export default function CustomersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{customer.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{customer.phone}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{customer.address}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {customer.street || customer.city
+                          ? [customer.street, [customer.city, [customer.state, customer.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')].filter(Boolean).join(', ')
+                          : customer.address || '—'}
+                      </td>
                       <td className="px-6 py-4 text-right text-sm font-medium">
                         <Link
                           href={`/admin/customers/${customer.id}`}

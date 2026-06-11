@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../../../../lib/supabaseAdmin'
 import { authenticateAdminRequest } from '../../../../../../lib/adminAuth'
+import { getSiteSettings } from '../../../../../../lib/siteSettings'
 import { Resend } from 'resend'
 
 export async function POST(
@@ -44,6 +45,9 @@ export async function POST(
     return NextResponse.json({ error: 'Email not configured.' }, { status: 500 })
   }
 
+  const settings = await getSiteSettings()
+  const businessName = settings.public_business_name || settings.business_name || 'Coffee Service'
+
   const partsRows = (partsRes.data ?? []).map(p => {
     const inv = (p as Record<string, unknown>).parts_inventory as { name: string; part_number: string } | null
     return `<tr>
@@ -62,7 +66,7 @@ export async function POST(
 <div style="font-family:sans-serif;max-width:620px;margin:0 auto">
   <div style="background:#0D1B2A;padding:24px 32px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between">
     <div>
-      <h1 style="color:white;margin:0;font-size:22px">Cafe <span style="color:#B87333">Works</span></h1>
+      <h1 style="color:white;margin:0;font-size:22px">${businessName}</h1>
       <p style="color:#7A8898;margin:4px 0 0;font-size:13px">Work Order Details</p>
     </div>
     <div style="text-align:right">
@@ -130,9 +134,9 @@ export async function POST(
 
   const resend = new Resend(process.env.RESEND_API_KEY)
   const { error: emailErr } = await resend.emails.send({
-    from:    'Cafe Works <onboarding@resend.dev>',
+    from:    `${businessName} <onboarding@resend.dev>`,
     to:      customer.email,
-    subject: `Work Order ${wo.work_order_number} – Cafe Works`,
+    subject: `Work Order ${wo.work_order_number} – ${businessName}`,
     html,
   })
 

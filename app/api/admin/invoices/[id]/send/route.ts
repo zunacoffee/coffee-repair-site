@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { Resend } from 'resend'
 import { supabaseAdmin } from '../../../../../../lib/supabaseAdmin'
 import { authenticateAdminRequest } from '../../../../../../lib/adminAuth'
+import { getSiteSettings } from '../../../../../../lib/siteSettings'
 
 function fmt(n: number) { return `$${n.toFixed(2)}` }
 
@@ -14,6 +15,7 @@ function buildEmailHtml(opts: {
   total: number
   notes: string | null
   payment_link: string
+  business_name: string
 }) {
   const rows = opts.lineItems.map((li) => `
     <tr>
@@ -30,7 +32,7 @@ function buildEmailHtml(opts: {
   return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F4F6F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:600px;margin:0 auto;padding:24px">
   <div style="background:#0D1B2A;padding:24px 32px;border-radius:12px 12px 0 0">
-    <span style="color:white;font-size:20px;font-weight:700">Cafe</span><span style="color:#B87333;font-size:20px;font-weight:700"> Works</span>
+    <span style="color:white;font-size:20px;font-weight:700">${opts.business_name}</span>
     <p style="color:#7A8898;margin:4px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:.08em">Equipment Repair & Maintenance</p>
   </div>
   <div style="background:white;padding:32px;border:1px solid #E8ECF0;border-top:none">
@@ -72,7 +74,7 @@ function buildEmailHtml(opts: {
     </div>
   </div>
   <div style="background:#E8ECF0;padding:16px;border-radius:0 0 12px 12px;text-align:center">
-    <p style="margin:0;font-size:12px;color:#7A8898">Cafe Works · Professional Coffee Equipment Service</p>
+    <p style="margin:0;font-size:12px;color:#7A8898">${opts.business_name} · Professional Coffee Equipment Service</p>
   </div>
 </div>
 </body></html>`
@@ -113,6 +115,9 @@ export async function POST(
     return NextResponse.json({ error: 'Invoice is already paid' }, { status: 400 })
   }
 
+  const settings = await getSiteSettings()
+  const businessName = settings.public_business_name || settings.business_name || 'Coffee Service'
+
   let paymentLinkUrl = invoice.stripe_payment_link as string | null
 
   // Create Stripe Payment Link if not already created
@@ -133,7 +138,7 @@ export async function POST(
         metadata: { invoice_number: invoice.invoice_number },
         after_completion: {
           type: 'hosted_confirmation',
-          hosted_confirmation: { custom_message: 'Payment received. Thank you for choosing Cafe Works!' },
+          hosted_confirmation: { custom_message: `Payment received. Thank you for choosing ${businessName}!` },
         },
       })
       paymentLinkUrl = link.url
@@ -175,11 +180,12 @@ export async function POST(
       total:        Number(invoice.total),
       notes:        invoice.notes ?? null,
       payment_link: paymentLinkUrl ?? '#',
+      business_name: businessName,
     })
     await resend.emails.send({
-      from:    'Cafe Works <onboarding@resend.dev>',
+      from:    `${businessName} <onboarding@resend.dev>`,
       to:      customer.email,
-      subject: `Invoice ${invoice.invoice_number} from Cafe Works — ${fmt(Number(invoice.total))} due`,
+      subject: `Invoice ${invoice.invoice_number} from ${businessName} — ${fmt(Number(invoice.total))} due`,
       html,
     }).catch((err: unknown) => console.error('Resend invoice email error:', err))
   }

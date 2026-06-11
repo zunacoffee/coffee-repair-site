@@ -8,11 +8,11 @@ import DateSlotPicker from '../components/DateSlotPicker'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type Customer = { id: number; full_name: string; email: string; phone: string; address: string }
+type Customer = { id: number; full_name: string; email: string; phone: string; address: string; street: string | null; city: string | null; state: string | null; zip: string | null }
 type Equipment = { id: number; equipment_type: string; brand: string; model: string; serial_number: string }
 type RepairJob  = { id: number; equipment_type: string; status: string; description: string; created_at: string; completed_at: string | null }
 type WorkOrder  = { id: number; work_order_number: string; status: string; problem_description: string; grand_total: number; created_at: string; completed_at: string | null; equipment_list: { equipment_type: string; brand: string; model: string } | null }
-type Plan       = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null; next_visit_date?: string | null; next_visit_slot?: string | null }
+type Plan       = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null; next_visit_date?: string | null; next_visit_slot?: string | null; is_custom?: boolean; stripe_payment_link?: string | null; description?: string | null; visit_frequency?: number | null; features?: string[] }
 type Invoice   = { id: number; amount: number; status: string; due_date: string | null; description: string; created_at: string }
 type Tab = 'schedule' | 'repairs' | 'equipment' | 'plan' | 'invoices' | 'profile'
 
@@ -116,7 +116,10 @@ export default function DashboardPage() {
   // Profile form state
   const [profileName,    setProfileName]    = useState('')
   const [profilePhone,   setProfilePhone]   = useState('')
-  const [profileAddress, setProfileAddress] = useState('')
+  const [profileStreet,  setProfileStreet]  = useState('')
+  const [profileCity,    setProfileCity]    = useState('')
+  const [profileState,   setProfileState]   = useState('')
+  const [profileZip,     setProfileZip]     = useState('')
   const [profileSaving,  setProfileSaving]  = useState(false)
   const [profileMsg,     setProfileMsg]     = useState<string | null>(null)
   const [profileError,   setProfileError]   = useState<string | null>(null)
@@ -157,7 +160,10 @@ export default function DashboardPage() {
       if (json.customer) {
         setProfileName(json.customer.full_name ?? '')
         setProfilePhone(json.customer.phone ?? '')
-        setProfileAddress(json.customer.address ?? '')
+        setProfileStreet(json.customer.street ?? '')
+        setProfileCity(json.customer.city ?? '')
+        setProfileState(json.customer.state ?? '')
+        setProfileZip(json.customer.zip ?? '')
       }
 
       setLoading(false)
@@ -230,7 +236,7 @@ export default function DashboardPage() {
     const res  = await fetch('/api/customer/profile', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-      body: JSON.stringify({ full_name: profileName, phone: profilePhone, address: profileAddress }),
+      body: JSON.stringify({ full_name: profileName, phone: profilePhone, street: profileStreet, city: profileCity, state: profileState, zip: profileZip }),
     })
     const data = await res.json()
     setProfileSaving(false)
@@ -370,8 +376,8 @@ export default function DashboardPage() {
                   <p className="mt-1 text-sm text-[#7A8898]">
                     {plan.price ? `$${plan.price}/mo` : '—'}
                     {' · '}
-                    <span className={`font-semibold ${plan.status === 'active' ? 'text-green-600' : 'text-[#7A8898]'}`}>
-                      {plan.status}
+                    <span className={`font-semibold ${plan.status === 'active' ? 'text-green-600' : plan.status === 'pending_payment' ? 'text-amber-600' : 'text-[#7A8898]'}`}>
+                      {plan.status === 'pending_payment' ? 'pending' : plan.status}
                     </span>
                   </p>
                 </>
@@ -841,35 +847,85 @@ export default function DashboardPage() {
                       <div className="rounded-2xl border border-[#E8ECF0] bg-[#F9FAFB] p-6 space-y-4">
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <p className="text-xl font-bold text-[#0D1B2A]">{plan.plan_name}</p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-xl font-bold text-[#0D1B2A]">{plan.plan_name}</p>
+                              {plan.is_custom && (
+                                <span className="inline-flex items-center rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#B87333]">
+                                  Custom
+                                </span>
+                              )}
+                            </div>
                             {plan.price ? <p className="text-2xl font-bold text-[#B87333] mt-1">${plan.price}<span className="text-sm font-normal text-[#7A8898]">/mo</span></p> : null}
+                            {plan.description && <p className="mt-1 text-sm text-[#7A8898]">{plan.description}</p>}
                           </div>
-                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${plan.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                            {plan.status}
+                          <span className={`shrink-0 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+                            plan.status === 'active'          ? 'bg-green-100 text-green-700' :
+                            plan.status === 'pending_payment' ? 'bg-amber-100 text-amber-700' :
+                                                                'bg-[#E8ECF0] text-[#7A8898]'
+                          }`}>
+                            {plan.status === 'pending_payment' ? 'Pending' : plan.status}
                           </span>
                         </div>
-                        <div className="border-t border-[#E8ECF0] pt-4 space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-[#7A8898]">Next renewal</span>
-                            <span className="font-medium text-[#0D1B2A]">{plan.renewal_date ? fmt(plan.renewal_date) : '—'}</span>
+
+                        {plan.visit_frequency && (
+                          <div className="text-sm flex justify-between border-t border-[#E8ECF0] pt-3">
+                            <span className="text-[#7A8898]">Visits per month</span>
+                            <span className="font-medium text-[#0D1B2A]">{plan.visit_frequency}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-[#7A8898]">Billing</span>
-                            <span className="font-medium text-[#0D1B2A]">Monthly</span>
+                        )}
+
+                        {plan.features && plan.features.length > 0 && (
+                          <ul className="space-y-1.5 border-t border-[#E8ECF0] pt-3">
+                            {plan.features.map((f, i) => (
+                              <li key={i} className="flex items-start gap-2 text-sm text-[#7A8898]">
+                                <span className="mt-0.5 text-[#B87333] shrink-0">•</span>
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {plan.status !== 'pending_payment' && (
+                          <div className="border-t border-[#E8ECF0] pt-4 space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-[#7A8898]">Next renewal</span>
+                              <span className="font-medium text-[#0D1B2A]">{plan.renewal_date ? fmt(plan.renewal_date) : '—'}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-[#7A8898]">Billing</span>
+                              <span className="font-medium text-[#0D1B2A]">Monthly</span>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
-                      {portalError && <p className="text-sm text-red-600">{portalError}</p>}
-                      <button
-                        onClick={handleManagePlan}
-                        disabled={portalLoading}
-                        className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
-                      >
-                        {portalLoading ? 'Opening billing portal…' : 'Manage plan & billing'}
-                      </button>
-                      <p className="text-xs text-center text-[#7A8898]">
-                        Update payment method, cancel, or change your plan in the Stripe billing portal.
-                      </p>
+
+                      {plan.status === 'pending_payment' && plan.stripe_payment_link ? (
+                        <>
+                          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                            Your plan is set up and ready — complete your payment to activate it.
+                          </div>
+                          <a
+                            href={plan.stripe_payment_link}
+                            className="flex w-full items-center justify-center rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+                          >
+                            Activate My Plan →
+                          </a>
+                        </>
+                      ) : (
+                        <>
+                          {portalError && <p className="text-sm text-red-600">{portalError}</p>}
+                          <button
+                            onClick={handleManagePlan}
+                            disabled={portalLoading}
+                            className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                          >
+                            {portalLoading ? 'Opening billing portal…' : 'Manage plan & billing'}
+                          </button>
+                          <p className="text-xs text-center text-[#7A8898]">
+                            Update payment method, cancel, or change your plan in the Stripe billing portal.
+                          </p>
+                        </>
+                      )}
                     </div>
                   ) : (
                     <EmptyState
@@ -955,14 +1011,48 @@ export default function DashboardPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Address</label>
+                      <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Street Address</label>
                       <input
                         type="text"
-                        value={profileAddress}
-                        onChange={(e) => setProfileAddress(e.target.value)}
-                        placeholder="123 Main St, City, State"
+                        value={profileStreet}
+                        onChange={(e) => setProfileStreet(e.target.value)}
+                        placeholder="123 Main St"
                         className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                       />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">City</label>
+                      <input
+                        type="text"
+                        value={profileCity}
+                        onChange={(e) => setProfileCity(e.target.value)}
+                        placeholder="Portland"
+                        className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">State</label>
+                        <input
+                          type="text"
+                          value={profileState}
+                          onChange={(e) => setProfileState(e.target.value)}
+                          placeholder="OR"
+                          maxLength={2}
+                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">ZIP</label>
+                        <input
+                          type="text"
+                          value={profileZip}
+                          onChange={(e) => setProfileZip(e.target.value)}
+                          placeholder="97201"
+                          maxLength={10}
+                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                        />
+                      </div>
                     </div>
                     {profileError && <p className="text-sm text-red-600">{profileError}</p>}
                     {profileMsg   && <p className="text-sm text-green-600">{profileMsg}</p>}

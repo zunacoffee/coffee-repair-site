@@ -25,6 +25,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     updates.notes = body.notes
   }
 
+  if (body.scheduled_date !== undefined) {
+    updates.scheduled_date = body.scheduled_date || null
+  }
+
+  if (body.scheduled_time !== undefined) {
+    updates.scheduled_time = body.scheduled_time || null
+  }
+
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'No update fields provided.' }, { status: 400 })
   }
@@ -33,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .from('repair_jobs')
     .update(updates)
     .eq('id', jobId)
-    .select('id, status, notes, completed_at')
+    .select('id, status, notes, completed_at, scheduled_date, scheduled_time')
     .maybeSingle()
 
   if (error) {

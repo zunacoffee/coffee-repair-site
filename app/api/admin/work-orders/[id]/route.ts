@@ -19,7 +19,7 @@ export async function GET(
       .select(`
         id, work_order_number, status, problem_description, technician_notes,
         labor_hours, labor_type, labor_total, parts_total, grand_total,
-        created_at, completed_at,
+        created_at, completed_at, scheduled_date, scheduled_time,
         customers(id, full_name, email, phone),
         equipment_list(id, equipment_type, brand, model, serial_number)
       `)
@@ -62,6 +62,8 @@ export async function PATCH(
   }
   if (body.problem_description !== undefined) updates.problem_description = body.problem_description
   if (body.technician_notes    !== undefined) updates.technician_notes    = body.technician_notes || null
+  if (body.scheduled_date      !== undefined) updates.scheduled_date      = body.scheduled_date || null
+  if (body.scheduled_time      !== undefined) updates.scheduled_time      = body.scheduled_time || null
   if (body.labor_hours !== undefined || body.labor_type !== undefined) {
     const { data: current } = await supabaseAdmin
       .from('work_orders')
@@ -88,7 +90,7 @@ export async function PATCH(
     .from('work_orders')
     .update(updates)
     .eq('id', id)
-    .select('id, work_order_number, status, problem_description, technician_notes, labor_hours, labor_type, labor_total, parts_total, grand_total, completed_at')
+    .select('id, work_order_number, status, problem_description, technician_notes, labor_hours, labor_type, labor_total, parts_total, grand_total, completed_at, scheduled_date, scheduled_time')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

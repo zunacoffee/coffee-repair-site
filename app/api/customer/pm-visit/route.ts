@@ -3,6 +3,13 @@ import { Resend } from 'resend'
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin'
 import { getSiteSettings } from '../../../../lib/siteSettings'
 
+function fmtTime(t: string): string {
+  const [h, m] = t.split(':').map(Number)
+  const suffix = h >= 12 ? 'pm' : 'am'
+  const hr = h > 12 ? h - 12 : h === 0 ? 12 : h
+  return m ? `${hr}:${String(m).padStart(2, '0')}${suffix}` : `${hr}${suffix}`
+}
+
 async function getAuthUser(req: NextRequest) {
   const token = req.headers.get('authorization')?.replace('Bearer ', '') ?? null
   if (!token) return null
@@ -52,17 +59,22 @@ export async function PATCH(req: NextRequest) {
   if (process.env.RESEND_API_KEY) {
     const resend = new Resend(process.env.RESEND_API_KEY)
     const settings = await getSiteSettings()
-    const adminEmail = settings.notify_email || 'tyson@zunacoffee.com'
-    const slotLabel = next_visit_slot === 'morning' ? 'Morning (8am–12pm)' : 'Afternoon (12pm–5pm)'
+    const businessName = settings.public_business_name || settings.business_name || 'Coffee Service'
+    const fromField = `${businessName} <onboarding@resend.dev>`
+    const adminEmail = settings.notify_email
+    const morningLabel = `Morning (${fmtTime(settings.morning_slot_start || '08:00')}–${fmtTime(settings.morning_slot_end || '12:00')})`
+    const afternoonLabel = `Afternoon (${fmtTime(settings.afternoon_slot_start || '12:00')}–${fmtTime(settings.afternoon_slot_end || '17:00')})`
+    const slotLabel = next_visit_slot === 'morning' ? morningLabel : afternoonLabel
     const dateLabel = new Date(next_visit_date + 'T00:00:00').toLocaleDateString('en-US', {
       weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
     })
     const custRecord = customer as { full_name: string; email: string }
     const planRecord = plan as { plan_name: string }
 
-    await Promise.all([
+    const portalUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/dashboard`
+    const emailTasks = [
       resend.emails.send({
-        from: 'Cafe Works <onboarding@resend.dev>',
+        from: fromField,
         to: custRecord.email,
         subject: `PM Visit Confirmed – ${dateLabel}`,
         html: `
@@ -73,12 +85,12 @@ export async function PATCH(req: NextRequest) {
             <tr><td style="color:#666;">Time</td><td><strong>${slotLabel}</strong></td></tr>
             <tr><td style="color:#666;">Plan</td><td>${planRecord.plan_name}</td></tr>
           </table>
-          <p style="margin-top:16px;">If you need to reschedule, log in to your <a href="https://cafeworks.com/dashboard">customer portal</a>.</p>
-          <p>— The Cafe Works Team</p>
+          <p style="margin-top:16px;">If you need to reschedule, log in to your <a href="${portalUrl}">customer portal</a>.</p>
+          <p>— The ${businessName} Team</p>
         `,
       }).catch(() => {}),
-      resend.emails.send({
-        from: 'Cafe Works <onboarding@resend.dev>',
+      ...(adminEmail ? [resend.emails.send({
+        from: fromField,
         to: adminEmail,
         subject: `PM Visit Scheduled – ${custRecord.full_name} (${dateLabel})`,
         html: `
@@ -91,8 +103,9 @@ export async function PATCH(req: NextRequest) {
             <tr><td style="color:#666;">Plan</td><td>${planRecord.plan_name}</td></tr>
           </table>
         `,
-      }).catch(() => {}),
-    ])
+      }).catch(() => {})] : []),
+    ]
+    await Promise.all(emailTasks)
   }
 
   return NextResponse.json({ plan })

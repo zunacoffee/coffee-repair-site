@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, use } from 'react'
 import Link from 'next/link'
+import TimePickerSelect from '../../../components/ui/TimePickerSelect'
 
 interface WOPart {
   id: number
@@ -23,9 +24,12 @@ interface WorkOrder {
   grand_total: number
   created_at: string
   completed_at: string | null
+  scheduled_date: string | null
+  scheduled_time: string | null
   customers: { id: number; full_name: string; email: string; phone: string } | null
   equipment_list: { id: number; equipment_type: string; brand: string; model: string; serial_number: string } | null
 }
+
 interface InventoryPart {
   id: number
   name: string
@@ -58,8 +62,10 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
   const [status, setStatus]         = useState<WorkOrder['status']>('open')
   const [problem, setProblem]       = useState('')
   const [notes, setNotes]           = useState('')
-  const [laborType, setLaborType]   = useState<'weekday' | 'weekend'>('weekday')
-  const [laborHours, setLaborHours] = useState('')
+  const [laborType, setLaborType]         = useState<'weekday' | 'weekend'>('weekday')
+  const [laborHours, setLaborHours]       = useState('')
+  const [scheduledDate, setScheduledDate] = useState('')
+  const [scheduledTime, setScheduledTime] = useState('')
 
   // Add part
   const [addPartId, setAddPartId]   = useState('')
@@ -87,6 +93,8 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
       setNotes(woRes.workOrder.technician_notes ?? '')
       setLaborType(woRes.workOrder.labor_type)
       setLaborHours(String(woRes.workOrder.labor_hours ?? ''))
+      setScheduledDate(woRes.workOrder.scheduled_date ?? '')
+      setScheduledTime(woRes.workOrder.scheduled_time ?? '')
     }
     setInvParts(invRes.parts ?? invRes ?? [])
     if (sRes.settings) {
@@ -108,8 +116,10 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
         status,
         problem_description: problem.trim(),
         technician_notes:    notes.trim() || null,
-        labor_type:  laborType,
-        labor_hours: parseFloat(laborHours) || 0,
+        labor_type:          laborType,
+        labor_hours:         parseFloat(laborHours) || 0,
+        scheduled_date:      scheduledDate || null,
+        scheduled_time:      scheduledTime || null,
       }),
     })
     const data = await res.json()
@@ -283,6 +293,26 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                     placeholder="Internal notes…"
                     className="w-full border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-[#0D1B2A] resize-none focus:outline-none focus:ring-2 focus:ring-[#B87333]"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Scheduled Date</label>
+                    <input
+                      type="date"
+                      value={scheduledDate}
+                      onChange={e => setScheduledDate(e.target.value)}
+                      className="w-full border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Scheduled Time</label>
+                    <TimePickerSelect
+                      value={scheduledTime}
+                      onChange={e => setScheduledTime(e.target.value)}
+                      className="w-full border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

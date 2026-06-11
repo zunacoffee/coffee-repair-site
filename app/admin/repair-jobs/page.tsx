@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import TimePickerSelect from '../../components/ui/TimePickerSelect'
 
 type Customer = {
   id: number | string
@@ -25,6 +26,8 @@ type RepairJob = {
   created_at: string | null
   completed_at: string | null
   customer_id: number | string
+  scheduled_date: string | null
+  scheduled_time: string | null
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -49,17 +52,21 @@ export default function RepairJobsPage() {
   const [inlineSaving,       setInlineSaving]       = useState(false)
   const [description,        setDescription]        = useState('')
   const [status,             setStatus]             = useState('pending')
+  const [scheduledDate,      setScheduledDate]      = useState('')
+  const [scheduledTime,      setScheduledTime]      = useState('')
   const [saving,             setSaving]             = useState(false)
   const [message,            setMessage]            = useState<string | null>(null)
   const [updatingJobId,      setUpdatingJobId]      = useState<string | number | null>(null)
 
   // Modal state
   const [selectedJob,  setSelectedJob]  = useState<RepairJob | null>(null)
-  const [modalStatus,  setModalStatus]  = useState('')
-  const [modalNotes,   setModalNotes]   = useState('')
-  const [modalSaving,  setModalSaving]  = useState(false)
-  const [modalError,   setModalError]   = useState<string | null>(null)
-  const [modalSaved,   setModalSaved]   = useState(false)
+  const [modalStatus,        setModalStatus]        = useState('')
+  const [modalNotes,         setModalNotes]         = useState('')
+  const [modalScheduledDate, setModalScheduledDate] = useState('')
+  const [modalScheduledTime, setModalScheduledTime] = useState('')
+  const [modalSaving,        setModalSaving]        = useState(false)
+  const [modalError,         setModalError]         = useState<string | null>(null)
+  const [modalSaved,         setModalSaved]         = useState(false)
 
   const fetchRepairData = async () => {
     const res = await fetch('/api/admin-data')
@@ -139,7 +146,7 @@ export default function RepairJobsPage() {
     const res  = await fetch('/api/admin-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customer_id: customerId, equipment_type: equipmentType, status, description }),
+      body: JSON.stringify({ customer_id: customerId, equipment_type: equipmentType, status, description, scheduled_date: scheduledDate || null, scheduled_time: scheduledTime || null }),
     })
     const json = await res.json()
     setSaving(false)
@@ -149,13 +156,15 @@ export default function RepairJobsPage() {
     setEquipmentSelection('')
     setDescription('')
     setStatus('pending')
+    setScheduledDate('')
+    setScheduledTime('')
     setShowForm(false)
     setShowInlineEquipment(false)
     setInlineEquipment({ equipment_type: '', brand: '', model: '', serial_number: '' })
     await fetchRepairData()
   }
 
-  const patchJob = async (jobId: string | number, updates: { status?: string; notes?: string }) => {
+  const patchJob = async (jobId: string | number, updates: { status?: string; notes?: string; scheduled_date?: string | null; scheduled_time?: string | null }) => {
     setUpdatingJobId(jobId)
     const res  = await fetch(`/api/admin/repair-jobs/${jobId}`, {
       method: 'PATCH',
@@ -173,6 +182,8 @@ export default function RepairJobsPage() {
     setSelectedJob(job)
     setModalStatus(job.status)
     setModalNotes(job.notes ?? '')
+    setModalScheduledDate(job.scheduled_date ?? '')
+    setModalScheduledTime(job.scheduled_time ?? '')
     setModalError(null)
     setModalSaved(false)
   }
@@ -181,7 +192,7 @@ export default function RepairJobsPage() {
     if (!selectedJob) return
     setModalSaving(true)
     setModalError(null)
-    const updated = await patchJob(selectedJob.id, { status: modalStatus, notes: modalNotes })
+    const updated = await patchJob(selectedJob.id, { status: modalStatus, notes: modalNotes, scheduled_date: modalScheduledDate || null, scheduled_time: modalScheduledTime || null })
     setModalSaving(false)
     if (updated) {
       setSelectedJob((prev) => prev ? { ...prev, ...updated } : null)
@@ -312,6 +323,19 @@ export default function RepairJobsPage() {
                 <option value="in_progress">In progress</option>
                 <option value="completed">Completed</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Scheduled Date <span className="text-[#7A8898] font-normal">(optional)</span></label>
+              <input
+                type="date"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Scheduled Time <span className="text-[#7A8898] font-normal">(optional)</span></label>
+              <TimePickerSelect value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} className={inputCls} />
             </div>
             <div className="lg:col-span-2 flex justify-end">
               <button
@@ -447,6 +471,23 @@ export default function RepairJobsPage() {
                   <p className="text-sm text-[#0D1B2A]">
                     {selectedJob.completed_at ? new Date(selectedJob.completed_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—'}
                   </p>
+                </div>
+              </div>
+
+              {/* Schedule */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-2">Scheduled Date</label>
+                  <input
+                    type="date"
+                    value={modalScheduledDate}
+                    onChange={(e) => setModalScheduledDate(e.target.value)}
+                    className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-2">Scheduled Time</label>
+                  <TimePickerSelect value={modalScheduledTime} onChange={(e) => setModalScheduledTime(e.target.value)} />
                 </div>
               </div>
 

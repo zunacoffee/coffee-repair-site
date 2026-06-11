@@ -34,7 +34,7 @@ export default function PublicNavbar() {
 
           <button
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="sm:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 transition"
+            className="sm:hidden p-2.5 rounded-md text-gray-600 hover:bg-gray-100 transition"
             aria-label="Toggle menu"
           >
             {menuOpen ? (
@@ -52,16 +52,16 @@ export default function PublicNavbar() {
 
       {menuOpen && (
         <div className="sm:hidden border-t border-gray-100 bg-white px-6 pb-5 pt-3 flex flex-col gap-1">
-          <Link href="/" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-gray-50 transition" style={{ color: '#0D1B2A' }}>
+          <Link href="/" onClick={close} className="block rounded-lg px-3 py-3 text-sm font-medium hover:bg-gray-50 transition" style={{ color: '#0D1B2A' }}>
             Home
           </Link>
-          <Link href="/#services" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-gray-50 transition" style={{ color: '#0D1B2A' }}>
+          <Link href="/#services" onClick={close} className="block rounded-lg px-3 py-3 text-sm font-medium hover:bg-gray-50 transition" style={{ color: '#0D1B2A' }}>
             Services
           </Link>
-          <Link href="/pricing" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-gray-50 transition" style={{ color: '#0D1B2A' }}>
+          <Link href="/pricing" onClick={close} className="block rounded-lg px-3 py-3 text-sm font-medium hover:bg-gray-50 transition" style={{ color: '#0D1B2A' }}>
             Pricing
           </Link>
-          <Link href="/service-request" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-gray-50 transition" style={{ color: '#0D1B2A' }}>
+          <Link href="/service-request" onClick={close} className="block rounded-lg px-3 py-3 text-sm font-medium hover:bg-gray-50 transition" style={{ color: '#0D1B2A' }}>
             Book a Repair
           </Link>
           <div className="mt-2 pt-3 border-t border-gray-100">

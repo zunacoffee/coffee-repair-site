@@ -3,6 +3,13 @@ import { Resend } from 'resend'
 import { supabaseAdmin } from '../../../lib/supabaseAdmin'
 import { getSiteSettings, getBool } from '../../../lib/siteSettings'
 
+function fmtTime(t: string): string {
+  const [h, m] = t.split(':').map(Number)
+  const suffix = h >= 12 ? 'pm' : 'am'
+  const hr = h > 12 ? h - 12 : h === 0 ? 12 : h
+  return m ? `${hr}:${String(m).padStart(2, '0')}${suffix}` : `${hr}${suffix}`
+}
+
 export async function POST(req: NextRequest) {
   let body: unknown
   try {
@@ -57,22 +64,26 @@ export async function POST(req: NextRequest) {
 
   if (process.env.RESEND_API_KEY) {
     const resend = new Resend(process.env.RESEND_API_KEY)
-    const slotLabel = time_slot === 'morning' ? 'Morning (8am–12pm)' : time_slot === 'afternoon' ? 'Afternoon (12pm–5pm)' : null
+    const settings = await getSiteSettings()
+    const businessName = settings.public_business_name || settings.business_name || 'Coffee Service'
+    const fromField = `${businessName} <onboarding@resend.dev>`
+    const morningLabel = `Morning (${fmtTime(settings.morning_slot_start || '08:00')}–${fmtTime(settings.morning_slot_end || '12:00')})`
+    const afternoonLabel = `Afternoon (${fmtTime(settings.afternoon_slot_start || '12:00')}–${fmtTime(settings.afternoon_slot_end || '17:00')})`
+    const slotLabel = time_slot === 'morning' ? morningLabel : time_slot === 'afternoon' ? afternoonLabel : null
     const dateLabel = scheduled_date
       ? new Date(scheduled_date + 'T00:00:00').toLocaleDateString('en-US', {
           weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
         })
       : null
 
-    const settings = await getSiteSettings()
     const sendAdminNotif = getBool(settings, 'notify_new_service_request')
-    const adminEmail = settings.notify_email || 'tyson@zunacoffee.com'
+    const adminEmail = settings.notify_email
 
     const emailTasks: Promise<unknown>[] = []
 
-    if (sendAdminNotif) {
+    if (sendAdminNotif && adminEmail) {
       emailTasks.push(resend.emails.send({
-        from: 'Cafe Works <onboarding@resend.dev>',
+        from: fromField,
         to: adminEmail,
         subject: `New service request – ${equipment_type} (${full_name})`,
         html: `
@@ -90,16 +101,16 @@ export async function POST(req: NextRequest) {
           <p style="margin-top:16px;"><strong>Issue description:</strong></p>
           <p style="white-space:pre-wrap;background:#f5f5f5;padding:12px;border-radius:6px;">${issue_description}</p>
           ${notes ? `<p style="margin-top:8px;"><strong>Notes:</strong></p><p style="white-space:pre-wrap;background:#f5f5f5;padding:12px;border-radius:6px;">${notes}</p>` : ''}
-          <p style="margin-top:24px;font-size:12px;color:#999;">View all requests in the <a href="https://cafeworks.com/admin/service-requests">admin dashboard</a>.</p>
+          <p style="margin-top:24px;font-size:12px;color:#999;">View all requests in the <a href="${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/admin/service-requests">admin dashboard</a>.</p>
         `,
       }).catch(() => {}))
     }
 
     // Customer confirmation
     emailTasks.push(resend.emails.send({
-        from: 'Cafe Works <onboarding@resend.dev>',
+        from: fromField,
         to: email,
-        subject: 'We received your service request – Cafe Works',
+        subject: `We received your service request – ${businessName}`,
         html: `
           <p>Hi ${full_name},</p>
           <p>Thanks for reaching out! We've received your service request and will follow up within one business day.</p>
@@ -109,7 +120,7 @@ export async function POST(req: NextRequest) {
             ${slotLabel ? `<tr><td style="color:#666;">Preferred time</td><td><strong>${slotLabel}</strong></td></tr>` : ''}
           </table>
           ${dateLabel ? '<p style="margin-top:16px;">We\'ll confirm your appointment shortly.</p>' : '<p style="margin-top:16px;">We\'ll be in touch to schedule your visit.</p>'}
-          <p>— The Cafe Works Team</p>
+          <p>— The ${businessName} Team</p>
         `,
       }).catch(() => {}))
 

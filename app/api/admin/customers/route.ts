@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin'
 import { authenticateAdminRequest } from '../../../../lib/adminAuth'
 
+function buildAddress(street = '', city = '', state = '', zip = '') {
+  const locality = [state.trim(), zip.trim()].filter(Boolean).join(' ')
+  return [street.trim(), city.trim(), locality].filter(Boolean).join(', ')
+}
+
 export async function GET(req: NextRequest) {
   const user = await authenticateAdminRequest(req)
   if (!user) {
@@ -10,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('customers')
-    .select('id, full_name, email, phone, address')
+    .select('id, full_name, email, phone, address, street, city, state, zip')
     .order('full_name', { ascending: true })
 
   if (error) {
@@ -27,10 +32,10 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { full_name, email, phone, address } = body
+  const { full_name, email, phone, street, city, state, zip } = body
 
-  if (!full_name || !email || !phone || !address) {
-    return NextResponse.json({ error: 'All fields are required.' }, { status: 400 })
+  if (!full_name || !email || !phone || !street || !city) {
+    return NextResponse.json({ error: 'Name, email, phone, street address, and city are required.' }, { status: 400 })
   }
 
   const { data: existing } = await supabaseAdmin
@@ -43,10 +48,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'A customer with this email already exists.' }, { status: 409 })
   }
 
+  const address = buildAddress(street, city, state, zip)
+
   const { data, error } = await supabaseAdmin
     .from('customers')
-    .insert([{ full_name, email, phone, address }])
-    .select('id, full_name, email, phone, address')
+    .insert([{ full_name, email, phone, street, city, state: state || null, zip: zip || null, address }])
+    .select('id, full_name, email, phone, address, street, city, state, zip')
     .single()
 
   if (error) {

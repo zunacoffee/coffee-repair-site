@@ -30,25 +30,34 @@ export default function PartsPage() {
   const [saving,      setSaving]      = useState(false)
   const [saveError,   setSaveError]   = useState<string | null>(null)
   const [deletingId,  setDeletingId]  = useState<number | null>(null)
+  const [markupPct,   setMarkupPct]   = useState(30)
 
   useEffect(() => {
-    fetch('/api/admin/parts')
-      .then(async (r) => {
-        if (r.status === 401) { router.replace('/admin/login'); return }
-        const j = await r.json()
-        if (r.ok) setParts(j.parts ?? [])
-        else setError(j.error ?? 'Failed to load parts')
-      })
-      .catch(() => setError('Network error'))
-      .finally(() => setLoading(false))
+    async function load() {
+      let partsRes: Response
+      try { partsRes = await fetch('/api/admin/parts') }
+      catch { setError('Network error'); setLoading(false); return }
+      if (partsRes.status === 401) { router.replace('/admin/login'); return }
+      const j = await partsRes.json()
+      if (partsRes.ok) setParts(j.parts ?? [])
+      else setError(j.error ?? 'Failed to load parts')
+
+      fetch('/api/admin/site-settings')
+        .then(r => r.ok ? r.json() : null)
+        .then(j => { if (j?.settings?.parts_markup_pct) setMarkupPct(Number(j.settings.parts_markup_pct)) })
+        .catch(() => {})
+        .finally(() => setLoading(false))
+    }
+    load()
   }, [router])
 
   const handleCostChange = (v: string) => {
     const cost = parseFloat(v)
+    const multiplier = 1 + markupPct / 100
     setForm((f) => ({
       ...f,
       cost_price: v,
-      sell_price: isNaN(cost) ? f.sell_price : String(Math.round(cost * 1.3 * 100) / 100),
+      sell_price: isNaN(cost) ? f.sell_price : String(Math.round(cost * multiplier * 100) / 100),
     }))
   }
 
@@ -307,7 +316,7 @@ export default function PartsPage() {
                 <div>
                   <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">
                     Sell Price ($)
-                    <span className="ml-1 text-[10px] font-normal text-[#7A8898]">auto = cost × 1.30</span>
+                    <span className="ml-1 text-[10px] font-normal text-[#7A8898]">auto = cost × {(1 + markupPct / 100).toFixed(2)}</span>
                   </label>
                   <input
                     type="number" min="0" step="0.01" value={form.sell_price}

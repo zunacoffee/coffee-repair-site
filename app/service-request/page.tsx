@@ -11,6 +11,10 @@ type FormState = {
   full_name: string
   email: string
   phone: string
+  street: string
+  city: string
+  state: string
+  zip: string
   equipment_type: string
   brand: string
   model: string
@@ -23,6 +27,10 @@ const EMPTY: FormState = {
   full_name: '',
   email: '',
   phone: '',
+  street: '',
+  city: '',
+  state: '',
+  zip: '',
   equipment_type: '',
   brand: '',
   model: '',
@@ -75,7 +83,7 @@ export default function ServiceRequestPage() {
     setSubmitted(true)
   }
 
-  const inputClass  = 'mt-1 block w-full px-3 py-2 border border-[#D4D8DC] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-cafe-bronze text-cafe-navy bg-white'
+  const inputClass  = 'mt-1 block w-full px-3 py-2.5 border border-[#D4D8DC] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-cafe-bronze text-cafe-navy bg-white'
   const labelClass  = 'block text-sm font-medium text-cafe-navy'
 
   const slotDateLabel = selectedDate
@@ -136,6 +144,24 @@ export default function ServiceRequestPage() {
                   <div>
                     <label className={labelClass}>Phone</label>
                     <input type="tel" value={form.phone} onChange={set('phone')} required placeholder="(555) 000-0000" className={inputClass} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className={labelClass}>Street Address</label>
+                    <input type="text" value={form.street} onChange={set('street')} placeholder="123 Main St" className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>City</label>
+                    <input type="text" value={form.city} onChange={set('city')} placeholder="Portland" className={inputClass} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelClass}>State</label>
+                      <input type="text" value={form.state} onChange={set('state')} placeholder="OR" maxLength={2} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>ZIP</label>
+                      <input type="text" value={form.zip} onChange={set('zip')} placeholder="97201" maxLength={10} className={inputClass} />
+                    </div>
                   </div>
                   <div>
                     <label className={labelClass}>Preferred contact method</label>

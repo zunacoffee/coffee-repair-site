@@ -46,14 +46,14 @@ export default function WorkOrdersPage() {
     <div className="min-h-screen bg-[#F4F6F9] p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[#0D1B2A]">Work Orders</h1>
             <p className="text-sm text-[#7A8898] mt-1">{workOrders.length} total work orders</p>
           </div>
           <Link
             href="/admin/work-orders/new"
-            className="bg-[#B87333] hover:bg-[#a0632b] text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
+            className="shrink-0 inline-flex items-center justify-center bg-[#B87333] hover:bg-[#a0632b] text-white font-semibold px-5 py-3 rounded-xl text-sm transition-colors"
           >
             + New Work Order
           </Link>
@@ -65,7 +65,7 @@ export default function WorkOrdersPage() {
             <button
               key={s}
               onClick={() => setFilter(s)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 filter === s
                   ? 'bg-[#0D1B2A] text-white'
                   : 'bg-white text-[#7A8898] hover:bg-[#E8ECF0]'
@@ -83,6 +83,7 @@ export default function WorkOrdersPage() {
           ) : filtered.length === 0 ? (
             <div className="p-12 text-center text-[#7A8898]">No work orders found.</div>
           ) : (
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-[#F4F6F9] border-b border-[#E8ECF0]">
                 <tr>
@@ -127,6 +128,7 @@ export default function WorkOrdersPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
   const { data: customer, error: customerError } = await supabaseAdmin
     .from('customers')
-    .select('id, full_name, email, phone, address')
+    .select('id, full_name, email, phone, address, street, city, state, zip')
     .eq('email', user.email)
     .maybeSingle()
 
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false }),
     supabaseAdmin
       .from('maintenance_plans')
-      .select('id, plan_name, status, price, renewal_date, next_visit_date, next_visit_slot, notes')
+      .select('id, plan_name, status, price, renewal_date, next_visit_date, next_visit_slot, notes, is_custom, stripe_payment_link, description, visit_frequency, features')
       .eq('customer_id', customer.id)
       .maybeSingle(),
     supabaseAdmin

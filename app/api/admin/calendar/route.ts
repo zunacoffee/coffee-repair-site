@@ -6,11 +6,12 @@ export type CalendarEvent = {
   id: string
   title: string
   date: string        // YYYY-MM-DD
-  type: 'repair' | 'maintenance' | 'emergency' | 'service_request'
+  type: 'repair' | 'maintenance' | 'emergency' | 'service_request' | 'work_order'
   status: string
   customerName: string
   detail: string
   time_slot?: 'morning' | 'afternoon' | null
+  scheduled_time?: string | null
 }
 
 export type BlockedDate = {
@@ -39,12 +40,12 @@ export async function GET(req: NextRequest) {
   const startDate = `${year}-${mm}-01`
   const endDate   = `${year}-${mm}-${String(lastDay).padStart(2, '0')}`
 
-  const [jobsRes, customersRes, plansRes, serviceReqRes, blockedRes] = await Promise.all([
+  const [jobsRes, customersRes, plansRes, serviceReqRes, blockedRes, workOrdersRes] = await Promise.all([
     supabaseAdmin
       .from('repair_jobs')
-      .select('id, equipment_type, status, description, customer_id, created_at, scheduled_date, priority')
-      .or(`created_at.gte.${startISO},scheduled_date.gte.${startDate}`)
-      .or(`created_at.lte.${endISO},scheduled_date.lte.${endDate}`),
+      .select('id, equipment_type, status, description, customer_id, created_at, scheduled_date, scheduled_time')
+      .or(`created_at.gte.${startDate},scheduled_date.gte.${startDate}`)
+      .or(`created_at.lte.${endDate},scheduled_date.lte.${endDate}`),
     supabaseAdmin.from('customers').select('id, full_name'),
     supabaseAdmin
       .from('maintenance_plans')
@@ -54,7 +55,7 @@ export async function GET(req: NextRequest) {
       .not('renewal_date', 'is', null),
     supabaseAdmin
       .from('service_requests')
-      .select('id, full_name, equipment_type, issue_description, status, scheduled_date, time_slot')
+      .select('id, full_name, equipment_type, issue_description, status, scheduled_date')
       .gte('scheduled_date', startDate)
       .lte('scheduled_date', endDate)
       .not('scheduled_date', 'is', null)
@@ -65,11 +66,19 @@ export async function GET(req: NextRequest) {
       .gte('date', startDate)
       .lte('date', endDate)
       .then((r) => ({ data: r.data ?? [], error: r.error })),
+    supabaseAdmin
+      .from('work_orders')
+      .select('id, status, scheduled_date, scheduled_time')
+      .gte('scheduled_date', startDate)
+      .lte('scheduled_date', endDate)
+      .not('scheduled_date', 'is', null)
+      .then((r) => ({ data: r.data ?? [], error: r.error })),
   ])
 
   let jobsData: Record<string, unknown>[] = (jobsRes.data ?? []) as Record<string, unknown>[]
   let customersData: Record<string, unknown>[] = (customersRes.data ?? []) as Record<string, unknown>[]
 
+  if (jobsRes.error) console.error('repair_jobs query error:', jobsRes.error.message)
   if (jobsRes.error || customersRes.error) {
     const [fallbackJobs, fallbackCustomers] = await Promise.all([
       supabaseAdmin
@@ -92,6 +101,7 @@ export async function GET(req: NextRequest) {
     plansRes.data ?? [],
     serviceReqRes.data ?? [],
     blockedRes.data ?? [],
+    workOrdersRes.data ?? [],
   )
 }
 
@@ -101,6 +111,7 @@ function buildResponse(
   plans: Record<string, unknown>[],
   serviceRequests: Record<string, unknown>[],
   blockedDates: Record<string, unknown>[],
+  workOrders: Record<string, unknown>[] = [],
 ): NextResponse {
   const customerMap: Record<string, string> = {}
   for (const c of customers) {
@@ -113,17 +124,15 @@ function buildResponse(
     const rawDate = (job.scheduled_date as string | null)
       ?? (job.created_at as string).split('T')[0]
 
-    const priority = (job.priority as string | null) ?? 'normal'
-    const type: CalendarEvent['type'] = priority === 'emergency' ? 'emergency' : 'repair'
-
     events.push({
       id: `job-${job.id}`,
-      title: String(job.equipment_type),
+      title: String(job.equipment_type ?? 'Repair'),
       date: rawDate,
-      type,
+      type: 'repair',
       status: String(job.status),
       customerName: customerMap[String(job.customer_id)] ?? 'Unknown',
       detail: String(job.description ?? ''),
+      scheduled_time: (job.scheduled_time as string | null) ?? null,
     })
   }
 
@@ -149,7 +158,20 @@ function buildResponse(
       status: String(sr.status),
       customerName: String(sr.full_name ?? ''),
       detail: String(sr.issue_description ?? ''),
-      time_slot: (sr.time_slot as 'morning' | 'afternoon' | null) ?? null,
+    })
+  }
+
+  for (const wo of workOrders) {
+    if (!wo.scheduled_date) continue
+    events.push({
+      id: `wo-${wo.id}`,
+      title: `WO #${wo.id}`,
+      date: String(wo.scheduled_date),
+      type: 'work_order',
+      status: String(wo.status),
+      customerName: '',
+      detail: '',
+      scheduled_time: (wo.scheduled_time as string | null) ?? null,
     })
   }
 

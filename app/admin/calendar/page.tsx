@@ -8,11 +8,12 @@ type CalendarEvent = {
   id: string
   title: string
   date: string
-  type: 'repair' | 'maintenance' | 'emergency' | 'service_request'
+  type: 'repair' | 'maintenance' | 'emergency' | 'service_request' | 'work_order'
   status: string
   customerName: string
   detail: string
   time_slot?: 'morning' | 'afternoon' | null
+  scheduled_time?: string | null
 }
 
 type BlockedDate = {
@@ -28,10 +29,11 @@ const MONTH_NAMES = [
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const EVENT_STYLE: Record<CalendarEvent['type'], { pill: string; dot: string; badge: string }> = {
-  repair:          { pill: 'bg-orange-100 text-orange-700', dot: 'bg-orange-400', badge: 'bg-orange-100 text-orange-700' },
-  maintenance:     { pill: 'bg-blue-100 text-blue-700',     dot: 'bg-blue-400',   badge: 'bg-blue-100 text-blue-700'    },
-  emergency:       { pill: 'bg-red-100 text-red-700',       dot: 'bg-red-400',    badge: 'bg-red-100 text-red-700'      },
-  service_request: { pill: 'bg-green-100 text-green-700',   dot: 'bg-green-400',  badge: 'bg-green-100 text-green-700'  },
+  repair:          { pill: 'bg-orange-100 text-orange-700',  dot: 'bg-orange-400',  badge: 'bg-orange-100 text-orange-700'  },
+  maintenance:     { pill: 'bg-blue-100 text-blue-700',      dot: 'bg-blue-400',    badge: 'bg-blue-100 text-blue-700'      },
+  emergency:       { pill: 'bg-red-100 text-red-700',        dot: 'bg-red-400',     badge: 'bg-red-100 text-red-700'        },
+  service_request: { pill: 'bg-green-100 text-green-700',    dot: 'bg-green-400',   badge: 'bg-green-100 text-green-700'    },
+  work_order:      { pill: 'bg-purple-100 text-purple-700',  dot: 'bg-purple-400',  badge: 'bg-purple-100 text-purple-700'  },
 }
 
 const TYPE_LABEL: Record<CalendarEvent['type'], string> = {
@@ -39,6 +41,7 @@ const TYPE_LABEL: Record<CalendarEvent['type'], string> = {
   maintenance:     'PM Visit',
   emergency:       'Emergency',
   service_request: 'Service Request',
+  work_order:      'Work Order',
 }
 
 const PILL_LABEL: Record<CalendarEvent['type'], string> = {
@@ -46,23 +49,42 @@ const PILL_LABEL: Record<CalendarEvent['type'], string> = {
   maintenance:     'PM Visit',
   emergency:       'Emergency',
   service_request: 'Service Req.',
+  work_order:      'Work Order',
 }
 
 const SLOT_TIME: Record<string, string> = {
-  morning:   '8am',
-  afternoon: '12pm',
+  morning:   'AM',
+  afternoon: 'PM',
 }
 
 const STATUS_STYLE: Record<string, string> = {
   pending:     'bg-gray-100 text-gray-600',
+  open:        'bg-blue-100 text-blue-700',
   in_progress: 'bg-amber-100 text-amber-800',
   completed:   'bg-green-100 text-green-700',
   active:      'bg-green-100 text-green-700',
+  cancelled:   'bg-gray-100 text-gray-500',
 }
 
 const SLOT_LABEL: Record<string, string> = {
   morning:   'AM (8am–12pm)',
   afternoon: 'PM (12pm–5pm)',
+}
+
+function formatTime(hhmm: string): string {
+  const [h, m] = hhmm.split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const h12  = h % 12 || 12
+  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
+}
+
+function pillTime(ev: CalendarEvent): string {
+  if (ev.type === 'maintenance') {
+    return ev.time_slot ? ` · ${SLOT_TIME[ev.time_slot]}` : ''
+  }
+  if (ev.scheduled_time) return ` · ${formatTime(ev.scheduled_time)}`
+  if (ev.time_slot)      return ` · ${SLOT_TIME[ev.time_slot]}`
+  return ''
 }
 
 function buildGrid(year: number, month: number): Date[] {
@@ -114,6 +136,7 @@ export default function CalendarPage() {
     const res = await fetch(`/api/admin/calendar?year=${year}&month=${month + 1}`)
     if (res.status === 401) { router.replace('/admin/login'); return }
     const json = await res.json()
+    console.log('calendar API response:', json)
     setEvents(json.events ?? [])
     setBlockedDates(json.blockedDates ?? [])
     setLoading(false)
@@ -319,11 +342,21 @@ export default function CalendarPage() {
 
                         {/* Event pills — sm+ */}
                         <div className="hidden sm:flex w-full flex-col gap-0.5">
-                          {visible.map((ev) => (
-                            <span key={ev.id} className={`truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium leading-tight ${EVENT_STYLE[ev.type].pill}`}>
-                              {PILL_LABEL[ev.type]}{ev.time_slot ? ` ${SLOT_TIME[ev.time_slot]}` : ''}
-                            </span>
-                          ))}
+                          {visible.map((ev) => {
+                            console.log('pill data:', ev.type, ev.id, ev.scheduled_time)
+                            const timeLabel = ev.scheduled_time
+                              ? formatTime(ev.scheduled_time)
+                              : ev.time_slot ? SLOT_LABEL[ev.time_slot] : ''
+                            return (
+                              <span
+                                key={ev.id}
+                                title={[TYPE_LABEL[ev.type], ev.customerName, timeLabel].filter(Boolean).join(' · ')}
+                                className={`truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium leading-tight ${EVENT_STYLE[ev.type].pill}`}
+                              >
+                                {PILL_LABEL[ev.type]}{pillTime(ev)}
+                              </span>
+                            )
+                          })}
                           {overflow > 0 && (
                             <span className="pl-1 text-[10px] font-semibold text-[#7A8898]">+{overflow} more</span>
                           )}
@@ -431,6 +464,11 @@ export default function CalendarPage() {
                     {ev.detail && (
                       <p className="mt-1.5 text-xs text-[#7A8898] line-clamp-2">{ev.detail}</p>
                     )}
+                    {ev.scheduled_time && (
+                      <span className="mt-1 inline-flex items-center rounded-full bg-[#0D1B2A]/5 px-2 py-0.5 text-[10px] font-semibold text-[#0D1B2A]">
+                        {formatTime(ev.scheduled_time)}
+                      </span>
+                    )}
                     {ev.type === 'repair' && (
                       <Link href="/admin/repair-jobs" className="mt-2 inline-flex text-xs font-semibold text-[#B87333] hover:underline">
                         View job →
@@ -439,6 +477,11 @@ export default function CalendarPage() {
                     {ev.type === 'service_request' && (
                       <Link href="/admin/service-requests" className="mt-2 inline-flex text-xs font-semibold text-[#B87333] hover:underline">
                         View request →
+                      </Link>
+                    )}
+                    {ev.type === 'work_order' && (
+                      <Link href={`/admin/work-orders/${ev.id.replace('wo-', '')}`} className="mt-2 inline-flex text-xs font-semibold text-[#B87333] hover:underline">
+                        View work order →
                       </Link>
                     )}
                   </li>

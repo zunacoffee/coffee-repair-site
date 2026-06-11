@@ -7,26 +7,33 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const [equipmentRes, customersRes] = await Promise.all([
-    supabaseAdmin
-      .from('equipment_list')
-      .select('id, customer_id, equipment_type, brand, model, serial_number, created_at')
-      .order('created_at', { ascending: false }),
-    supabaseAdmin
-      .from('customers')
-      .select('id, full_name, email'),
-  ])
+  try {
+    const [equipmentRes, customersRes] = await Promise.all([
+      supabaseAdmin
+        .from('equipment_list')
+        .select('id, customer_id, equipment_type, brand, model, serial_number, created_at')
+        .order('created_at', { ascending: false }),
+      supabaseAdmin
+        .from('customers')
+        .select('id, full_name, email'),
+    ])
 
-  if (equipmentRes.error) return NextResponse.json({ error: equipmentRes.error.message }, { status: 500 })
+    if (equipmentRes.error) {
+      return NextResponse.json({ error: equipmentRes.error.message }, { status: 500 })
+    }
 
-  const customerMap = Object.fromEntries(
-    (customersRes.data ?? []).map((c) => [c.id, c])
-  )
+    const customerMap = Object.fromEntries(
+      (customersRes.data ?? []).map((c) => [c.id, c])
+    )
 
-  const equipment = (equipmentRes.data ?? []).map((eq) => ({
-    ...eq,
-    customers: customerMap[eq.customer_id] ?? null,
-  }))
+    const equipment = (equipmentRes.data ?? []).map((eq) => ({
+      ...eq,
+      customers: customerMap[eq.customer_id] ?? null,
+    }))
 
-  return NextResponse.json({ equipment })
+    return NextResponse.json({ equipment })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unexpected server error.'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }

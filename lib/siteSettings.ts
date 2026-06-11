@@ -9,7 +9,7 @@ export const SETTING_DEFAULTS: Record<string, string> = {
   business_hours:              'Mon-Fri 8am-5pm',
   emergency_phone:             '',
   // Notifications
-  notify_email:                'tyson@zunacoffee.com',
+  notify_email:                '',
   notify_new_service_request:  'true',
   notify_new_customer:         'true',
   notify_low_stock:            'true',
