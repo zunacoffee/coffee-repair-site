@@ -61,11 +61,11 @@ function todayLabel() {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  pending:    'bg-gray-100 text-gray-700',
-  in_progress:'bg-amber-100 text-amber-800',
+  pending:    'border border-[#B87333] text-[#B87333] bg-transparent',
+  in_progress:'bg-[#0D1B2A] text-[#E8ECF0]',
   completed:  'bg-green-100 text-green-700',
-  new:        'bg-blue-100 text-blue-800',
-  contacted:  'bg-yellow-100 text-yellow-800',
+  new:        'bg-[#7A8898] text-white',
+  contacted:  'border border-[#B87333] text-[#B87333] bg-transparent',
   scheduled:  'bg-[#B87333]/10 text-[#B87333]',
 }
 
@@ -183,15 +183,13 @@ export default function AdminPage() {
             ] as { label: string; href?: string; onClick?: () => void; icon: string }[]).map((action) => {
               const inner = (
                 <>
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B87333]/10 text-[#B87333] group-hover:bg-[#B87333]/20 transition">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d={action.icon} />
-                    </svg>
-                  </span>
+                  <svg className="h-5 w-5 shrink-0 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d={action.icon} />
+                  </svg>
                   <span className="text-xs font-semibold text-[#0D1B2A]">{action.label}</span>
                 </>
               )
-              const cls = 'flex flex-col items-center justify-center gap-2 rounded-2xl bg-white border border-[#E8ECF0] px-4 py-5 text-center shadow-sm hover:border-[#B87333]/40 hover:shadow-md transition group'
+              const cls = 'flex items-center gap-2.5 rounded-xl bg-white border border-[#E8ECF0] px-4 py-2.5 shadow-sm hover:border-[#B87333]/40 hover:shadow-md transition group'
               return action.onClick
                 ? <button key={action.label} onClick={action.onClick} className={cls}>{inner}</button>
                 : <Link    key={action.label} href={action.href!}       className={cls}>{inner}</Link>
@@ -237,10 +235,10 @@ export default function AdminPage() {
               <Link
                 key={card.label}
                 href={card.href}
-                className={`group flex flex-col justify-between rounded-2xl border-l-4 bg-white px-4 py-3.5 shadow-sm hover:shadow-md transition ${card.border}`}
+                className={`group flex flex-col justify-between rounded-2xl border-l-4 bg-white px-4 py-3.5 shadow-sm hover:shadow-md transition overflow-hidden ${card.border}`}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">{card.label}</p>
+                  <p className="min-w-0 truncate text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">{card.label}</p>
                   {card.badge && (
                     <span className="shrink-0 rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-semibold text-[#B87333]">
                       {card.badge}
@@ -273,7 +271,7 @@ export default function AdminPage() {
                         <p className="truncate text-sm font-medium text-[#0D1B2A]">{job.equipment_type}</p>
                         <p className="truncate text-xs text-[#7A8898]">{customerMap[job.customer_id?.toString()] ?? 'Unknown'}</p>
                       </div>
-                      <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
+                      <span className="shrink-0 rounded-full bg-[#0D1B2A] px-2.5 py-1 text-[11px] font-semibold text-[#E8ECF0]">
                         In progress
                       </span>
                     </li>
@@ -308,7 +306,7 @@ export default function AdminPage() {
                           </p>
                         )}
                       </div>
-                      <span className="shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold text-green-700">
+                      <span className="shrink-0 rounded-full bg-[#B87333] px-2.5 py-1 text-[11px] font-semibold text-white">
                         Active
                       </span>
                     </li>

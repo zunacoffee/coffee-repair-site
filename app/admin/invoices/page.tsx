@@ -253,7 +253,7 @@ export default function InvoicesPage() {
               <thead>
                 <tr className="border-b border-[#E8ECF0] bg-[#F9FAFB]">
                   {['Invoice #', 'Customer', 'Date', 'Amount', 'Status', ''].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">{h}</th>
+                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0D1B2A]">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -262,7 +262,7 @@ export default function InvoicesPage() {
                   <tr
                     key={inv.id}
                     onClick={() => openModal(inv)}
-                    className="hover:bg-[#F9FAFB] cursor-pointer transition-colors"
+                    className="hover:bg-[#F5F7FA] cursor-pointer transition-colors"
                   >
                     <td className="px-5 py-3.5">
                       <span className="font-mono text-sm font-bold text-[#0D1B2A]">{inv.invoice_number}</span>

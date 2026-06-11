@@ -17,8 +17,8 @@ interface WorkOrder {
 }
 
 const STATUS_BADGE: Record<WorkOrder['status'], string> = {
-  open:        'bg-blue-100 text-blue-700',
-  in_progress: 'bg-yellow-100 text-yellow-700',
+  open:        'bg-[#7A8898] text-white',
+  in_progress: 'bg-[#0D1B2A] text-[#E8ECF0]',
   completed:   'bg-green-100 text-green-700',
   cancelled:   'bg-gray-100 text-gray-500',
 }
@@ -87,20 +87,20 @@ export default function WorkOrdersPage() {
             <table className="w-full text-sm">
               <thead className="bg-[#F4F6F9] border-b border-[#E8ECF0]">
                 <tr>
-                  <th className="px-4 py-3 text-left text-[#7A8898] font-semibold">WO #</th>
-                  <th className="px-4 py-3 text-left text-[#7A8898] font-semibold">Customer</th>
-                  <th className="px-4 py-3 text-left text-[#7A8898] font-semibold">Equipment</th>
-                  <th className="px-4 py-3 text-left text-[#7A8898] font-semibold">Problem</th>
-                  <th className="px-4 py-3 text-left text-[#7A8898] font-semibold">Status</th>
-                  <th className="px-4 py-3 text-right text-[#7A8898] font-semibold">Total</th>
-                  <th className="px-4 py-3 text-left text-[#7A8898] font-semibold">Created</th>
+                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">WO #</th>
+                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">Customer</th>
+                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">Equipment</th>
+                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">Problem</th>
+                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">Status</th>
+                  <th className="px-4 py-3 text-right text-[#0D1B2A] font-semibold">Total</th>
+                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">Created</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map(wo => (
                   <tr
                     key={wo.id}
-                    className="border-b border-[#E8ECF0] last:border-0 hover:bg-[#F4F6F9] cursor-pointer transition-colors"
+                    className="border-b border-[#E8ECF0] last:border-0 hover:bg-[#F5F7FA] cursor-pointer transition-colors"
                     onClick={() => window.location.href = `/admin/work-orders/${wo.id}`}
                   >
                     <td className="px-4 py-3 font-mono font-semibold text-[#B87333]">{wo.work_order_number}</td>

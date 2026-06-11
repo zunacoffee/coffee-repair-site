@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../supabase'
 import DateSlotPicker from '../components/DateSlotPicker'
 
+const MONO = 'font-[family-name:var(--font-ibm-plex-mono)]'
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Customer = { id: number; full_name: string; email: string; phone: string; address: string; street: string | null; city: string | null; state: string | null; zip: string | null }
@@ -261,7 +263,7 @@ export default function DashboardPage() {
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F4F6F9]">
+      <div className="min-h-screen flex items-center justify-center bg-[#E8ECF0]">
         <div className="flex items-center gap-3 text-[#7A8898]">
           <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -275,7 +277,7 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F4F6F9] px-4">
+      <div className="min-h-screen flex items-center justify-center bg-[#E8ECF0] px-4">
         <div className="max-w-md rounded-2xl bg-white p-8 shadow text-center">
           <p className="text-sm font-semibold text-red-600">{error}</p>
           <button onClick={() => window.location.reload()} className="mt-4 text-sm text-[#B87333] hover:underline">Try again</button>
@@ -286,7 +288,7 @@ export default function DashboardPage() {
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#F4F6F9]">
+    <div className="min-h-screen bg-[#E8ECF0]">
 
       {/* ── Header ── */}
       <header className="bg-[#0D1B2A]">
@@ -295,8 +297,8 @@ export default function DashboardPage() {
 
             {/* Identity */}
             <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/20">
-                <svg className="h-6 w-6 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#B87333]">
+                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
@@ -313,7 +315,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <Link
                 href="/service-request"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
               >
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -354,7 +356,7 @@ export default function DashboardPage() {
             <p className="mt-2 text-sm text-[#7A8898]">
               Your login ({userEmail}) hasn't been linked to a customer record. Contact Cafe Works to complete your setup.
             </p>
-            <Link href="/service-request" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">
+            <Link href="/service-request" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#B87333] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">
               Submit a service request
             </Link>
           </div>
@@ -369,7 +371,7 @@ export default function DashboardPage() {
 
             {/* My Plan */}
             <div className="rounded-2xl border-l-4 border-l-[#B87333] bg-white px-5 py-5 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">My Plan</p>
+              <p className={`${MONO} text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>My Plan</p>
               {plan ? (
                 <>
                   <p className="mt-2 text-xl font-bold text-[#0D1B2A] leading-tight">{plan.plan_name}</p>
@@ -391,7 +393,7 @@ export default function DashboardPage() {
 
             {/* Next PM Visit */}
             <div className="rounded-2xl border-l-4 border-l-blue-500 bg-white px-5 py-5 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Next PM Visit</p>
+              <p className={`${MONO} text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Next PM Visit</p>
               {plan?.next_visit_date ? (
                 <>
                   <p className="mt-2 text-xl font-bold text-[#0D1B2A] leading-tight">
@@ -422,7 +424,7 @@ export default function DashboardPage() {
 
             {/* Equipment */}
             <div className="rounded-2xl border-l-4 border-l-emerald-500 bg-white px-5 py-5 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Equipment</p>
+              <p className={`${MONO} text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Equipment</p>
               <p className="mt-2 text-4xl font-bold text-[#0D1B2A]">{equipment.length}</p>
               <p className="mt-1 text-xs text-[#7A8898]">
                 {equipment.length === 1 ? 'registered item' : 'registered items'}
@@ -431,7 +433,7 @@ export default function DashboardPage() {
 
             {/* Open Invoices */}
             <div className="rounded-2xl border-l-4 border-l-orange-400 bg-white px-5 py-5 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Open Invoices</p>
+              <p className={`${MONO} text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Open Invoices</p>
               <p className="mt-2 text-4xl font-bold text-[#0D1B2A]">{openInvoices.length}</p>
               <p className="mt-1 text-xs text-[#7A8898]">
                 {openInvoices.length === 0 ? 'all paid' : `${openInvoices.length} unpaid`}
@@ -441,10 +443,10 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Tab bar ── */}
-          <div className="rounded-2xl bg-white border border-[#E8ECF0] shadow-sm overflow-hidden">
+          <div className="rounded-xl bg-white border border-black/[0.08] overflow-hidden">
             <div
               ref={tabBarRef}
-              className="flex overflow-x-auto border-b border-[#E8ECF0] scrollbar-none"
+              className="flex overflow-x-auto border-b border-black/[0.08] scrollbar-none"
               style={{ scrollbarWidth: 'none' }}
             >
               {TABS.map((tab) => (
@@ -602,7 +604,7 @@ export default function DashboardPage() {
                       icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
                       title="No maintenance plan"
                       body="Subscribe to a plan to see your scheduled preventive maintenance visits here."
-                      cta={<Link href="/pricing" className="rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">View plans</Link>}
+                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">View plans</Link>}
                     />
                   )}
                 </div>
@@ -613,7 +615,7 @@ export default function DashboardPage() {
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-base font-bold text-[#0D1B2A]">Repair History</h2>
-                    <Link href="/service-request" className="inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:bg-[#a0632b] transition">
+                    <Link href="/service-request" className="inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:bg-[#a0632b] transition">
                       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                       Request Repair
                     </Link>
@@ -685,7 +687,7 @@ export default function DashboardPage() {
                       icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>}
                       title="No repair history"
                       body="Your completed and in-progress repairs will appear here."
-                      cta={<Link href="/service-request" className="rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">Request a repair</Link>}
+                      cta={<Link href="/service-request" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">Request a repair</Link>}
                     />
                   )}
                 </div>
@@ -932,7 +934,7 @@ export default function DashboardPage() {
                       icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
                       title="No active plan"
                       body="Subscribe to a maintenance plan to keep your equipment in peak condition."
-                      cta={<Link href="/pricing" className="rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">See plans & pricing</Link>}
+                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">See plans & pricing</Link>}
                     />
                   )}
                 </div>

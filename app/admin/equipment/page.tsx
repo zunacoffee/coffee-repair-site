@@ -31,8 +31,8 @@ const EMPTY_FORM = { customer_id: '', equipment_type: '', brand: '', model: '', 
 
 const JOB_STATUS_BADGE: Record<string, string> = {
   completed:   'bg-green-100 text-green-700',
-  in_progress: 'bg-amber-100 text-amber-800',
-  pending:     'bg-gray-100 text-gray-600',
+  in_progress: 'bg-[#0D1B2A] text-[#E8ECF0]',
+  pending:     'border border-[#B87333] text-[#B87333] bg-transparent',
 }
 
 export default function EquipmentPage() {
@@ -320,7 +320,7 @@ export default function EquipmentPage() {
               <thead>
                 <tr className="border-b border-[#E8ECF0]">
                   {['Customer', 'Type', 'Brand', 'Model', 'Serial Number', ''].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">{h}</th>
+                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0D1B2A]">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -329,7 +329,7 @@ export default function EquipmentPage() {
                   <tr
                     key={eq.id}
                     onClick={() => setSelectedEq(eq)}
-                    className="hover:bg-[#F9FAFB] cursor-pointer transition-colors"
+                    className="hover:bg-[#F5F7FA] cursor-pointer transition-colors"
                   >
                     <td className="px-5 py-3.5">
                       {eq.customers ? (

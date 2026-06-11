@@ -51,10 +51,16 @@ const CUSTOM_PLAN_EMPTY = {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  active:          'bg-green-100 text-green-700',
-  pending_payment: 'bg-amber-100 text-amber-700',
+  active:          'bg-[#B87333] text-white',
+  pending_payment: 'border border-[#B87333] text-[#B87333] bg-transparent',
   inactive:        'bg-[#E8ECF0] text-[#7A8898]',
   cancelled:       'bg-red-100 text-red-700',
+}
+
+const JOB_STATUS: Record<string, string> = {
+  pending:     'border border-[#B87333] text-[#B87333]',
+  in_progress: 'bg-[#0D1B2A] text-[#E8ECF0]',
+  completed:   'bg-green-100 text-green-700',
 }
 
 export default function CustomerDetailPage() {
@@ -452,7 +458,9 @@ export default function CustomerDetailPage() {
                             <p className="text-sm font-semibold text-[#0D1B2A]">{job.equipment_type}</p>
                             <p className="mt-1 text-sm text-[#7A8898]">{job.description}</p>
                           </div>
-                          <div className="rounded-full bg-[#E8ECF0] px-3 py-1 text-xs font-semibold text-[#0D1B2A]">{job.status}</div>
+                          <div className={`rounded-full px-3 py-1 text-xs font-semibold ${JOB_STATUS[job.status] ?? 'bg-[#E8ECF0] text-[#0D1B2A]'}`}>
+                            {job.status.replace('_', ' ')}
+                          </div>
                         </div>
                         <p className="mt-3 text-xs uppercase tracking-[0.24em] text-[#7A8898]">{new Date(job.created_at).toLocaleDateString()}</p>
                       </div>

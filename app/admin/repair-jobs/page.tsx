@@ -28,12 +28,13 @@ type RepairJob = {
   customer_id: number | string
   scheduled_date: string | null
   scheduled_time: string | null
+  is_emergency: boolean
 }
 
 const STATUS_BADGE: Record<string, string> = {
   completed:   'border-green-200 bg-green-50 text-green-800',
-  in_progress: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-  pending:     'border-gray-200 bg-gray-50 text-gray-800',
+  in_progress: 'border-[#0D1B2A] bg-[#0D1B2A] text-[#E8ECF0]',
+  pending:     'border-[#B87333] text-[#B87333] bg-transparent',
 }
 
 export default function RepairJobsPage() {
@@ -54,6 +55,7 @@ export default function RepairJobsPage() {
   const [status,             setStatus]             = useState('pending')
   const [scheduledDate,      setScheduledDate]      = useState('')
   const [scheduledTime,      setScheduledTime]      = useState('')
+  const [isEmergency,        setIsEmergency]        = useState(false)
   const [saving,             setSaving]             = useState(false)
   const [message,            setMessage]            = useState<string | null>(null)
   const [updatingJobId,      setUpdatingJobId]      = useState<string | number | null>(null)
@@ -64,6 +66,7 @@ export default function RepairJobsPage() {
   const [modalNotes,         setModalNotes]         = useState('')
   const [modalScheduledDate, setModalScheduledDate] = useState('')
   const [modalScheduledTime, setModalScheduledTime] = useState('')
+  const [modalIsEmergency,   setModalIsEmergency]   = useState(false)
   const [modalSaving,        setModalSaving]        = useState(false)
   const [modalError,         setModalError]         = useState<string | null>(null)
   const [modalSaved,         setModalSaved]         = useState(false)
@@ -146,7 +149,7 @@ export default function RepairJobsPage() {
     const res  = await fetch('/api/admin-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customer_id: customerId, equipment_type: equipmentType, status, description, scheduled_date: scheduledDate || null, scheduled_time: scheduledTime || null }),
+      body: JSON.stringify({ customer_id: customerId, equipment_type: equipmentType, status, description, scheduled_date: scheduledDate || null, scheduled_time: scheduledTime || null, is_emergency: isEmergency }),
     })
     const json = await res.json()
     setSaving(false)
@@ -158,13 +161,14 @@ export default function RepairJobsPage() {
     setStatus('pending')
     setScheduledDate('')
     setScheduledTime('')
+    setIsEmergency(false)
     setShowForm(false)
     setShowInlineEquipment(false)
     setInlineEquipment({ equipment_type: '', brand: '', model: '', serial_number: '' })
     await fetchRepairData()
   }
 
-  const patchJob = async (jobId: string | number, updates: { status?: string; notes?: string; scheduled_date?: string | null; scheduled_time?: string | null }) => {
+  const patchJob = async (jobId: string | number, updates: { status?: string; notes?: string; scheduled_date?: string | null; scheduled_time?: string | null; is_emergency?: boolean }) => {
     setUpdatingJobId(jobId)
     const res  = await fetch(`/api/admin/repair-jobs/${jobId}`, {
       method: 'PATCH',
@@ -184,6 +188,7 @@ export default function RepairJobsPage() {
     setModalNotes(job.notes ?? '')
     setModalScheduledDate(job.scheduled_date ?? '')
     setModalScheduledTime(job.scheduled_time ?? '')
+    setModalIsEmergency(job.is_emergency ?? false)
     setModalError(null)
     setModalSaved(false)
   }
@@ -192,7 +197,7 @@ export default function RepairJobsPage() {
     if (!selectedJob) return
     setModalSaving(true)
     setModalError(null)
-    const updated = await patchJob(selectedJob.id, { status: modalStatus, notes: modalNotes, scheduled_date: modalScheduledDate || null, scheduled_time: modalScheduledTime || null })
+    const updated = await patchJob(selectedJob.id, { status: modalStatus, notes: modalNotes, scheduled_date: modalScheduledDate || null, scheduled_time: modalScheduledTime || null, is_emergency: modalIsEmergency })
     setModalSaving(false)
     if (updated) {
       setSelectedJob((prev) => prev ? { ...prev, ...updated } : null)
@@ -337,7 +342,16 @@ export default function RepairJobsPage() {
               <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Scheduled Time <span className="text-[#7A8898] font-normal">(optional)</span></label>
               <TimePickerSelect value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} className={inputCls} />
             </div>
-            <div className="lg:col-span-2 flex justify-end">
+            <div className="lg:col-span-2 flex items-center justify-between gap-4">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isEmergency}
+                  onChange={(e) => setIsEmergency(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 accent-red-600"
+                />
+                <span className="text-sm font-semibold text-red-600">Emergency</span>
+              </label>
               <button
                 type="submit"
                 disabled={saving}
@@ -516,6 +530,17 @@ export default function RepairJobsPage() {
                   className="block w-full resize-none rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] placeholder-[#7A8898] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                 />
               </div>
+
+              {/* Emergency */}
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={modalIsEmergency}
+                  onChange={(e) => setModalIsEmergency(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 accent-red-600"
+                />
+                <span className="text-sm font-semibold text-red-600">Emergency job</span>
+              </label>
 
               {modalError && <p className="text-sm text-red-600">{modalError}</p>}
             </div>

@@ -39,8 +39,8 @@ interface InventoryPart {
 }
 
 const STATUS_BADGE: Record<WorkOrder['status'], string> = {
-  open:        'bg-blue-100 text-blue-700',
-  in_progress: 'bg-yellow-100 text-yellow-700',
+  open:        'bg-[#7A8898] text-white',
+  in_progress: 'bg-[#0D1B2A] text-[#E8ECF0]',
   completed:   'bg-green-100 text-green-700',
   cancelled:   'bg-[#E8ECF0] text-[#7A8898]',
 }

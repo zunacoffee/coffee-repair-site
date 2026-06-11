@@ -29,8 +29,9 @@ export default function PartsPage() {
   const [form,        setForm]        = useState(EMPTY)
   const [saving,      setSaving]      = useState(false)
   const [saveError,   setSaveError]   = useState<string | null>(null)
-  const [deletingId,  setDeletingId]  = useState<number | null>(null)
-  const [markupPct,   setMarkupPct]   = useState(30)
+  const [deletingId,      setDeletingId]      = useState<number | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+  const [markupPct,       setMarkupPct]       = useState(30)
 
   useEffect(() => {
     async function load() {
@@ -115,7 +116,6 @@ export default function PartsPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Delete this part? This cannot be undone.')) return
     setDeletingId(id)
     const res = await fetch(`/api/admin/parts/${id}`, { method: 'DELETE' })
     setDeletingId(null)
@@ -387,7 +387,7 @@ export default function PartsPage() {
               <thead>
                 <tr className="border-b border-[#E8ECF0]">
                   {['Part', 'Part #', 'Cost', 'Sell Price', 'Qty', 'Threshold', ''].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">
+                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0D1B2A]">
                       {h}
                     </th>
                   ))}
@@ -397,7 +397,7 @@ export default function PartsPage() {
                 {parts.map((part) => {
                   const isLow = part.quantity <= part.low_stock_threshold
                   return (
-                    <tr key={part.id} className={isLow ? 'bg-red-50' : 'hover:bg-[#F9FAFB]'}>
+                    <tr key={part.id} className={isLow ? 'bg-red-50' : 'hover:bg-[#F5F7FA] transition-colors'}>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
                           {isLow && (
@@ -420,25 +420,40 @@ export default function PartsPage() {
                       <td className="px-5 py-3.5 text-sm text-[#7A8898]">{part.low_stock_threshold}</td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2 justify-end">
-                          <button
-                            onClick={() => startEdit(part)}
-                            className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#E8ECF0] hover:text-[#0D1B2A] transition"
-                            title="Edit"
-                          >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(part.id)}
-                            disabled={deletingId === part.id}
-                            className="rounded-lg p-1.5 text-[#7A8898] hover:bg-red-50 hover:text-red-600 transition disabled:opacity-50"
-                            title="Delete"
-                          >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                          {confirmDeleteId === part.id ? (
+                            <span className="inline-flex items-center gap-2">
+                              <span className="text-xs font-medium text-[#0D1B2A] whitespace-nowrap">Are you sure?</span>
+                              <button
+                                onClick={() => { handleDelete(part.id); setConfirmDeleteId(null) }}
+                                disabled={deletingId === part.id}
+                                className="rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50 transition whitespace-nowrap"
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="rounded-full border border-[#7A8898] px-3 py-1 text-xs font-semibold text-[#7A8898] hover:bg-[#F4F6F9] transition whitespace-nowrap"
+                              >
+                                Cancel
+                              </button>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-2">
+                              <button
+                                onClick={() => startEdit(part)}
+                                className="rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#a0632b] transition whitespace-nowrap"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteId(part.id)}
+                                disabled={deletingId === part.id}
+                                className="rounded-full border border-[#7A8898] px-3 py-1.5 text-xs font-semibold text-[#7A8898] hover:bg-[#F4F6F9] disabled:opacity-50 transition whitespace-nowrap"
+                              >
+                                Delete
+                              </button>
+                            </span>
+                          )}
                         </div>
                       </td>
                     </tr>

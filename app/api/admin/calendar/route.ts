@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
   const [jobsRes, customersRes, plansRes, serviceReqRes, blockedRes, workOrdersRes] = await Promise.all([
     supabaseAdmin
       .from('repair_jobs')
-      .select('id, equipment_type, status, description, customer_id, created_at, scheduled_date, scheduled_time')
+      .select('id, equipment_type, status, description, customer_id, created_at, scheduled_date, scheduled_time, is_emergency')
       .or(`created_at.gte.${startDate},scheduled_date.gte.${startDate}`)
       .or(`created_at.lte.${endDate},scheduled_date.lte.${endDate}`),
     supabaseAdmin.from('customers').select('id, full_name'),
@@ -128,7 +128,7 @@ function buildResponse(
       id: `job-${job.id}`,
       title: String(job.equipment_type ?? 'Repair'),
       date: rawDate,
-      type: 'repair',
+      type: job.is_emergency ? 'emergency' : 'repair',
       status: String(job.status),
       customerName: customerMap[String(job.customer_id)] ?? 'Unknown',
       detail: String(job.description ?? ''),

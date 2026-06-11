@@ -22,8 +22,8 @@ type ServiceRequest = {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  new:       'border-blue-200 bg-blue-50 text-blue-800',
-  contacted: 'border-yellow-200 bg-yellow-50 text-yellow-800',
+  new:       'border-[#7A8898] bg-[#7A8898] text-white',
+  contacted: 'border-[#B87333] text-[#B87333] bg-transparent',
   scheduled: 'border-[#B87333]/30 bg-[#B87333]/5 text-[#B87333]',
   completed: 'border-green-200 bg-green-50 text-green-800',
 }
@@ -158,7 +158,7 @@ export default function ServiceRequestsPage() {
             <thead className="bg-white">
               <tr>
                 {['Name', 'Equipment', 'Appointment', 'Issue', 'Status', 'Submitted', ''].map((h) => (
-                  <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">{h}</th>
+                  <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0D1B2A]">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -174,7 +174,7 @@ export default function ServiceRequestsPage() {
                     <tr
                       key={req.id}
                       onClick={() => openModal(req)}
-                      className={`hover:bg-[#F9FAFB] cursor-pointer transition-colors ${isUpdating ? 'opacity-60' : ''}`}
+                      className={`hover:bg-[#F5F7FA] cursor-pointer transition-colors ${isUpdating ? 'opacity-60' : ''}`}
                     >
                       <td className="px-5 py-3.5 whitespace-nowrap">
                         <p className="text-sm font-medium text-[#0D1B2A]">{req.full_name}</p>

@@ -20,8 +20,8 @@ type MaintenancePlan = {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  active:          'bg-green-100 text-green-700',
-  pending_payment: 'bg-amber-100 text-amber-700',
+  active:          'bg-[#B87333] text-white',
+  pending_payment: 'border border-[#B87333] text-[#B87333] bg-transparent',
   inactive:        'bg-[#E8ECF0] text-[#7A8898]',
   cancelled:       'bg-red-100 text-red-700',
 }
@@ -136,7 +136,7 @@ export default function MaintenancePlansPage() {
               <thead>
                 <tr className="border-b border-[#E8ECF0]">
                   {['Customer', 'Plan', 'Status', 'Price', 'Renewal date', ''].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">
+                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0D1B2A]">
                       {h}
                     </th>
                   ))}
@@ -144,7 +144,7 @@ export default function MaintenancePlansPage() {
               </thead>
               <tbody className="divide-y divide-[#E8ECF0]">
                 {plans.map((plan) => (
-                  <tr key={plan.id} className="hover:bg-[#F9FAFB] transition-colors">
+                  <tr key={plan.id} className="hover:bg-[#F5F7FA] transition-colors">
                     <td className="px-5 py-3.5">
                       <p className="text-sm font-medium text-[#0D1B2A]">{findCustomerName(plan.customer_id)}</p>
                     </td>
@@ -172,9 +172,9 @@ export default function MaintenancePlansPage() {
                     <td className="px-5 py-3.5 text-right whitespace-nowrap">
                       <Link
                         href={`/admin/customers/${plan.customer_id}`}
-                        className="text-xs font-semibold text-[#B87333] hover:text-[#a0632b] transition"
+                        className="inline-flex items-center rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#a0632b] transition whitespace-nowrap"
                       >
-                        View customer →
+                        View customer
                       </Link>
                     </td>
                   </tr>

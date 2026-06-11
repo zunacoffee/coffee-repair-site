@@ -314,7 +314,7 @@ export default function CalendarPage() {
                     } else if (!inMonth) {
                       cellCls = 'border border-[#E8ECF0] bg-[#FAFAFA] hover:bg-[#F4F6F9]'
                     } else if (isWeekend) {
-                      cellCls = 'border border-[#E8ECF0] bg-[#F4F6F9] hover:bg-[#eef0f3]'
+                      cellCls = 'border border-[#E8ECF0] bg-red-50 hover:bg-red-100'
                     } else {
                       cellCls = 'border border-[#E8ECF0] bg-white hover:bg-[#F4F6F9]'
                     }

@@ -31,6 +31,7 @@ export default function CustomersPage() {
   const [zip, setZip] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | string | null>(null)
 
   const fetchCustomers = async () => {
     const res = await fetch('/api/admin/customers')
@@ -80,9 +81,6 @@ export default function CustomersPage() {
   }
 
   const handleDelete = async (id: number | string) => {
-    const confirmed = confirm('Delete this customer?')
-    if (!confirmed) return
-
     const res = await fetch(`/api/admin/customers/${id}`, { method: 'DELETE' })
     const json = await res.json()
 
@@ -204,11 +202,11 @@ export default function CustomersPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-white">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Name</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Email</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Phone</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Address</th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">Actions</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Email</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Phone</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Address</th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
@@ -216,7 +214,7 @@ export default function CustomersPage() {
                   <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">Loading customers...</td></tr>
                 ) : customers.length > 0 ? (
                   customers.map((customer) => (
-                    <tr key={customer.id} className="hover:bg-gray-50">
+                    <tr key={customer.id} className="hover:bg-[#F5F7FA] transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         <Link href={`/admin/customers/${customer.id}`} className="text-[#B87333] hover:text-[#a0632b]">
                           {customer.full_name}
@@ -230,18 +228,38 @@ export default function CustomersPage() {
                           : customer.address || '—'}
                       </td>
                       <td className="px-6 py-4 text-right text-sm font-medium">
-                        <Link
-                          href={`/admin/customers/${customer.id}`}
-                          className="mr-3 rounded-lg bg-[#B87333]/10 px-3 py-2 text-xs font-semibold text-[#B87333] hover:bg-[#B87333]/20"
-                        >
-                          View
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(customer.id)}
-                          className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
-                        >
-                          Delete
-                        </button>
+                        {confirmDeleteId === customer.id ? (
+                          <span className="inline-flex items-center gap-2">
+                            <span className="text-xs text-[#0D1B2A] font-medium">Are you sure?</span>
+                            <button
+                              onClick={() => { handleDelete(customer.id); setConfirmDeleteId(null) }}
+                              className="rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 transition"
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="rounded-full border border-[#7A8898] px-3 py-1 text-xs font-semibold text-[#7A8898] hover:bg-[#F4F6F9] transition"
+                            >
+                              Cancel
+                            </button>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-2">
+                            <Link
+                              href={`/admin/customers/${customer.id}`}
+                              className="rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#a0632b] transition"
+                            >
+                              View
+                            </Link>
+                            <button
+                              onClick={() => setConfirmDeleteId(customer.id)}
+                              className="rounded-full border border-[#7A8898] px-3 py-1.5 text-xs font-semibold text-[#7A8898] hover:bg-[#F4F6F9] transition"
+                            >
+                              Delete
+                            </button>
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))

@@ -1,5 +1,6 @@
 'use client'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useEffect, useState, useCallback } from 'react'
 
 type Settings = Record<string, string>
@@ -37,9 +38,9 @@ function ToggleField({ label, description, value, onChange }: {
       <button
         type="button"
         onClick={() => onChange(!value)}
-        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${value ? 'bg-[#B87333]' : 'bg-[#E8ECF0]'}`}
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${value ? 'bg-[#B87333]' : 'bg-[#E8ECF0]'}`}
       >
-        <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${value ? 'translate-x-6' : 'translate-x-1'}`} />
+        <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${value ? 'translate-x-5' : 'translate-x-0'}`} />
       </button>
     </div>
   )
@@ -136,9 +137,19 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-[#F4F6F9] p-6">
       <div className="max-w-3xl mx-auto space-y-6">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#7A8898]">Settings</p>
-          <h1 className="text-2xl font-bold text-[#0D1B2A] mt-1">General Settings</h1>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#7A8898]">Settings</p>
+            <h1 className="text-2xl font-bold text-[#0D1B2A] mt-1">General Settings</h1>
+          </div>
+          <div className="flex gap-2 flex-wrap justify-end">
+            <Link href="/admin/settings/plans" className="inline-flex items-center gap-1.5 rounded-xl border border-[#E8ECF0] bg-white px-4 py-2 text-sm font-semibold text-[#0D1B2A] hover:border-[#B87333]/40 hover:text-[#B87333] transition shadow-sm">
+              Maintenance Plans
+            </Link>
+            <Link href="/admin/settings/notifications" className="inline-flex items-center gap-1.5 rounded-xl border border-[#E8ECF0] bg-white px-4 py-2 text-sm font-semibold text-[#0D1B2A] hover:border-[#B87333]/40 hover:text-[#B87333] transition shadow-sm">
+              Notifications
+            </Link>
+          </div>
         </div>
 
         {/* ── Business Info ── */}
