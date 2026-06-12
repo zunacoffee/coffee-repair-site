@@ -14,7 +14,7 @@ type Equipment = { id: number; equipment_type: string; brand: string; model: str
 type RepairJob = { id: number; equipment_type: string; status: string; description: string; created_at: string; completed_at: string | null }
 type WorkOrder = { id: number; work_order_number: string; status: string; problem_description: string; grand_total: number; created_at: string; completed_at: string | null; equipment_list: { equipment_type: string; brand: string; model: string } | null }
 type Plan      = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null; next_visit_date?: string | null; next_visit_slot?: string | null; is_custom?: boolean; stripe_payment_link?: string | null; description?: string | null; visit_frequency?: number | null; features?: string[] }
-type Invoice   = { id: number; amount: number; status: string; due_date: string | null; description: string; created_at: string; stripe_payment_link: string | null }
+type Invoice   = { id: number; total: number; status: string; due_date: string | null; description: string; created_at: string; invoice_number: string | null; stripe_payment_link?: string | null }
 type Section   = 'invoices' | 'equipment' | 'plan' | 'repairs' | 'account' | 'contact' | null
 type Nav       = 'home' | 'repairs' | 'contact' | 'account'
 type DesktopNav = 'home' | 'repairs' | 'plan' | 'invoices' | 'equipment' | 'contact' | 'profile'
@@ -118,6 +118,7 @@ export default function DashboardPage() {
   const [activeNav,     setActiveNav]     = useState<Nav>('home')
   const [portalLoading, setPortalLoading] = useState(false)
   const [portalError,   setPortalError]   = useState<string | null>(null)
+  const [siteSettings,  setSiteSettings]  = useState<{ phone?: string; email?: string; business_hours?: string }>({})
 
   // Equipment form state
   const [showEqForm, setShowEqForm] = useState(false)
@@ -202,6 +203,10 @@ export default function DashboardPage() {
       setWorkOrders(json.workOrders ?? [])
       setPlan(json.plan ?? null)
       setInvoices(json.invoices ?? [])
+
+      const settingsRes  = await fetch('/api/public-settings')
+      const settingsJson = await settingsRes.json()
+      setSiteSettings(settingsJson.settings ?? {})
 
       if (json.customer) {
         setProfileName(json.customer.full_name ?? '')
@@ -386,12 +391,12 @@ export default function DashboardPage() {
       type: 'invoice' as const,
       iconColor: 'copper',
       title: inv.description || 'Invoice',
-      subtitle: `$${Number(inv.amount).toFixed(2)}`,
+      subtitle: `$${Number(inv.total).toFixed(2)}`,
       status: inv.status,
       statusMap: INV_STATUS,
       date: inv.created_at,
       description: inv.description,
-      amount: inv.amount,
+      total: inv.total,
       dueDate: inv.due_date,
     })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
@@ -498,7 +503,7 @@ export default function DashboardPage() {
                     </p>
                     {plan.next_visit_slot && (
                       <p className="text-xs text-[#7A8898] mt-0.5">
-                        {plan.next_visit_slot === 'morning' ? 'Morning (8am–12pm)' : 'Afternoon (12pm–5pm)'}
+                        {plan.next_visit_slot}
                       </p>
                     )}
                   </div>
@@ -916,7 +921,7 @@ export default function DashboardPage() {
                               </div>
                               <div className="mt-2 flex items-center justify-between">
                                 <p className="text-xs text-[#7A8898]">{inv.due_date ? `Due ${fmt(inv.due_date)}` : '—'}</p>
-                                <p className="text-sm font-bold text-[#0D1B2A]">${Number(inv.amount).toFixed(2)}</p>
+                                <p className="text-sm font-bold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</p>
                               </div>
                               {payable && (
                                 <div className="mt-3">
@@ -1003,7 +1008,7 @@ export default function DashboardPage() {
                   <div className="space-y-1">
                     {/* Phone */}
                     <a
-                      href="tel:+15550123456"
+                      href={`tel:${siteSettings.phone || '(555) 012-3456'}`}
                       className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-white px-4 py-4 shadow-sm hover:bg-[#B87333]/5 transition"
                     >
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10">
@@ -1013,13 +1018,13 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Call or Text</p>
-                        <p className="mt-0.5 text-lg font-bold text-[#0D1B2A]">(555) 012-3456</p>
+                        <p className="mt-0.5 text-lg font-bold text-[#0D1B2A]">{siteSettings.phone || '(555) 012-3456'}</p>
                       </div>
                     </a>
 
                     {/* Email */}
                     <a
-                      href="mailto:hello@cafeworks.com"
+                      href={`mailto:${siteSettings.email || 'hello@cafeworks.com'}`}
                       className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-white px-4 py-4 shadow-sm hover:bg-[#B87333]/5 transition"
                     >
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10">
@@ -1029,7 +1034,7 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Email Us</p>
-                        <p className="mt-0.5 text-base font-bold text-[#0D1B2A]">hello@cafeworks.com</p>
+                        <p className="mt-0.5 text-base font-bold text-[#0D1B2A]">{siteSettings.email || 'hello@cafeworks.com'}</p>
                       </div>
                     </a>
 
@@ -1042,7 +1047,7 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Business Hours</p>
-                        <p className="mt-0.5 text-base font-bold text-[#0D1B2A]">Mon–Sat, 7am–6pm</p>
+                        <p className="mt-0.5 text-base font-bold text-[#0D1B2A]">{siteSettings.business_hours || 'Mon–Sat, 7am–6pm'}</p>
                       </div>
                     </div>
 
@@ -1153,7 +1158,7 @@ export default function DashboardPage() {
                               )}
                               <div className="flex items-center justify-between">
                                 <span className="text-xs text-[#7A8898]">Amount</span>
-                                <span className="text-sm font-bold text-[#0D1B2A]">${Number(item.amount).toFixed(2)}</span>
+                                <span className="text-sm font-bold text-[#0D1B2A]">${Number(item.total).toFixed(2)}</span>
                               </div>
                               {item.dueDate && (
                                 <div className="flex items-center justify-between">
@@ -1337,7 +1342,7 @@ export default function DashboardPage() {
                         <p className="mt-1 text-lg font-bold text-[#0D1B2A]">{fmt(plan.next_visit_date)}</p>
                         {plan.next_visit_slot && (
                           <p className="mt-0.5 text-xs text-[#7A8898]">
-                            {plan.next_visit_slot === 'morning' ? 'Morning (8am–12pm)' : 'Afternoon (12pm–5pm)'}
+                            {plan.next_visit_slot}
                           </p>
                         )}
                         <div className="mt-1.5 flex items-center gap-1">
@@ -1461,7 +1466,7 @@ export default function DashboardPage() {
                                       {inv.due_date && <p className="text-xs text-[#7A8898] mt-0.5">Due {fmt(inv.due_date)}</p>}
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
-                                      <span className="text-sm font-bold text-[#0D1B2A]">${Number(inv.amount).toFixed(2)}</span>
+                                      <span className="text-sm font-bold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</span>
                                       {displayStatus
                                         ? <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">{displayStatus}</span>
                                         : <StatusBadge status={inv.status} map={INV_STATUS} />}
@@ -1471,7 +1476,7 @@ export default function DashboardPage() {
                                   {exp && (
                                     <div className="px-5 pb-4 pt-2 border-l-2 border-[#B87333] bg-[#B87333]/[0.03] space-y-2">
                                       {inv.description && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Description</span><span className="text-[#0D1B2A]">{inv.description}</span></div>}
-                                      <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Amount</span><span className="font-bold text-[#0D1B2A]">${Number(inv.amount).toFixed(2)}</span></div>
+                                      <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Amount</span><span className="font-bold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</span></div>
                                       {inv.due_date && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Due date</span><span className="text-[#0D1B2A]">{fmt(inv.due_date)}</span></div>}
                                       <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Created</span><span className="text-[#0D1B2A]">{fmt(inv.created_at)}</span></div>
                                       <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Status</span>{displayStatus ? <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">{displayStatus}</span> : <StatusBadge status={inv.status} map={INV_STATUS} />}</div>
@@ -1608,22 +1613,22 @@ export default function DashboardPage() {
                     <div className="bg-white rounded-xl border border-black/[0.07] p-5">
                       <p className="text-sm font-bold text-[#0D1B2A] mb-4">Contact</p>
                       <div className="grid grid-cols-3 gap-4">
-                        <a href="tel:+15550123456" className="flex items-center gap-3 rounded-xl bg-[#E8ECF0] px-4 py-3 hover:bg-[#B87333]/[0.06] transition">
+                        <a href={`tel:${siteSettings.phone || '(555) 012-3456'}`} className="flex items-center gap-3 rounded-xl bg-[#E8ECF0] px-4 py-3 hover:bg-[#B87333]/[0.06] transition">
                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#B87333]/[0.12]">
                             <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
                           </div>
                           <div>
                             <p className={`${MONO} text-[9px] font-semibold uppercase tracking-widest text-[#7A8898]`}>Phone</p>
-                            <p className="text-sm font-bold text-[#0D1B2A] mt-0.5">(555) 012-3456</p>
+                            <p className="text-sm font-bold text-[#0D1B2A] mt-0.5">{siteSettings.phone || '(555) 012-3456'}</p>
                           </div>
                         </a>
-                        <a href="mailto:hello@cafeworks.com" className="flex items-center gap-3 rounded-xl bg-[#E8ECF0] px-4 py-3 hover:bg-[#B87333]/[0.06] transition">
+                        <a href={`mailto:${siteSettings.email || 'hello@cafeworks.com'}`} className="flex items-center gap-3 rounded-xl bg-[#E8ECF0] px-4 py-3 hover:bg-[#B87333]/[0.06] transition">
                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#B87333]/[0.12]">
                             <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                           </div>
                           <div>
                             <p className={`${MONO} text-[9px] font-semibold uppercase tracking-widest text-[#7A8898]`}>Email</p>
-                            <p className="text-sm font-bold text-[#0D1B2A] mt-0.5">hello@cafeworks.com</p>
+                            <p className="text-sm font-bold text-[#0D1B2A] mt-0.5">{siteSettings.email || 'hello@cafeworks.com'}</p>
                           </div>
                         </a>
                         <div className="flex items-center gap-3 rounded-xl bg-[#E8ECF0] px-4 py-3">
@@ -1632,7 +1637,7 @@ export default function DashboardPage() {
                           </div>
                           <div>
                             <p className={`${MONO} text-[9px] font-semibold uppercase tracking-widest text-[#7A8898]`}>Hours</p>
-                            <p className="text-sm font-bold text-[#0D1B2A] mt-0.5">Mon–Sat, 7am–6pm</p>
+                            <p className="text-sm font-bold text-[#0D1B2A] mt-0.5">{siteSettings.business_hours || 'Mon–Sat, 7am–6pm'}</p>
                           </div>
                         </div>
                       </div>
@@ -1786,7 +1791,7 @@ export default function DashboardPage() {
                                         {inv.due_date && <p className="text-xs text-[#7A8898] mt-0.5">Due {fmt(inv.due_date)}</p>}
                                       </div>
                                       <div className="flex items-center gap-2 shrink-0">
-                                        <span className="text-sm font-bold text-[#0D1B2A]">${Number(inv.amount).toFixed(2)}</span>
+                                        <span className="text-sm font-bold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</span>
                                         {displayStatus
                                           ? <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">{displayStatus}</span>
                                           : <StatusBadge status={inv.status} map={INV_STATUS} />}
@@ -1796,7 +1801,7 @@ export default function DashboardPage() {
                                     {exp && (
                                       <div className="px-5 pb-4 pt-2 border-l-2 border-[#B87333] bg-[#B87333]/[0.03] space-y-2">
                                         {inv.description && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Description</span><span className="text-[#0D1B2A]">{inv.description}</span></div>}
-                                        <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Amount</span><span className="font-bold text-[#0D1B2A]">${Number(inv.amount).toFixed(2)}</span></div>
+                                        <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Amount</span><span className="font-bold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</span></div>
                                         {inv.due_date && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Due date</span><span className="text-[#0D1B2A]">{fmt(inv.due_date)}</span></div>}
                                         <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Created</span><span className="text-[#0D1B2A]">{fmt(inv.created_at)}</span></div>
                                         <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Status</span>{displayStatus ? <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">{displayStatus}</span> : <StatusBadge status={inv.status} map={INV_STATUS} />}</div>
@@ -1847,17 +1852,17 @@ export default function DashboardPage() {
                       {/* ── Contact ── */}
                       {desktopNav === 'contact' && (
                         <div className="grid grid-cols-3 gap-4">
-                          <a href="tel:+15550123456" className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-[#E8ECF0] px-4 py-4 hover:bg-[#B87333]/5 transition">
+                          <a href={`tel:${siteSettings.phone || '(555) 012-3456'}`} className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-[#E8ECF0] px-4 py-4 hover:bg-[#B87333]/5 transition">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10"><svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg></div>
-                            <div><p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Call or Text</p><p className="mt-0.5 text-lg font-bold text-[#0D1B2A]">(555) 012-3456</p></div>
+                            <div><p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Call or Text</p><p className="mt-0.5 text-lg font-bold text-[#0D1B2A]">{siteSettings.phone || '(555) 012-3456'}</p></div>
                           </a>
-                          <a href="mailto:hello@cafeworks.com" className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-[#E8ECF0] px-4 py-4 hover:bg-[#B87333]/5 transition">
+                          <a href={`mailto:${siteSettings.email || 'hello@cafeworks.com'}`} className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-[#E8ECF0] px-4 py-4 hover:bg-[#B87333]/5 transition">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10"><svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg></div>
-                            <div><p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Email Us</p><p className="mt-0.5 text-base font-bold text-[#0D1B2A]">hello@cafeworks.com</p></div>
+                            <div><p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Email Us</p><p className="mt-0.5 text-base font-bold text-[#0D1B2A]">{siteSettings.email || 'hello@cafeworks.com'}</p></div>
                           </a>
                           <div className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-[#E8ECF0] px-4 py-4">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10"><svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
-                            <div><p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Hours</p><p className="mt-0.5 text-base font-bold text-[#0D1B2A]">Mon–Sat, 7am–6pm</p><p className="text-xs text-[#7A8898]">Emergency? Call anytime.</p></div>
+                            <div><p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Hours</p><p className="mt-0.5 text-base font-bold text-[#0D1B2A]">{siteSettings.business_hours || 'Mon–Sat, 7am–6pm'}</p><p className="text-xs text-[#7A8898]">Emergency? Call anytime.</p></div>
                           </div>
                         </div>
                       )}

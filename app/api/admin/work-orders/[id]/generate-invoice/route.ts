@@ -61,13 +61,29 @@ export async function POST(
     })
   }
 
-  const subtotal    = lineItems.reduce((s, li) => s + li.total, 0)
+  const subtotal = lineItems.reduce((s, li) => s + li.total, 0)
+
+  const { data: lastInvoice } = await supabaseAdmin
+    .from('invoices')
+    .select('invoice_number')
+    .order('id', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  let nextInvNum = 1
+  if (lastInvoice?.invoice_number) {
+    const match = lastInvoice.invoice_number.match(/INV-(\d+)/)
+    if (match) nextInvNum = parseInt(match[1]) + 1
+  }
+  const invoiceNumber = `INV-${String(nextInvNum).padStart(4, '0')}`
+
   const invoiceData = {
-    customer_id: wo.customer_id,
-    status:      'draft',
-    subtotal:    Math.round(subtotal * 100) / 100,
-    total:       Math.round(subtotal * 100) / 100,
-    notes:       `Generated from work order ${wo.work_order_number}`,
+    customer_id:    wo.customer_id,
+    invoice_number: invoiceNumber,
+    status:         'draft',
+    subtotal:       Math.round(subtotal * 100) / 100,
+    total:          Math.round(subtotal * 100) / 100,
+    notes:          `Generated from work order ${wo.work_order_number}`,
   }
 
   const { data: invoice, error: invErr } = await supabaseAdmin
