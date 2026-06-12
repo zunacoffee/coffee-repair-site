@@ -119,7 +119,7 @@ export default function DashboardPage() {
   const [profileError,  setProfileError]  = useState<string | null>(null)
 
   const sectionRef = useRef<HTMLDivElement>(null)
-  const [highlightedItem, setHighlightedItem] = useState<string | null>(null)
+  const [selectedFeedItem, setSelectedFeedItem] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -251,21 +251,30 @@ export default function DashboardPage() {
   const activityItems = [
     ...workOrders.map((wo) => ({
       key: `wo-${wo.id}`,
+      type: 'workorder' as const,
       iconColor: wo.status === 'completed' ? 'green' : wo.status === 'in_progress' ? 'amber' : 'blue',
       title: `WO ${wo.work_order_number}`,
       subtitle: wo.problem_description || '',
       status: wo.status,
       statusMap: WO_STATUS,
       date: wo.created_at,
+      woNumber: wo.work_order_number,
+      equipment: wo.equipment_list ? `${wo.equipment_list.brand} ${wo.equipment_list.model}` : null,
+      problem: wo.problem_description || null,
+      total: wo.grand_total,
     })),
     ...invoices.map((inv) => ({
       key: `inv-${inv.id}`,
+      type: 'invoice' as const,
       iconColor: 'copper',
       title: inv.description || 'Invoice',
       subtitle: `$${Number(inv.amount).toFixed(2)}`,
       status: inv.status,
       statusMap: INV_STATUS,
       date: inv.created_at,
+      description: inv.description,
+      amount: inv.amount,
+      dueDate: inv.due_date,
     })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
 
@@ -274,20 +283,7 @@ export default function DashboardPage() {
     setTimeout(() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   }
 
-  const openActivityItem = (key: string, section: Section) => {
-    setHighlightedItem(key)
-    if (section === 'repairs') setActiveNav('repairs')
-    if (activeSection === section) {
-      setTimeout(() => document.getElementById(key)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
-    } else {
-      setActiveSection(section)
-      setTimeout(() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
-      setTimeout(() => document.getElementById(key)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)
-    }
-    setTimeout(() => setHighlightedItem(null), 2500)
-  }
-
-  // ── Loading ──────────────────────────────────────────────────────────────
+// ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#E8ECF0]">
@@ -551,7 +547,7 @@ export default function DashboardPage() {
                     {workOrders.length > 0 ? (
                       <div className="space-y-3">
                         {workOrders.map((wo) => (
-                          <div key={wo.id} id={`wo-${wo.id}`} className={`rounded-xl border p-4 border-l-2 border-l-[#B87333] transition-all duration-500 ${highlightedItem === `wo-${wo.id}` ? 'bg-amber-50 border-amber-200' : 'border-[#E8ECF0]'}`}>
+                          <div key={wo.id} className="rounded-xl border border-[#E8ECF0] p-4 border-l-2 border-l-[#B87333]">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
                                 <p className={`${MONO} text-[10px] font-semibold text-[#B87333]`}>{wo.work_order_number}</p>
@@ -781,7 +777,7 @@ export default function DashboardPage() {
                     {invoices.length > 0 ? (
                       <div className="space-y-3">
                         {invoices.map((inv) => (
-                          <div key={inv.id} id={`inv-${inv.id}`} className={`rounded-xl border p-4 border-l-2 transition-all duration-500 ${highlightedItem === `inv-${inv.id}` ? 'bg-amber-50 border-amber-200 border-l-[#B87333]' : inv.status === 'paid' ? 'border-[#E8ECF0] border-l-green-400' : inv.status === 'overdue' ? 'border-orange-100 border-l-orange-400' : 'border-[#E8ECF0] border-l-red-400'}`}>
+                          <div key={inv.id} className={`rounded-xl border p-4 border-l-2 ${inv.status === 'paid' ? 'border-[#E8ECF0] border-l-green-400' : inv.status === 'overdue' ? 'border-orange-100 border-l-orange-400' : 'border-[#E8ECF0] border-l-red-400'}`}>
                             <div className="flex items-start justify-between gap-2">
                               <p className="text-sm font-semibold text-[#0D1B2A]">{inv.description}</p>
                               <StatusBadge status={inv.status} map={INV_STATUS} />
@@ -870,38 +866,124 @@ export default function DashboardPage() {
             <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-5">
               <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-4`}>Recent Activity</p>
               <div className="space-y-1">
-                {activityItems.map((item) => (
-                  <button
-                    key={item.key}
-                    onClick={() => openActivityItem(item.key, item.iconColor === 'copper' ? 'invoices' : 'repairs')}
-                    className="flex w-full items-center gap-3 rounded-xl px-2 py-2 cursor-pointer text-left transition-all active:scale-[0.98] active:opacity-90 hover:bg-[#E8ECF0]"
-                  >
-                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
-                      item.iconColor === 'green'  ? 'bg-green-100 text-green-600'     :
-                      item.iconColor === 'amber'  ? 'bg-amber-100 text-amber-600'     :
-                      item.iconColor === 'copper' ? 'bg-[#B87333]/10 text-[#B87333]'  :
-                                                    'bg-blue-100 text-blue-600'
-                    }`}>
-                      {item.iconColor === 'copper' ? (
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                {activityItems.map((item) => {
+                  const expanded = selectedFeedItem === item.key
+                  return (
+                    <div
+                      key={item.key}
+                      className={`rounded-xl overflow-hidden transition-all duration-200 ${expanded ? 'border border-[#B87333]/25 border-l-2 border-l-[#B87333] bg-[#B87333]/5' : ''}`}
+                    >
+                      {/* ── Collapsed header (always visible) ── */}
+                      <button
+                        onClick={() => setSelectedFeedItem(expanded ? null : item.key)}
+                        className={`flex w-full items-center gap-3 px-2 py-2 cursor-pointer text-left transition-all active:scale-[0.98] active:opacity-90 ${expanded ? '' : 'rounded-xl hover:bg-[#E8ECF0]'}`}
+                      >
+                        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
+                          item.iconColor === 'green'  ? 'bg-green-100 text-green-600'    :
+                          item.iconColor === 'amber'  ? 'bg-amber-100 text-amber-600'    :
+                          item.iconColor === 'copper' ? 'bg-[#B87333]/10 text-[#B87333]' :
+                                                        'bg-blue-100 text-blue-600'
+                        }`}>
+                          {item.iconColor === 'copper' ? (
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          ) : (
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-[#0D1B2A] truncate">{item.title}</p>
+                          <p className="text-xs text-[#7A8898] truncate">{item.subtitle}</p>
+                        </div>
+                        <StatusBadge status={item.status} map={item.statusMap} />
+                        <svg
+                          className={`h-4 w-4 shrink-0 text-[#7A8898] transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}
+                          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
-                      ) : (
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
-                        </svg>
-                      )}
+                      </button>
+
+                      {/* ── Expanded detail panel ── */}
+                      <div className={`overflow-hidden transition-all duration-200 ${expanded ? 'max-h-72' : 'max-h-0'}`}>
+                        <div className="px-3 pb-4 pt-1 space-y-2.5 border-t border-[#B87333]/10">
+                          {item.type === 'workorder' && (
+                            <>
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-[#7A8898]">Work order</span>
+                                <span className={`${MONO} text-xs font-semibold text-[#B87333]`}>{item.woNumber}</span>
+                              </div>
+                              {item.equipment && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-[#7A8898]">Equipment</span>
+                                  <span className="text-xs font-medium text-[#0D1B2A]">{item.equipment}</span>
+                                </div>
+                              )}
+                              {item.problem && (
+                                <div>
+                                  <span className="text-xs text-[#7A8898]">Problem</span>
+                                  <p className="mt-0.5 text-xs text-[#0D1B2A]">{item.problem}</p>
+                                </div>
+                              )}
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-[#7A8898]">Date</span>
+                                <span className="text-xs text-[#0D1B2A]">{fmt(item.date)}</span>
+                              </div>
+                              {item.total != null && Number(item.total) > 0 && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-[#7A8898]">Total</span>
+                                  <span className="text-sm font-bold text-[#0D1B2A]">${Number(item.total).toFixed(2)}</span>
+                                </div>
+                              )}
+                              <Link
+                                href="/service-request"
+                                className="mt-1 flex w-full items-center justify-center rounded-xl border border-[#B87333] px-4 py-2 text-xs font-semibold text-[#B87333] hover:bg-[#B87333]/5 transition"
+                              >
+                                Request follow-up
+                              </Link>
+                            </>
+                          )}
+
+                          {item.type === 'invoice' && (
+                            <>
+                              {item.description && (
+                                <div>
+                                  <span className="text-xs text-[#7A8898]">Description</span>
+                                  <p className="mt-0.5 text-xs text-[#0D1B2A]">{item.description}</p>
+                                </div>
+                              )}
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-[#7A8898]">Amount</span>
+                                <span className="text-sm font-bold text-[#0D1B2A]">${Number(item.amount).toFixed(2)}</span>
+                              </div>
+                              {item.dueDate && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-[#7A8898]">Due date</span>
+                                  <span className="text-xs text-[#0D1B2A]">{fmt(item.dueDate)}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-[#7A8898]">Status</span>
+                                <StatusBadge status={item.status} map={item.statusMap} />
+                              </div>
+                              {item.status !== 'paid' && (
+                                <Link
+                                  href="/pricing"
+                                  className="mt-1 flex w-full items-center justify-center rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition"
+                                >
+                                  Pay now
+                                </Link>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#0D1B2A] truncate">{item.title}</p>
-                      <p className="text-xs text-[#7A8898] truncate">{item.subtitle}</p>
-                    </div>
-                    <StatusBadge status={item.status} map={item.statusMap} />
-                    <svg className="h-4 w-4 shrink-0 text-[#7A8898]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
