@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 type Customer = {
@@ -16,7 +16,7 @@ type Customer = {
   zip: string | null
 }
 
-export default function CustomersPage() {
+function CustomersPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -283,5 +283,13 @@ export default function CustomersPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CustomersPage() {
+  return (
+    <Suspense>
+      <CustomersPageInner />
+    </Suspense>
   )
 }
