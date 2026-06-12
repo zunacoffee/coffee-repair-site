@@ -119,6 +119,7 @@ export default function DashboardPage() {
   const [profileError,  setProfileError]  = useState<string | null>(null)
 
   const sectionRef = useRef<HTMLDivElement>(null)
+  const [highlightedItem, setHighlightedItem] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -271,6 +272,19 @@ export default function DashboardPage() {
   const showSection = (s: Section) => {
     setActiveSection(s)
     setTimeout(() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+  }
+
+  const openActivityItem = (key: string, section: Section) => {
+    setHighlightedItem(key)
+    if (section === 'repairs') setActiveNav('repairs')
+    if (activeSection === section) {
+      setTimeout(() => document.getElementById(key)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
+    } else {
+      setActiveSection(section)
+      setTimeout(() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+      setTimeout(() => document.getElementById(key)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)
+    }
+    setTimeout(() => setHighlightedItem(null), 2500)
   }
 
   // ── Loading ──────────────────────────────────────────────────────────────
@@ -537,7 +551,7 @@ export default function DashboardPage() {
                     {workOrders.length > 0 ? (
                       <div className="space-y-3">
                         {workOrders.map((wo) => (
-                          <div key={wo.id} className="rounded-xl border border-[#E8ECF0] p-4 border-l-2 border-l-[#B87333]">
+                          <div key={wo.id} id={`wo-${wo.id}`} className={`rounded-xl border p-4 border-l-2 border-l-[#B87333] transition-all duration-500 ${highlightedItem === `wo-${wo.id}` ? 'bg-amber-50 border-amber-200' : 'border-[#E8ECF0]'}`}>
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
                                 <p className={`${MONO} text-[10px] font-semibold text-[#B87333]`}>{wo.work_order_number}</p>
@@ -767,7 +781,7 @@ export default function DashboardPage() {
                     {invoices.length > 0 ? (
                       <div className="space-y-3">
                         {invoices.map((inv) => (
-                          <div key={inv.id} className={`rounded-xl border p-4 border-l-2 ${inv.status === 'paid' ? 'border-[#E8ECF0] border-l-green-400' : inv.status === 'overdue' ? 'border-orange-100 border-l-orange-400' : 'border-[#E8ECF0] border-l-red-400'}`}>
+                          <div key={inv.id} id={`inv-${inv.id}`} className={`rounded-xl border p-4 border-l-2 transition-all duration-500 ${highlightedItem === `inv-${inv.id}` ? 'bg-amber-50 border-amber-200 border-l-[#B87333]' : inv.status === 'paid' ? 'border-[#E8ECF0] border-l-green-400' : inv.status === 'overdue' ? 'border-orange-100 border-l-orange-400' : 'border-[#E8ECF0] border-l-red-400'}`}>
                             <div className="flex items-start justify-between gap-2">
                               <p className="text-sm font-semibold text-[#0D1B2A]">{inv.description}</p>
                               <StatusBadge status={inv.status} map={INV_STATUS} />
@@ -855,9 +869,13 @@ export default function DashboardPage() {
           {activityItems.length > 0 && (
             <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-5">
               <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-4`}>Recent Activity</p>
-              <div className="space-y-4">
+              <div className="space-y-1">
                 {activityItems.map((item) => (
-                  <div key={item.key} className="flex items-center gap-3">
+                  <button
+                    key={item.key}
+                    onClick={() => openActivityItem(item.key, item.iconColor === 'copper' ? 'invoices' : 'repairs')}
+                    className="flex w-full items-center gap-3 rounded-xl px-2 py-2 cursor-pointer text-left transition-all active:scale-[0.98] active:opacity-90 hover:bg-[#E8ECF0]"
+                  >
                     <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
                       item.iconColor === 'green'  ? 'bg-green-100 text-green-600'     :
                       item.iconColor === 'amber'  ? 'bg-amber-100 text-amber-600'     :
@@ -879,7 +897,10 @@ export default function DashboardPage() {
                       <p className="text-xs text-[#7A8898] truncate">{item.subtitle}</p>
                     </div>
                     <StatusBadge status={item.status} map={item.statusMap} />
-                  </div>
+                    <svg className="h-4 w-4 shrink-0 text-[#7A8898]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
                 ))}
               </div>
             </div>
