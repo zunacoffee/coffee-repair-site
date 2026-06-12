@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
       .gte('scheduled_date', start)
       .lte('scheduled_date', end)
       .not('scheduled_date', 'is', null)
-      .neq('status', 'completed')
+      .neq('status', 'cancelled')
       .then((r) => ({ data: r.data ?? [], error: r.error })),
     supabaseAdmin
       .from('maintenance_plans')
