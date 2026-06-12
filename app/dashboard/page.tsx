@@ -1907,9 +1907,9 @@ export default function DashboardPage() {
 
       {/* ── Repair request bottom sheet ── */}
       {showRepairModal && (
-        <div className="fixed inset-0 z-40">
+        <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowRepairModal(false)} />
-          <div className="absolute bottom-0 left-0 right-0 z-50 rounded-t-3xl bg-white max-h-[85vh] flex flex-col">
+          <div className="relative w-full sm:max-w-lg sm:rounded-2xl rounded-t-3xl bg-white max-h-[85vh] sm:max-h-[90vh] flex flex-col z-50">
             <form onSubmit={handleRepairSubmit} className="flex flex-col flex-1 min-h-0">
               {/* Header */}
               <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#E8ECF0] shrink-0">
