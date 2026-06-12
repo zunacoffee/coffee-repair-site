@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
       .maybeSingle(),
     supabaseAdmin
       .from('invoices')
-      .select('id, amount, status, due_date, description, created_at')
+      .select('id, amount, status, due_date, description, created_at, stripe_payment_link')
       .eq('customer_id', customer.id)
       .order('created_at', { ascending: false })
       .then((r) => ({ data: r.data ?? [], error: r.error })),

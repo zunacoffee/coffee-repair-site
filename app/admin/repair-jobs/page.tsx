@@ -146,7 +146,7 @@ export default function RepairJobsPage() {
       return
     }
     setSaving(true)
-    const res  = await fetch('/api/admin-data', {
+    const res  = await fetch('/api/admin/repair-jobs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ customer_id: customerId, equipment_type: equipmentType, status, description, scheduled_date: scheduledDate || null, scheduled_time: scheduledTime || null, is_emergency: isEmergency }),

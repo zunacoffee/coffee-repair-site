@@ -32,15 +32,15 @@ export async function POST(req: NextRequest) {
     notes,
   } = body as Record<string, string>
 
-  if (!full_name || !email || !phone || !equipment_type || !brand || !model || !issue_description || !contact_preference) {
+  const resolvedContactPref = ['email', 'phone'].includes(contact_preference) ? contact_preference : 'email'
+
+  console.log('Form values:', { full_name, email, phone, equipment_type, brand, model, issue_description, contact_preference: resolvedContactPref, scheduled_date, time_slot })
+
+  if (!full_name || !email || !phone || !equipment_type || !brand || !model || !issue_description) {
     return NextResponse.json({ error: 'All fields are required.' }, { status: 400 })
   }
 
-  if (!['email', 'phone'].includes(contact_preference)) {
-    return NextResponse.json({ error: 'Invalid contact preference.' }, { status: 400 })
-  }
-
-  if (time_slot && !['morning', 'afternoon'].includes(time_slot)) {
+  if (time_slot && typeof time_slot !== 'string') {
     return NextResponse.json({ error: 'Invalid time slot.' }, { status: 400 })
   }
 
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     brand,
     model,
     issue_description,
-    contact_preference,
+    contact_preference: resolvedContactPref,
     scheduled_date: scheduled_date || null,
     time_slot: time_slot || null,
     notes: notes || null,
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
             <tr><td style="color:#666;">Phone</td><td>${phone}</td></tr>
             <tr><td style="color:#666;">Equipment</td><td>${equipment_type}</td></tr>
             <tr><td style="color:#666;">Brand / Model</td><td>${brand} ${model}</td></tr>
-            <tr><td style="color:#666;">Contact preference</td><td>${contact_preference}</td></tr>
+            <tr><td style="color:#666;">Contact preference</td><td>${resolvedContactPref}</td></tr>
             ${dateLabel ? `<tr><td style="color:#666;">Preferred date</td><td><strong>${dateLabel}</strong></td></tr>` : ''}
             ${slotLabel ? `<tr><td style="color:#666;">Preferred time</td><td><strong>${slotLabel}</strong></td></tr>` : ''}
           </table>

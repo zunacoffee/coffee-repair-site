@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 type Customer = {
   id: number | string
@@ -18,6 +18,7 @@ type Customer = {
 
 export default function CustomersPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -46,6 +47,16 @@ export default function CustomersPage() {
     fetchCustomers().finally(() => { if (mounted) setIsLoading(false) })
     return () => { mounted = false }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const name  = searchParams.get('name')
+    const email = searchParams.get('email')
+    if (name || email) {
+      if (name)  setFullName(name)
+      if (email) setEmail(email)
+      setShowForm(true)
+    }
+  }, [searchParams])
 
   const handleAddCustomer = async (event: React.FormEvent) => {
     event.preventDefault()

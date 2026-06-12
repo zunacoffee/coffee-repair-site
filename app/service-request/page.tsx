@@ -14,13 +14,10 @@ const MONTH_NAMES = [
 ]
 const DAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
-const WEEKDAY_SLOTS = [
-  '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-  '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
-]
-const SATURDAY_SLOTS = [
-  '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-  '1:00 PM', '2:00 PM',
+const TIME_SLOTS = [
+  '8:00 AM', '9:00 AM', '10:00 AM',
+  '11:00 AM', '12:00 PM', '1:00 PM',
+  '2:00 PM', '3:00 PM', '4:00 PM',
 ]
 
 function padDate(y: number, m: number, d: number): string {
@@ -66,7 +63,7 @@ const EMPTY: FormState = {
   brand: '',
   model: '',
   issue_description: '',
-  contact_preference: '',
+  contact_preference: 'email',
   notes: '',
 }
 
@@ -78,10 +75,8 @@ export default function ServiceRequestPage() {
 
   const [form,                setForm]                = useState<FormState>(EMPTY)
   const [selectedDate,        setSelectedDate]        = useState<string | null>(null)
-  const [selectedTime,        setSelectedTime]        = useState<string | null>(null)
-  const [bookedTimes,         setBookedTimes]         = useState<string[]>([])
-  const [availabilityLoading, setAvailabilityLoading] = useState(false)
-  const [submitting,          setSubmitting]          = useState(false)
+  const [selectedTime, setSelectedTime] = useState<string | null>(null)
+  const [submitting,   setSubmitting]   = useState(false)
   const [error,               setError]              = useState<string | null>(null)
   const [submitted,           setSubmitted]           = useState(false)
 
@@ -93,20 +88,9 @@ export default function ServiceRequestPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
-  const handleDateChange = async (d: string) => {
+  const handleDateChange = (d: string) => {
     setSelectedDate(d)
     setSelectedTime(null)
-    setBookedTimes([])
-    setAvailabilityLoading(true)
-    try {
-      const res  = await fetch(`/api/availability?start=${d}&end=${d}`)
-      const data = await res.json()
-      setBookedTimes(data.booked?.[d] ?? [])
-    } catch {
-      // availability fetch failed — show all slots as available
-    } finally {
-      setAvailabilityLoading(false)
-    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -157,12 +141,6 @@ export default function ServiceRequestPage() {
 
   const grid = buildGrid(viewYear, viewMonth)
 
-  // Time slot derived values
-  const selectedDow   = selectedDate ? new Date(selectedDate + 'T00:00:00').getDay() : null
-  const isSunday      = selectedDow === 0
-  const slots         = selectedDow === 6 ? SATURDAY_SLOTS : WEEKDAY_SLOTS
-  const allBooked     = !isSunday && slots.every((t) => bookedTimes.includes(t))
-
   // Labels for confirmation and success
   const slotDateLabel = selectedDate
     ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
@@ -194,13 +172,13 @@ export default function ServiceRequestPage() {
               </div>
               <h2 className="text-xl font-semibold text-green-800">Request submitted!</h2>
               <p className="mt-2 text-sm text-green-700">
-                Thanks for booking. A confirmation has been sent to <strong>{form.email}</strong>.
+                We&apos;ll be in touch within one business day to confirm your appointment.
                 {slotDateLabel && selectedTime && (
-                  <> Your preferred appointment is <strong>{slotDateLabel} at {selectedTime}</strong>.</>
+                  <> Your preferred time is <strong>{slotDateLabel} at {selectedTime}</strong>.</>
                 )}
               </p>
               <button
-                onClick={() => { setForm(EMPTY); setSelectedDate(null); setSelectedTime(null); setBookedTimes([]); setSubmitted(false) }}
+                onClick={() => { setForm(EMPTY); setSelectedDate(null); setSelectedTime(null); setSubmitted(false) }}
                 className="mt-6 inline-flex items-center justify-center rounded-full bg-cafe-bronze px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition"
               >
                 Submit another request
@@ -292,9 +270,9 @@ export default function ServiceRequestPage() {
 
               {/* Appointment */}
               <div className="border-t border-[#D4D8DC] pt-6">
-                <h2 className="text-base font-semibold text-cafe-navy mb-1">Preferred appointment</h2>
+                <h2 className="text-base font-semibold text-cafe-navy mb-1">Preferred arrival time</h2>
                 <p className="text-sm text-cafe-steel mb-4">
-                  Choose a date, then select an available time. We're open Mon–Sat.
+                  Choose a date and your preferred arrival time. We&apos;ll confirm within one business day.
                 </p>
 
                 {/* ── Calendar ── */}
@@ -331,7 +309,7 @@ export default function ServiceRequestPage() {
                       <div
                         key={d}
                         className={`text-center text-[10px] font-semibold uppercase py-1 ${
-                          i === 0 ? 'text-gray-300' : 'text-[#7A8898]'
+                          i === 0 || i === 6 ? 'text-red-300' : 'text-[#7A8898]'
                         }`}
                       >
                         {d}
@@ -345,15 +323,18 @@ export default function ServiceRequestPage() {
 
                       const key        = padDate(date.getFullYear(), date.getMonth(), date.getDate())
                       const isPast     = date < todayRef
-                      const isSun      = date.getDay() === 0
-                      const disabled   = isPast || isSun
+                      const dow        = date.getDay()
+                      const isWeekend  = dow === 0 || dow === 6
+                      const disabled   = isPast || isWeekend
                       const isSelected = selectedDate === key
                       const isToday    = key === padDate(todayRef.getFullYear(), todayRef.getMonth(), todayRef.getDate())
 
                       let cls: string
                       if (isSelected) {
                         cls = 'bg-[#B87333] text-white font-bold ring-2 ring-[#B87333]/30'
-                      } else if (disabled) {
+                      } else if (isWeekend) {
+                        cls = 'bg-red-50 text-red-300 cursor-not-allowed'
+                      } else if (isPast) {
                         cls = 'text-gray-300 cursor-not-allowed'
                       } else if (isToday) {
                         cls = 'text-[#B87333] font-bold ring-1 ring-[#B87333]/30 hover:bg-[#B87333]/10'
@@ -383,49 +364,25 @@ export default function ServiceRequestPage() {
                       {slotDateLabel}
                     </p>
 
-                    {availabilityLoading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <svg className="h-5 w-5 animate-spin text-[#B87333]" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                      </div>
-                    ) : isSunday ? (
-                      <p className="rounded-xl border border-[#D4D8DC] px-4 py-4 text-sm text-[#7A8898] text-center">
-                        We are closed on Sundays. Please select another day.
-                      </p>
-                    ) : allBooked ? (
-                      <p className="rounded-xl border border-[#D4D8DC] px-4 py-4 text-sm text-[#7A8898] text-center">
-                        No availability on this date, please select another day.
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-3 gap-2">
-                        {slots.map((time) => {
-                          const booked   = bookedTimes.includes(time)
-                          const selected = selectedTime === time
-                          return (
-                            <button
-                              key={time}
-                              type="button"
-                              disabled={booked}
-                              onClick={() => setSelectedTime(time)}
-                              className={`flex flex-col items-center justify-center rounded-[100px] border py-2.5 text-sm font-semibold transition ${
-                                selected
-                                  ? 'bg-[#B87333] border-[#B87333] text-white'
-                                  : booked
-                                  ? 'bg-[#E8ECF0] border-[#E8ECF0] text-[#7A8898] cursor-not-allowed'
-                                  : 'bg-white border-[#0D1B2A] text-[#0D1B2A] hover:bg-[#B87333]/5 hover:border-[#B87333]'
-                              }`}
-                            >
-                              {time}
-                              {booked && (
-                                <span className="text-[10px] font-normal text-[#7A8898] mt-0.5">Booked</span>
-                              )}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    )}
+                    <div className="grid grid-cols-3 gap-2">
+                      {TIME_SLOTS.map((time) => {
+                        const selected = selectedTime === time
+                        return (
+                          <button
+                            key={time}
+                            type="button"
+                            onClick={() => setSelectedTime(time)}
+                            className={`flex items-center justify-center rounded-[100px] border py-2.5 text-sm font-semibold transition ${
+                              selected
+                                ? 'bg-[#B87333] border-[#B87333] text-white'
+                                : 'bg-white border-[#0D1B2A] text-[#0D1B2A] hover:bg-[#B87333]/5 hover:border-[#B87333]'
+                            }`}
+                          >
+                            {time}
+                          </button>
+                        )
+                      })}
+                    </div>
 
                     {selectedDate && selectedTime && (
                       <p className="mt-3 text-xs text-green-700 font-medium">

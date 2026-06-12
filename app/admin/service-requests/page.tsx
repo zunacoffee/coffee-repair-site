@@ -28,11 +28,6 @@ const STATUS_STYLES: Record<string, string> = {
   completed: 'border-green-200 bg-green-100 text-green-800',
 }
 
-const SLOT_LABEL: Record<string, string> = {
-  morning:   'Morning (8am–12pm)',
-  afternoon: 'Afternoon (12pm–5pm)',
-}
-
 function fmtDate(d: string) {
   return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
@@ -130,10 +125,9 @@ export default function ServiceRequestsPage() {
   }
 
   return (
-    <div className="py-8 px-4 lg:px-10 max-w-7xl mx-auto w-full">
-
+    <div>
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+      <div className="bg-white border-b border-[#E8ECF0] px-6 py-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <Link href="/admin" className="text-xs font-medium text-[#7A8898] hover:text-[#0D1B2A] transition">
             ← Admin
@@ -142,9 +136,11 @@ export default function ServiceRequestsPage() {
           <p className="text-sm text-[#7A8898] mt-0.5">Incoming repair requests from the public form.</p>
         </div>
         {!loading && (
-          <p className="text-sm text-[#7A8898]">{requests.length} request{requests.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm font-medium text-[#0D1B2A]">{requests.length} request{requests.length !== 1 ? 's' : ''}</p>
         )}
       </div>
+
+    <div className="py-8 px-4 lg:px-10 max-w-7xl mx-auto w-full">
 
       {error && <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">{error}</div>}
 
@@ -189,9 +185,7 @@ export default function ServiceRequestsPage() {
                           <>
                             <p className="text-sm font-medium text-[#0D1B2A]">{fmtDate(req.scheduled_date)}</p>
                             {req.time_slot && (
-                              <span className="mt-0.5 inline-flex items-center rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-semibold text-[#B87333]">
-                                {req.time_slot === 'morning' ? 'AM' : 'PM'}
-                              </span>
+                              <p className="mt-0.5 text-xs text-[#7A8898]">{req.time_slot}</p>
                             )}
                           </>
                         ) : (
@@ -299,7 +293,7 @@ export default function ServiceRequestsPage() {
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Appointment</p>
                   <p className="text-sm font-medium text-[#0D1B2A]">{fmtDate(selectedReq.scheduled_date)}</p>
                   {selectedReq.time_slot && (
-                    <p className="text-xs text-[#7A8898] mt-0.5">{SLOT_LABEL[selectedReq.time_slot] ?? selectedReq.time_slot}</p>
+                    <p className="text-xs text-[#7A8898] mt-0.5">{selectedReq.time_slot}</p>
                   )}
                 </div>
               )}
@@ -335,17 +329,27 @@ export default function ServiceRequestsPage() {
               <div className="rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-4">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Convert to Work Order</p>
                 <p className="text-xs text-[#7A8898] mb-3">
-                  Creates a work order linked to this customer's account. Requires the customer to exist in the system.
+                  Customer must have an account before converting. If they don&apos;t exist yet, create them first then come back to convert.
                 </p>
                 {convertMsg && (
-                  <p className={`mb-3 text-sm font-medium ${convertMsg.ok ? 'text-green-600' : 'text-red-600'}`}>
-                    {convertMsg.text}
-                  </p>
+                  <>
+                    <p className={`mb-2 text-sm font-medium ${convertMsg.ok ? 'text-green-600' : 'text-red-600'}`}>
+                      {convertMsg.text}
+                    </p>
+                    {!convertMsg.ok && convertMsg.text.includes('No customer') && selectedReq && (
+                      <Link
+                        href={`/admin/customers?name=${encodeURIComponent(selectedReq.full_name)}&email=${encodeURIComponent(selectedReq.email)}`}
+                        className="mb-3 inline-flex items-center gap-1.5 rounded-lg border border-[#B87333] px-3 py-1.5 text-xs font-semibold text-[#B87333] hover:bg-[#B87333]/5 transition"
+                      >
+                        Create Customer Account →
+                      </Link>
+                    )}
+                  </>
                 )}
                 <button
                   onClick={handleConvert}
                   disabled={converting || convertMsg?.ok === true}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
+                  className="mt-1 inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
                 >
                   {converting ? 'Converting…' : convertMsg?.ok ? 'Work order created ✓' : 'Convert to Work Order'}
                 </button>
@@ -376,6 +380,7 @@ export default function ServiceRequestsPage() {
           </div>
         </div>
       )}
+    </div>
     </div>
   )
 }

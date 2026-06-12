@@ -3,13 +3,6 @@ import { Resend } from 'resend'
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin'
 import { getSiteSettings } from '../../../../lib/siteSettings'
 
-function fmtTime(t: string): string {
-  const [h, m] = t.split(':').map(Number)
-  const suffix = h >= 12 ? 'pm' : 'am'
-  const hr = h > 12 ? h - 12 : h === 0 ? 12 : h
-  return m ? `${hr}:${String(m).padStart(2, '0')}${suffix}` : `${hr}${suffix}`
-}
-
 async function getAuthUser(req: NextRequest) {
   const token = req.headers.get('authorization')?.replace('Bearer ', '') ?? null
   if (!token) return null
@@ -29,10 +22,6 @@ export async function PATCH(req: NextRequest) {
 
   if (!next_visit_date || !next_visit_slot) {
     return NextResponse.json({ error: 'Date and time slot are required.' }, { status: 400 })
-  }
-
-  if (!['morning', 'afternoon'].includes(next_visit_slot)) {
-    return NextResponse.json({ error: 'Invalid time slot.' }, { status: 400 })
   }
 
   const { data: customer, error: customerError } = await supabaseAdmin
@@ -62,9 +51,6 @@ export async function PATCH(req: NextRequest) {
     const businessName = settings.public_business_name || settings.business_name || 'Coffee Service'
     const fromField = `${businessName} <onboarding@resend.dev>`
     const adminEmail = settings.notify_email
-    const morningLabel = `Morning (${fmtTime(settings.morning_slot_start || '08:00')}–${fmtTime(settings.morning_slot_end || '12:00')})`
-    const afternoonLabel = `Afternoon (${fmtTime(settings.afternoon_slot_start || '12:00')}–${fmtTime(settings.afternoon_slot_end || '17:00')})`
-    const slotLabel = next_visit_slot === 'morning' ? morningLabel : afternoonLabel
     const dateLabel = new Date(next_visit_date + 'T00:00:00').toLocaleDateString('en-US', {
       weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
     })
@@ -82,7 +68,7 @@ export async function PATCH(req: NextRequest) {
           <p>Your preventive maintenance visit has been scheduled:</p>
           <table cellpadding="6" style="border-collapse:collapse;font-family:sans-serif;font-size:14px;">
             <tr><td style="color:#666;padding-right:16px;">Date</td><td><strong>${dateLabel}</strong></td></tr>
-            <tr><td style="color:#666;">Time</td><td><strong>${slotLabel}</strong></td></tr>
+            <tr><td style="color:#666;">Time</td><td><strong>${next_visit_slot}</strong></td></tr>
             <tr><td style="color:#666;">Plan</td><td>${planRecord.plan_name}</td></tr>
           </table>
           <p style="margin-top:16px;">If you need to reschedule, log in to your <a href="${portalUrl}">customer portal</a>.</p>
@@ -99,7 +85,7 @@ export async function PATCH(req: NextRequest) {
             <tr><td style="color:#666;padding-right:16px;">Customer</td><td><strong>${custRecord.full_name}</strong></td></tr>
             <tr><td style="color:#666;">Email</td><td>${custRecord.email}</td></tr>
             <tr><td style="color:#666;">Date</td><td><strong>${dateLabel}</strong></td></tr>
-            <tr><td style="color:#666;">Time</td><td><strong>${slotLabel}</strong></td></tr>
+            <tr><td style="color:#666;">Time</td><td><strong>${next_visit_slot}</strong></td></tr>
             <tr><td style="color:#666;">Plan</td><td>${planRecord.plan_name}</td></tr>
           </table>
         `,
