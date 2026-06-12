@@ -369,15 +369,15 @@ export default function DashboardPage() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8 space-y-6">
 
           {/* ── Stat cards ── */}
-          <div className="flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:pb-0 lg:grid-cols-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
 
             {/* My Plan */}
-            <div className="rounded-2xl border-l-4 border-l-[#B87333] w-36 shrink-0 sm:w-auto bg-white px-3 py-3 sm:px-5 sm:py-5 shadow-sm">
-              <p className={`${MONO} text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>My Plan</p>
+            <div className="rounded-xl sm:rounded-2xl border-l-4 border-l-[#B87333] bg-white px-3 py-2.5 sm:px-5 sm:py-5 shadow-sm">
+              <p className={`${MONO} text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>My Plan</p>
               {plan ? (
                 <>
-                  <p className="mt-2 text-xl font-bold text-[#0D1B2A] leading-tight">{plan.plan_name}</p>
-                  <p className="mt-1 text-sm text-[#7A8898]">
+                  <p className="mt-1 text-base sm:text-xl font-bold text-[#0D1B2A] leading-tight">{plan.plan_name}</p>
+                  <p className="mt-0.5 text-[10px] sm:text-sm text-[#7A8898]">
                     {plan.price ? `$${plan.price}/mo` : '—'}
                     {' · '}
                     <span className={`font-semibold ${plan.status === 'active' ? 'text-green-600' : plan.status === 'pending_payment' ? 'text-amber-600' : 'text-[#7A8898]'}`}>
@@ -387,21 +387,21 @@ export default function DashboardPage() {
                 </>
               ) : (
                 <>
-                  <p className="mt-2 text-xl font-bold text-[#0D1B2A]">No plan</p>
-                  <p className="mt-1 text-xs text-[#7A8898]">Subscribe to a maintenance plan</p>
+                  <p className="mt-1 text-base sm:text-xl font-bold text-[#0D1B2A]">No plan</p>
+                  <p className="mt-0.5 text-[10px] sm:text-xs text-[#7A8898]">Subscribe to a maintenance plan</p>
                 </>
               )}
             </div>
 
             {/* Next PM Visit */}
-            <div className="rounded-2xl border-l-4 border-l-blue-500 w-36 shrink-0 sm:w-auto bg-white px-3 py-3 sm:px-5 sm:py-5 shadow-sm">
-              <p className={`${MONO} text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Next PM Visit</p>
+            <div className="rounded-xl sm:rounded-2xl border-l-4 border-l-blue-500 bg-white px-3 py-2.5 sm:px-5 sm:py-5 shadow-sm">
+              <p className={`${MONO} text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Next PM Visit</p>
               {plan?.next_visit_date ? (
                 <>
-                  <p className="mt-2 text-xl font-bold text-[#0D1B2A] leading-tight">
+                  <p className="mt-1 text-base sm:text-xl font-bold text-[#0D1B2A] leading-tight">
                     {new Date(plan.next_visit_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </p>
-                  <p className="mt-1 text-sm text-[#7A8898]">
+                  <p className="mt-0.5 text-[10px] sm:text-sm text-[#7A8898]">
                     {(() => {
                       const d = daysUntil(plan.next_visit_date!)
                       if (d < 0) return 'Past due'
@@ -412,8 +412,8 @@ export default function DashboardPage() {
                 </>
               ) : (
                 <>
-                  <p className="mt-2 text-xl font-bold text-[#0D1B2A]">—</p>
-                  <p className="mt-1 text-xs text-[#7A8898]">
+                  <p className="mt-1 text-base sm:text-xl font-bold text-[#0D1B2A]">—</p>
+                  <p className="mt-0.5 text-[10px] sm:text-xs text-[#7A8898]">
                     {plan ? (
                       <button onClick={() => { switchTab('schedule'); setShowSchedulePicker(true) }} className="text-[#B87333] hover:underline">
                         Schedule visit
@@ -425,19 +425,19 @@ export default function DashboardPage() {
             </div>
 
             {/* Equipment */}
-            <div className="rounded-2xl border-l-4 border-l-emerald-500 w-36 shrink-0 sm:w-auto bg-white px-3 py-3 sm:px-5 sm:py-5 shadow-sm">
-              <p className={`${MONO} text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Equipment</p>
-              <p className="mt-2 text-2xl sm:text-3xl font-bold text-[#0D1B2A]">{equipment.length}</p>
-              <p className="mt-1 text-xs text-[#7A8898]">
+            <div className="rounded-xl sm:rounded-2xl border-l-4 border-l-emerald-500 bg-white px-3 py-2.5 sm:px-5 sm:py-5 shadow-sm">
+              <p className={`${MONO} text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Equipment</p>
+              <p className="mt-1 text-xl sm:text-3xl font-bold text-[#0D1B2A]">{equipment.length}</p>
+              <p className="mt-0.5 text-[10px] sm:text-sm text-[#7A8898]">
                 {equipment.length === 1 ? 'registered item' : 'registered items'}
               </p>
             </div>
 
             {/* Open Invoices */}
-            <div className="rounded-2xl border-l-4 border-l-orange-400 w-36 shrink-0 sm:w-auto bg-white px-3 py-3 sm:px-5 sm:py-5 shadow-sm">
-              <p className={`${MONO} text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Open Invoices</p>
-              <p className="mt-2 text-2xl sm:text-3xl font-bold text-[#0D1B2A]">{openInvoices.length}</p>
-              <p className="mt-1 text-xs text-[#7A8898]">
+            <div className="rounded-xl sm:rounded-2xl border-l-4 border-l-orange-400 bg-white px-3 py-2.5 sm:px-5 sm:py-5 shadow-sm">
+              <p className={`${MONO} text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Open Invoices</p>
+              <p className="mt-1 text-xl sm:text-3xl font-bold text-[#0D1B2A]">{openInvoices.length}</p>
+              <p className="mt-0.5 text-[10px] sm:text-sm text-[#7A8898]">
                 {openInvoices.length === 0 ? 'all paid' : `${openInvoices.length} unpaid`}
               </p>
             </div>
