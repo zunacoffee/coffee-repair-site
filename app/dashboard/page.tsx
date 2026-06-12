@@ -70,6 +70,35 @@ function StatusBadge({ status, map }: { status: string; map: Record<string, stri
   )
 }
 
+// ─── Repair modal helpers ─────────────────────────────────────────────────────
+
+const R_MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
+const R_DAY_LABELS  = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+const R_WEEKDAY_SLOTS = [
+  '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
+  '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
+]
+const R_SATURDAY_SLOTS = [
+  '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
+  '1:00 PM', '2:00 PM',
+]
+const REPAIR_EQUIPMENT_TYPES = ['Espresso Machine', 'Grinder', 'Brewer', 'Other']
+
+function rPadDate(y: number, m: number, d: number): string {
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+function rBuildGrid(year: number, month: number): (Date | null)[] {
+  const firstDow    = new Date(year, month, 1).getDay()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const cells: (Date | null)[] = []
+  for (let i = 0; i < firstDow; i++) cells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d))
+  return cells
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -120,6 +149,22 @@ export default function DashboardPage() {
 
   const sectionRef = useRef<HTMLDivElement>(null)
   const [selectedFeedItem, setSelectedFeedItem] = useState<string | null>(null)
+
+  // Repair modal state
+  const [showRepairModal,    setShowRepairModal]    = useState(false)
+  const [repairEqType,       setRepairEqType]       = useState('')
+  const [repairBrand,        setRepairBrand]        = useState('')
+  const [repairModel,        setRepairModel]        = useState('')
+  const [repairDescription,  setRepairDescription]  = useState('')
+  const [repairDate,         setRepairDate]         = useState<string | null>(null)
+  const [repairTime,         setRepairTime]         = useState<string | null>(null)
+  const [repairBookedTimes,  setRepairBookedTimes]  = useState<string[]>([])
+  const [repairAvailLoading, setRepairAvailLoading] = useState(false)
+  const [repairSaving,       setRepairSaving]       = useState(false)
+  const [repairError,        setRepairError]        = useState<string | null>(null)
+  const [repairViewYear,     setRepairViewYear]     = useState(() => new Date().getFullYear())
+  const [repairViewMonth,    setRepairViewMonth]    = useState(() => new Date().getMonth())
+  const [successToast,       setSuccessToast]       = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -238,6 +283,70 @@ export default function DashboardPage() {
     if (!res.ok) { setProfileError(data.error ?? 'Unable to save changes.'); return }
     setCustomer(data.customer)
     setProfileMsg('Profile updated successfully.')
+  }
+
+  const openRepairModal = () => {
+    const now = new Date()
+    setRepairViewYear(now.getFullYear())
+    setRepairViewMonth(now.getMonth())
+    setRepairEqType('')
+    setRepairBrand('')
+    setRepairModel('')
+    setRepairDescription('')
+    setRepairDate(null)
+    setRepairTime(null)
+    setRepairBookedTimes([])
+    setRepairError(null)
+    setShowRepairModal(true)
+  }
+
+  const handleRepairDateChange = async (d: string) => {
+    setRepairDate(d)
+    setRepairTime(null)
+    setRepairBookedTimes([])
+    setRepairAvailLoading(true)
+    try {
+      const res  = await fetch(`/api/availability?start=${d}&end=${d}`)
+      const data = await res.json()
+      setRepairBookedTimes(data.booked?.[d] ?? [])
+    } catch {
+      // availability fetch failed — show all slots as available
+    } finally {
+      setRepairAvailLoading(false)
+    }
+  }
+
+  const handleRepairSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setRepairError(null)
+    if (!repairDate || !repairTime) { setRepairError('Please select a date and time.'); return }
+    setRepairSaving(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { router.push('/login'); return }
+      const res  = await fetch('/api/service-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({
+          full_name:         customer?.full_name ?? '',
+          email:             userEmail ?? '',
+          phone:             customer?.phone ?? '',
+          equipment_type:    repairEqType,
+          brand:             repairBrand,
+          model:             repairModel,
+          issue_description: repairDescription,
+          scheduled_date:    repairDate,
+          time_slot:         repairTime,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setRepairError(data.error ?? 'Submission failed. Please try again.'); return }
+      setShowRepairModal(false)
+      setSuccessToast('Repair request submitted! We\'ll confirm shortly.')
+      setTimeout(() => setSuccessToast(null), 3000)
+    } finally {
+      setRepairSaving(false)
+    }
   }
 
   const openRepairs  = workOrders.filter((wo) => wo.status !== 'completed' && wo.status !== 'cancelled')
@@ -465,19 +574,7 @@ export default function DashboardPage() {
           {/* ── Quick actions ── */}
           <div className="grid grid-cols-4 gap-2">
             <button
-              onClick={() => { setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
-              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8ECF0]">
-                <svg className="h-[18px] w-[18px] text-[#0D1B2A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>Schedule</p>
-            </button>
-
-            <Link
-              href="/service-request"
+              onClick={openRepairModal}
               className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B87333]/10">
@@ -486,18 +583,6 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>Repair</p>
-            </Link>
-
-            <button
-              onClick={() => { setActiveNav('home'); showSection('equipment') }}
-              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8ECF0]">
-                <svg className="h-[18px] w-[18px] text-[#0D1B2A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18" />
-                </svg>
-              </div>
-              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>Equipment</p>
             </button>
 
             <button
@@ -512,6 +597,30 @@ export default function DashboardPage() {
               <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-center leading-tight ${openInvoices.length > 0 ? 'text-orange-600' : 'text-[#0D1B2A]'}`}>
                 {openInvoices.length > 0 ? `Bills (${openInvoices.length})` : 'Invoices'}
               </p>
+            </button>
+
+            <button
+              onClick={() => { setActiveNav('home'); showSection('equipment') }}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8ECF0]">
+                <svg className="h-[18px] w-[18px] text-[#0D1B2A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18" />
+                </svg>
+              </div>
+              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>Equipment</p>
+            </button>
+
+            <button
+              onClick={() => { setActiveNav('home'); showSection('plan') }}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8ECF0]">
+                <svg className="h-[18px] w-[18px] text-[#0D1B2A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              </div>
+              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>My Plan</p>
             </button>
           </div>
 
@@ -1040,6 +1149,259 @@ export default function DashboardPage() {
           </button>
         </div>
       </nav>
+
+      {/* ── Success toast ── */}
+      {successToast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] max-w-sm w-[calc(100%-2rem)] rounded-2xl bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow-lg text-center">
+          {successToast}
+        </div>
+      )}
+
+      {/* ── Repair request bottom sheet ── */}
+      {showRepairModal && (
+        <div className="fixed inset-0 z-40">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowRepairModal(false)} />
+          <div className="absolute bottom-0 left-0 right-0 z-50 rounded-t-3xl bg-white max-h-[90vh] overflow-y-auto">
+            <form onSubmit={handleRepairSubmit}>
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#E8ECF0] sticky top-0 bg-white z-10">
+                <p className="text-base font-bold text-[#0D1B2A]">Request Repair</p>
+                <button type="button" onClick={() => setShowRepairModal(false)} className="text-[#7A8898] hover:text-[#0D1B2A] transition">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="px-5 pt-4 pb-8 space-y-4">
+
+                {/* Equipment type */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Equipment type</label>
+                  <select
+                    value={repairEqType}
+                    onChange={(e) => setRepairEqType(e.target.value)}
+                    required
+                    className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  >
+                    <option value="" disabled>Select type…</option>
+                    {equipment.length > 0 && (
+                      <optgroup label="Your equipment">
+                        {equipment.map((eq) => (
+                          <option key={eq.id} value={eq.equipment_type}>
+                            {eq.brand} {eq.model} ({eq.equipment_type})
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    <optgroup label="Other">
+                      {REPAIR_EQUIPMENT_TYPES.map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+
+                {/* Brand */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Brand</label>
+                  <input
+                    type="text"
+                    value={repairBrand}
+                    onChange={(e) => setRepairBrand(e.target.value)}
+                    required
+                    placeholder="e.g. La Marzocco"
+                    className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  />
+                </div>
+
+                {/* Model */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Model</label>
+                  <input
+                    type="text"
+                    value={repairModel}
+                    onChange={(e) => setRepairModel(e.target.value)}
+                    required
+                    placeholder="e.g. Linea Mini"
+                    className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  />
+                </div>
+
+                {/* Problem description */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Problem description</label>
+                  <textarea
+                    value={repairDescription}
+                    onChange={(e) => setRepairDescription(e.target.value)}
+                    required
+                    rows={3}
+                    placeholder="Describe what's wrong…"
+                    className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20 resize-none"
+                  />
+                </div>
+
+                {/* Preferred date — inline calendar */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Preferred date</label>
+                  <div className="rounded-xl border border-[#E8ECF0] bg-white p-4 select-none">
+                    {/* Month nav */}
+                    <div className="flex items-center justify-between mb-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const now = new Date()
+                          const canGo = repairViewYear > now.getFullYear() || (repairViewYear === now.getFullYear() && repairViewMonth > now.getMonth())
+                          if (!canGo) return
+                          if (repairViewMonth === 0) { setRepairViewYear((y) => y - 1); setRepairViewMonth(11) }
+                          else setRepairViewMonth((m) => m - 1)
+                        }}
+                        disabled={repairViewYear === new Date().getFullYear() && repairViewMonth === new Date().getMonth()}
+                        className="rounded-lg p-2 text-[#7A8898] hover:bg-[#E8ECF0] disabled:opacity-30 disabled:cursor-not-allowed transition"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <span className="text-sm font-bold text-[#0D1B2A]">
+                        {R_MONTH_NAMES[repairViewMonth]} {repairViewYear}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (repairViewMonth === 11) { setRepairViewYear((y) => y + 1); setRepairViewMonth(0) }
+                          else setRepairViewMonth((m) => m + 1)
+                        }}
+                        className="rounded-lg p-2 text-[#7A8898] hover:bg-[#E8ECF0] transition"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Day labels */}
+                    <div className="grid grid-cols-7 mb-1">
+                      {R_DAY_LABELS.map((d, i) => (
+                        <div key={d} className={`text-center text-[10px] font-semibold uppercase py-1 ${i === 0 ? 'text-gray-300' : 'text-[#7A8898]'}`}>
+                          {d}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Calendar grid */}
+                    <div className="grid grid-cols-7 gap-0.5">
+                      {rBuildGrid(repairViewYear, repairViewMonth).map((date, i) => {
+                        if (!date) return <div key={`e-${i}`} />
+                        const rToday = new Date(); rToday.setHours(0, 0, 0, 0)
+                        const key        = rPadDate(date.getFullYear(), date.getMonth(), date.getDate())
+                        const isPast     = date < rToday
+                        const isSun      = date.getDay() === 0
+                        const isSelected = repairDate === key
+                        const isToday    = key === rPadDate(rToday.getFullYear(), rToday.getMonth(), rToday.getDate())
+                        const disabled   = isPast || isSun
+
+                        let cls: string
+                        if (isSelected)     cls = 'bg-[#B87333] text-white font-bold ring-2 ring-[#B87333]/30'
+                        else if (disabled)  cls = 'text-gray-300 cursor-not-allowed'
+                        else if (isToday)   cls = 'text-[#B87333] font-bold ring-1 ring-[#B87333]/30 hover:bg-[#B87333]/10'
+                        else                cls = 'text-[#0D1B2A] hover:bg-[#B87333]/10 hover:text-[#B87333]'
+
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => handleRepairDateChange(key)}
+                            className={`flex h-10 w-full items-center justify-center rounded-lg text-sm transition ${cls}`}
+                          >
+                            {date.getDate()}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preferred time */}
+                {repairDate && (
+                  <div>
+                    <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">
+                      Preferred time —{' '}
+                      <span className="font-normal text-[#7A8898]">
+                        {new Date(repairDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                      </span>
+                    </label>
+
+                    {repairAvailLoading ? (
+                      <div className="flex items-center justify-center py-6">
+                        <svg className="h-5 w-5 animate-spin text-[#B87333]" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                      </div>
+                    ) : new Date(repairDate + 'T00:00:00').getDay() === 0 ? (
+                      <p className="rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#7A8898] text-center">
+                        We are closed on Sundays. Please select another day.
+                      </p>
+                    ) : (() => {
+                      const dow   = new Date(repairDate + 'T00:00:00').getDay()
+                      const slots = dow === 6 ? R_SATURDAY_SLOTS : R_WEEKDAY_SLOTS
+                      const allBooked = slots.every((t) => repairBookedTimes.includes(t))
+                      if (allBooked) return (
+                        <p className="rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#7A8898] text-center">
+                          No availability on this date, please select another day.
+                        </p>
+                      )
+                      return (
+                        <div className="grid grid-cols-3 gap-2">
+                          {slots.map((time) => {
+                            const booked   = repairBookedTimes.includes(time)
+                            const selected = repairTime === time
+                            return (
+                              <button
+                                key={time}
+                                type="button"
+                                disabled={booked}
+                                onClick={() => setRepairTime(time)}
+                                className={`flex flex-col items-center justify-center rounded-full border py-2.5 text-sm font-semibold transition ${
+                                  selected ? 'bg-[#B87333] border-[#B87333] text-white'
+                                  : booked  ? 'bg-[#E8ECF0] border-[#E8ECF0] text-[#7A8898] cursor-not-allowed'
+                                           : 'bg-white border-[#0D1B2A] text-[#0D1B2A] hover:bg-[#B87333]/5 hover:border-[#B87333]'
+                                }`}
+                              >
+                                {time}
+                                {booked && <span className="text-[10px] font-normal text-[#7A8898] mt-0.5">Booked</span>}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )
+                    })()}
+
+                    {repairDate && repairTime && (
+                      <p className="mt-2 text-xs text-green-700 font-medium">
+                        ✓ {new Date(repairDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} at {repairTime}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {repairError && <p className="text-sm text-red-600">{repairError}</p>}
+
+                <button
+                  type="submit"
+                  disabled={repairSaving}
+                  className="w-full rounded-full bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
+                >
+                  {repairSaving ? 'Submitting…' : 'Submit repair request'}
+                </button>
+
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── DateSlotPicker bottom sheet ── */}
       {showSchedulePicker && (
