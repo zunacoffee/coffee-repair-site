@@ -62,11 +62,11 @@ function fmt(dateStr: string) {
 
 function EmptyState({ icon, title, body, cta }: { icon: React.ReactNode; title: string; body: string; cta?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E8ECF0] text-[#7A8898]">{icon}</div>
-      <p className="text-base font-semibold text-[#0D1B2A]">{title}</p>
-      <p className="mt-1 text-sm text-[#7A8898] max-w-xs">{body}</p>
-      {cta && <div className="mt-5">{cta}</div>}
+    <div className="flex flex-col items-center justify-center py-4 sm:py-16 text-center px-4">
+      <div className="mb-2 sm:mb-4 flex h-8 w-8 sm:h-14 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl bg-[#E8ECF0] text-[#7A8898]">{icon}</div>
+      <p className="text-sm sm:text-base font-semibold text-[#0D1B2A]">{title}</p>
+      <p className="mt-1 text-xs sm:text-sm text-[#7A8898] max-w-xs">{body}</p>
+      {cta && <div className="mt-2 sm:mt-5">{cta}</div>}
     </div>
   )
 }
@@ -312,34 +312,36 @@ export default function DashboardPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
               <Link
                 href="/service-request"
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition"
+                className="flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition"
               >
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
                 Request Repair
               </Link>
-              <button
-                onClick={() => switchTab('profile')}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition"
-              >
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                My Profile
-              </button>
-              <button
-                onClick={handleSignOut}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition"
-              >
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Sign Out
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => switchTab('profile')}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  My Profile
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Sign Out
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -367,11 +369,11 @@ export default function DashboardPage() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8 space-y-6">
 
           {/* ── Stat cards ── */}
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:pb-0 lg:grid-cols-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
 
             {/* My Plan */}
-            <div className="rounded-2xl border-l-4 border-l-[#B87333] bg-white px-5 py-5 shadow-sm">
-              <p className={`${MONO} text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>My Plan</p>
+            <div className="rounded-2xl border-l-4 border-l-[#B87333] w-36 shrink-0 sm:w-auto bg-white px-3 py-3 sm:px-5 sm:py-5 shadow-sm">
+              <p className={`${MONO} text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>My Plan</p>
               {plan ? (
                 <>
                   <p className="mt-2 text-xl font-bold text-[#0D1B2A] leading-tight">{plan.plan_name}</p>
@@ -392,8 +394,8 @@ export default function DashboardPage() {
             </div>
 
             {/* Next PM Visit */}
-            <div className="rounded-2xl border-l-4 border-l-blue-500 bg-white px-5 py-5 shadow-sm">
-              <p className={`${MONO} text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Next PM Visit</p>
+            <div className="rounded-2xl border-l-4 border-l-blue-500 w-36 shrink-0 sm:w-auto bg-white px-3 py-3 sm:px-5 sm:py-5 shadow-sm">
+              <p className={`${MONO} text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Next PM Visit</p>
               {plan?.next_visit_date ? (
                 <>
                   <p className="mt-2 text-xl font-bold text-[#0D1B2A] leading-tight">
@@ -423,18 +425,18 @@ export default function DashboardPage() {
             </div>
 
             {/* Equipment */}
-            <div className="rounded-2xl border-l-4 border-l-emerald-500 bg-white px-5 py-5 shadow-sm">
-              <p className={`${MONO} text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Equipment</p>
-              <p className="mt-2 text-4xl font-bold text-[#0D1B2A]">{equipment.length}</p>
+            <div className="rounded-2xl border-l-4 border-l-emerald-500 w-36 shrink-0 sm:w-auto bg-white px-3 py-3 sm:px-5 sm:py-5 shadow-sm">
+              <p className={`${MONO} text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Equipment</p>
+              <p className="mt-2 text-2xl sm:text-3xl font-bold text-[#0D1B2A]">{equipment.length}</p>
               <p className="mt-1 text-xs text-[#7A8898]">
                 {equipment.length === 1 ? 'registered item' : 'registered items'}
               </p>
             </div>
 
             {/* Open Invoices */}
-            <div className="rounded-2xl border-l-4 border-l-orange-400 bg-white px-5 py-5 shadow-sm">
-              <p className={`${MONO} text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Open Invoices</p>
-              <p className="mt-2 text-4xl font-bold text-[#0D1B2A]">{openInvoices.length}</p>
+            <div className="rounded-2xl border-l-4 border-l-orange-400 w-36 shrink-0 sm:w-auto bg-white px-3 py-3 sm:px-5 sm:py-5 shadow-sm">
+              <p className={`${MONO} text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Open Invoices</p>
+              <p className="mt-2 text-2xl sm:text-3xl font-bold text-[#0D1B2A]">{openInvoices.length}</p>
               <p className="mt-1 text-xs text-[#7A8898]">
                 {openInvoices.length === 0 ? 'all paid' : `${openInvoices.length} unpaid`}
               </p>
@@ -443,10 +445,10 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Tab bar ── */}
-          <div className="rounded-xl bg-white border border-black/[0.08] overflow-hidden">
+          <div className="-mx-4 sm:mx-0 sm:rounded-xl sm:border sm:border-black/[0.08] sm:overflow-hidden">
             <div
               ref={tabBarRef}
-              className="flex overflow-x-auto border-b border-black/[0.08] scrollbar-none"
+              className="sticky top-0 z-10 bg-white flex overflow-x-auto border-b border-black/[0.08] scrollbar-none"
               style={{ scrollbarWidth: 'none' }}
             >
               {TABS.map((tab) => (
@@ -476,7 +478,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ── Tab panels ── */}
-            <div className="p-5 sm:p-7">
+            <div className="bg-white px-4 py-5 sm:p-7">
 
               {/* PM Schedule */}
               {activeTab === 'schedule' && (
@@ -604,7 +606,7 @@ export default function DashboardPage() {
                       icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
                       title="No maintenance plan"
                       body="Subscribe to a plan to see your scheduled preventive maintenance visits here."
-                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">View plans</Link>}
+                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-4 sm:px-5 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white hover:opacity-90 transition">View plans</Link>}
                     />
                   )}
                 </div>
@@ -687,7 +689,7 @@ export default function DashboardPage() {
                       icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>}
                       title="No repair history"
                       body="Your completed and in-progress repairs will appear here."
-                      cta={<Link href="/service-request" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">Request a repair</Link>}
+                      cta={<Link href="/service-request" className="rounded-full bg-[#B87333] px-4 sm:px-5 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white hover:opacity-90 transition">Request a repair</Link>}
                     />
                   )}
                 </div>
@@ -818,8 +820,8 @@ export default function DashboardPage() {
                       ))}
                     </div>
                   ) : !showEqForm ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center px-4 rounded-2xl border-2 border-dashed border-[#E8ECF0]">
-                      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E8ECF0] text-[#7A8898]">
+                    <div className="flex flex-col items-center justify-center py-4 sm:py-12 text-center px-4 rounded-2xl border-2 border-dashed border-[#E8ECF0]">
+                      <div className="mb-2 sm:mb-3 flex h-8 w-8 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-[#E8ECF0] text-[#7A8898]">
                         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18" />
                         </svg>
@@ -934,7 +936,7 @@ export default function DashboardPage() {
                       icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
                       title="No active plan"
                       body="Subscribe to a maintenance plan to keep your equipment in peak condition."
-                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">See plans & pricing</Link>}
+                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-4 sm:px-5 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white hover:opacity-90 transition">See plans & pricing</Link>}
                     />
                   )}
                 </div>
