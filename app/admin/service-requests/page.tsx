@@ -22,10 +22,10 @@ type ServiceRequest = {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  new:       'border-[#7A8898] bg-[#7A8898] text-white',
-  contacted: 'border-[#B87333] text-[#B87333] bg-transparent',
-  scheduled: 'border-[#B87333]/30 bg-[#B87333]/5 text-[#B87333]',
-  completed: 'border-green-200 bg-green-50 text-green-800',
+  new:       'border-blue-200 bg-blue-100 text-blue-800',
+  contacted: 'border-orange-200 bg-orange-100 text-orange-800',
+  scheduled: 'border-blue-200 bg-blue-100 text-blue-800',
+  completed: 'border-green-200 bg-green-100 text-green-800',
 }
 
 const SLOT_LABEL: Record<string, string> = {
@@ -150,7 +150,7 @@ export default function ServiceRequestsPage() {
 
       {/* Table */}
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#E8ECF0] bg-[#F9FAFB]">
+        <div className="px-6 py-4 border-b border-[#E8ECF0] bg-[#E8ECF0]">
           <h2 className="text-sm font-semibold text-[#0D1B2A]">All requests</h2>
         </div>
         <div className="overflow-x-auto">
@@ -174,7 +174,7 @@ export default function ServiceRequestsPage() {
                     <tr
                       key={req.id}
                       onClick={() => openModal(req)}
-                      className={`hover:bg-[#F5F7FA] cursor-pointer transition-colors ${isUpdating ? 'opacity-60' : ''}`}
+                      className={`hover:bg-[#E8ECF0] cursor-pointer transition-colors ${isUpdating ? 'opacity-60' : ''}`}
                     >
                       <td className="px-5 py-3.5 whitespace-nowrap">
                         <p className="text-sm font-medium text-[#0D1B2A]">{req.full_name}</p>
@@ -254,7 +254,7 @@ export default function ServiceRequestsPage() {
               </div>
               <button
                 onClick={() => setSelectedReq(null)}
-                className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#F4F6F9] transition shrink-0"
+                className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#E8ECF0] transition shrink-0"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -332,7 +332,7 @@ export default function ServiceRequestsPage() {
               </div>
 
               {/* Convert to work order */}
-              <div className="rounded-xl border border-[#E8ECF0] bg-[#F9FAFB] px-4 py-4">
+              <div className="rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-4">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Convert to Work Order</p>
                 <p className="text-xs text-[#7A8898] mb-3">
                   Creates a work order linked to this customer's account. Requires the customer to exist in the system.
@@ -345,7 +345,7 @@ export default function ServiceRequestsPage() {
                 <button
                   onClick={handleConvert}
                   disabled={converting || convertMsg?.ok === true}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
                 >
                   {converting ? 'Converting…' : convertMsg?.ok ? 'Work order created ✓' : 'Convert to Work Order'}
                 </button>
@@ -367,7 +367,7 @@ export default function ServiceRequestsPage() {
                 <button
                   onClick={handleModalSave}
                   disabled={modalSaving}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
                 >
                   {modalSaving ? 'Saving…' : 'Save Changes'}
                 </button>

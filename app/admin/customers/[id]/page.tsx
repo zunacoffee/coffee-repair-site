@@ -51,16 +51,16 @@ const CUSTOM_PLAN_EMPTY = {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  active:          'bg-[#B87333] text-white',
-  pending_payment: 'border border-[#B87333] text-[#B87333] bg-transparent',
-  inactive:        'bg-[#E8ECF0] text-[#7A8898]',
-  cancelled:       'bg-red-100 text-red-700',
+  active:          'bg-green-100 text-green-800',
+  pending_payment: 'bg-amber-100 text-amber-800',
+  inactive:        'bg-gray-100 text-gray-500',
+  cancelled:       'bg-gray-100 text-gray-500',
 }
 
 const JOB_STATUS: Record<string, string> = {
-  pending:     'border border-[#B87333] text-[#B87333]',
-  in_progress: 'bg-[#0D1B2A] text-[#E8ECF0]',
-  completed:   'bg-green-100 text-green-700',
+  pending:     'bg-amber-100 text-amber-800',
+  in_progress: 'bg-violet-100 text-violet-800',
+  completed:   'bg-green-100 text-green-800',
 }
 
 export default function CustomerDetailPage() {
@@ -242,12 +242,13 @@ export default function CustomerDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#E8ECF0] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <Link href="/admin/customers" className="text-sm font-medium text-[#B87333] hover:text-[#a0632b]">
-              ← Back to customers
+            <Link href="/admin/customers" className="inline-flex items-center gap-1 text-sm font-medium text-[#7A8898] hover:text-[#0D1B2A] transition">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+              Back
             </Link>
             <h1 className="mt-3 text-3xl font-semibold text-[#0D1B2A]">Customer details</h1>
             <p className="mt-2 text-sm text-[#7A8898]">Review contact info, equipment, repair history, and maintenance status.</p>
@@ -260,7 +261,7 @@ export default function CustomerDetailPage() {
                 setContactForm({ full_name: customer.full_name, email: customer.email, phone: customer.phone, street: customer.street ?? '', city: customer.city ?? '', state: customer.state ?? '', zip: customer.zip ?? '' })
               }
             }}
-            className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a0632b]"
+            className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
           >
             {editing ? 'Cancel edit' : 'Edit contact'}
           </button>
@@ -287,32 +288,32 @@ export default function CustomerDetailPage() {
                     <>
                       <div>
                         <label className="block text-sm font-medium text-[#0D1B2A]">Full name</label>
-                        <input value={contactForm.full_name} onChange={(e) => updateFormField('full_name', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#F4F6F9] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <input value={contactForm.full_name} onChange={(e) => updateFormField('full_name', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-[#0D1B2A]">Email</label>
-                        <input type="email" value={contactForm.email} onChange={(e) => updateFormField('email', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#F4F6F9] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <input type="email" value={contactForm.email} onChange={(e) => updateFormField('email', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-[#0D1B2A]">Phone</label>
-                        <input value={contactForm.phone} onChange={(e) => updateFormField('phone', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#F4F6F9] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <input value={contactForm.phone} onChange={(e) => updateFormField('phone', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div className="sm:col-span-2">
                         <label className="block text-sm font-medium text-[#0D1B2A]">Street Address</label>
-                        <input value={contactForm.street} onChange={(e) => updateFormField('street', e.target.value)} placeholder="123 Main St" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#F4F6F9] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <input value={contactForm.street} onChange={(e) => updateFormField('street', e.target.value)} placeholder="123 Main St" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-[#0D1B2A]">City</label>
-                        <input value={contactForm.city} onChange={(e) => updateFormField('city', e.target.value)} placeholder="Portland" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#F4F6F9] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <input value={contactForm.city} onChange={(e) => updateFormField('city', e.target.value)} placeholder="Portland" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-sm font-medium text-[#0D1B2A]">State</label>
-                          <input value={contactForm.state} onChange={(e) => updateFormField('state', e.target.value)} placeholder="OR" maxLength={2} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#F4F6F9] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                          <input value={contactForm.state} onChange={(e) => updateFormField('state', e.target.value)} placeholder="OR" maxLength={2} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-[#0D1B2A]">ZIP</label>
-                          <input value={contactForm.zip} onChange={(e) => updateFormField('zip', e.target.value)} placeholder="97201" maxLength={10} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#F4F6F9] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                          <input value={contactForm.zip} onChange={(e) => updateFormField('zip', e.target.value)} placeholder="97201" maxLength={10} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                         </div>
                       </div>
                     </>
@@ -347,7 +348,7 @@ export default function CustomerDetailPage() {
 
                 {editing ? (
                   <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
-                    <button type="button" onClick={handleSave} disabled={saving} className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] disabled:opacity-50">
+                    <button type="button" onClick={handleSave} disabled={saving} className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:opacity-90 disabled:opacity-50">
                       {saving ? 'Saving...' : 'Save changes'}
                     </button>
                     <button type="button" onClick={() => setEditing(false)} className="inline-flex items-center justify-center rounded-full border border-[#E8ECF0] bg-white px-6 py-3 text-sm font-semibold text-[#0D1B2A] transition hover:border-[#7A8898]">
@@ -363,7 +364,7 @@ export default function CustomerDetailPage() {
                     <h2 className="text-xl font-semibold text-[#0D1B2A]">Equipment</h2>
                     <p className="mt-2 text-sm text-[#7A8898]">Equipment registered for this customer.</p>
                   </div>
-                  <button type="button" onClick={() => setShowEquipmentForm((prev) => !prev)} className="inline-flex items-center gap-2 justify-center rounded-full bg-[#B87333] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a0632b]">
+                  <button type="button" onClick={() => setShowEquipmentForm((prev) => !prev)} className="inline-flex items-center gap-2 justify-center rounded-full bg-[#B87333] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
                     {showEquipmentForm ? (
                       <>
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -383,7 +384,7 @@ export default function CustomerDetailPage() {
                 </div>
 
                 {showEquipmentForm ? (
-                  <form onSubmit={handleAddEquipment} className="mt-6 space-y-4 rounded-2xl border border-[#E8ECF0] bg-[#F4F6F9] p-6">
+                  <form onSubmit={handleAddEquipment} className="mt-6 space-y-4 rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-6">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label className="block text-sm font-medium text-[#0D1B2A]">Equipment type</label>
@@ -404,7 +405,7 @@ export default function CustomerDetailPage() {
                     </div>
                     <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-end">
                       <button type="button" onClick={() => setShowEquipmentForm(false)} className="inline-flex items-center justify-center rounded-full border border-[#E8ECF0] bg-white px-6 py-3 text-sm font-semibold text-[#0D1B2A] transition hover:border-[#7A8898]">Cancel</button>
-                      <button type="submit" disabled={equipmentSaving} className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] disabled:opacity-50">{equipmentSaving ? 'Saving...' : 'Save equipment'}</button>
+                      <button type="submit" disabled={equipmentSaving} className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:opacity-90 disabled:opacity-50">{equipmentSaving ? 'Saving...' : 'Save equipment'}</button>
                     </div>
                   </form>
                 ) : null}
@@ -412,7 +413,7 @@ export default function CustomerDetailPage() {
                 <div className="mt-6 space-y-4">
                   {equipment.length > 0 ? (
                     equipment.map((item) => (
-                      <div key={item.id} className="rounded-3xl border border-[#E8ECF0] bg-[#F4F6F9] p-5">
+                      <div key={item.id} className="rounded-3xl border border-[#E8ECF0] bg-[#E8ECF0] p-5">
                         <p className="text-sm font-semibold text-[#0D1B2A]">{item.equipment_type}</p>
                         <p className="mt-2 text-sm text-[#7A8898]">{item.brand} {item.model}</p>
                         <p className="mt-1 text-xs text-[#7A8898]">Serial: {item.serial_number}</p>
@@ -431,7 +432,7 @@ export default function CustomerDetailPage() {
                         <button
                           type="button"
                           onClick={() => setShowEquipmentForm(true)}
-                          className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a0632b]"
+                          className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
                         >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -452,7 +453,7 @@ export default function CustomerDetailPage() {
                 <div className="mt-6 space-y-4">
                   {jobs.length > 0 ? (
                     jobs.map((job) => (
-                      <div key={job.id} className="rounded-3xl border border-[#E8ECF0] bg-[#F4F6F9] p-5">
+                      <div key={job.id} className="rounded-3xl border border-[#E8ECF0] bg-[#E8ECF0] p-5">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
                             <p className="text-sm font-semibold text-[#0D1B2A]">{job.equipment_type}</p>
@@ -466,7 +467,7 @@ export default function CustomerDetailPage() {
                       </div>
                     ))
                   ) : (
-                    <div className="rounded-3xl border border-dashed border-[#E8ECF0] bg-[#F4F6F9] p-6 text-sm text-[#7A8898]">No repair jobs found for this customer.</div>
+                    <div className="rounded-3xl border border-dashed border-[#E8ECF0] bg-[#E8ECF0] p-6 text-sm text-[#7A8898]">No repair jobs found for this customer.</div>
                   )}
                 </div>
               </section>
@@ -483,7 +484,7 @@ export default function CustomerDetailPage() {
                     <button
                       type="button"
                       onClick={openCustomPlanModal}
-                      className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:bg-[#a0632b] transition"
+                      className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition"
                     >
                       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -530,7 +531,7 @@ export default function CustomerDetailPage() {
                     <button
                       type="button"
                       onClick={openCustomPlanModal}
-                      className="mt-3 w-full rounded-2xl border border-[#E8ECF0] px-4 py-2.5 text-xs font-semibold text-[#0D1B2A] hover:bg-[#F4F6F9] transition text-center"
+                      className="mt-3 w-full rounded-2xl border border-[#E8ECF0] px-4 py-2.5 text-xs font-semibold text-[#0D1B2A] hover:bg-[#E8ECF0] transition text-center"
                     >
                       Create new custom plan
                     </button>
@@ -547,7 +548,7 @@ export default function CustomerDetailPage() {
                     <button
                       type="button"
                       onClick={openCustomPlanModal}
-                      className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -579,7 +580,7 @@ export default function CustomerDetailPage() {
               <button
                 type="button"
                 onClick={() => setShowCustomPlan(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#7A8898] hover:bg-[#F4F6F9] hover:text-[#0D1B2A] transition"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#7A8898] hover:bg-[#E8ECF0] hover:text-[#0D1B2A] transition"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -669,7 +670,7 @@ export default function CustomerDetailPage() {
                   {customPlanFeatures.length > 0 && (
                     <ul className="space-y-1.5">
                       {customPlanFeatures.map((f, i) => (
-                        <li key={i} className="flex items-center justify-between gap-2 rounded-xl bg-[#F4F6F9] px-3 py-2">
+                        <li key={i} className="flex items-center justify-between gap-2 rounded-xl bg-[#E8ECF0] px-3 py-2">
                           <span className="text-sm text-[#0D1B2A] flex items-center gap-1.5">
                             <span className="text-[#B87333]">•</span> {f}
                           </span>
@@ -706,19 +707,19 @@ export default function CustomerDetailPage() {
             </div>
 
             {/* Modal footer */}
-            <div className="shrink-0 flex gap-3 px-6 py-4 border-t border-[#E8ECF0] bg-[#F9FAFB] rounded-b-2xl">
+            <div className="shrink-0 flex gap-3 px-6 py-4 border-t border-[#E8ECF0] bg-[#E8ECF0] rounded-b-2xl">
               <button
                 type="submit"
                 form="custom-plan-form"
                 disabled={customPlanSaving}
-                className="flex-1 rounded-xl bg-[#B87333] px-5 py-3 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                className="flex-1 rounded-xl bg-[#B87333] px-5 py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
               >
                 {customPlanSaving ? 'Creating plan…' : 'Create Plan & Send Email'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowCustomPlan(false)}
-                className="flex-1 rounded-xl border border-[#E8ECF0] px-5 py-3 text-sm font-semibold text-[#0D1B2A] hover:bg-[#F4F6F9] transition"
+                className="flex-1 rounded-xl border border-[#E8ECF0] px-5 py-3 text-sm font-semibold text-[#0D1B2A] hover:bg-[#E8ECF0] transition"
               >
                 Cancel
               </button>

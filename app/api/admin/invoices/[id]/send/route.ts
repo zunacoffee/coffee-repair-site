@@ -26,10 +26,10 @@ function buildEmailHtml(opts: {
     </tr>`).join('')
 
   const notesHtml = opts.notes
-    ? `<p style="margin-top:24px;padding:16px;background:#F4F6F9;border-radius:8px;font-size:14px;color:#7A8898"><strong>Note:</strong> ${opts.notes}</p>`
+    ? `<p style="margin-top:24px;padding:16px;background:#E8ECF0;border-radius:8px;font-size:14px;color:#7A8898"><strong>Note:</strong> ${opts.notes}</p>`
     : ''
 
-  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F4F6F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#E8ECF0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:600px;margin:0 auto;padding:24px">
   <div style="background:#0D1B2A;padding:24px 32px;border-radius:12px 12px 0 0">
     <span style="color:white;font-size:20px;font-weight:700">${opts.business_name}</span>

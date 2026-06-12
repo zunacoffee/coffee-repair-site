@@ -39,10 +39,10 @@ interface InventoryPart {
 }
 
 const STATUS_BADGE: Record<WorkOrder['status'], string> = {
-  open:        'bg-[#7A8898] text-white',
-  in_progress: 'bg-[#0D1B2A] text-[#E8ECF0]',
-  completed:   'bg-green-100 text-green-700',
-  cancelled:   'bg-[#E8ECF0] text-[#7A8898]',
+  open:        'bg-amber-100 text-amber-800',
+  in_progress: 'bg-violet-100 text-violet-800',
+  completed:   'bg-green-100 text-green-800',
+  cancelled:   'bg-gray-100 text-gray-500',
 }
 const STATUS_LABEL: Record<WorkOrder['status'], string> = {
   open: 'Open', in_progress: 'In Progress', completed: 'Completed', cancelled: 'Cancelled',
@@ -170,8 +170,8 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
     setEmailMsg(res.ok ? 'Email sent successfully.' : `Error: ${data.error}`)
   }
 
-  if (loading) return <div className="min-h-screen bg-[#F4F6F9] flex items-center justify-center text-[#7A8898]">Loading…</div>
-  if (!wo)     return <div className="min-h-screen bg-[#F4F6F9] flex items-center justify-center text-red-500">Work order not found.</div>
+  if (loading) return <div className="min-h-screen bg-[#E8ECF0] flex items-center justify-center text-[#7A8898]">Loading…</div>
+  if (!wo)     return <div className="min-h-screen bg-[#E8ECF0] flex items-center justify-center text-red-500">Work order not found.</div>
 
   const RATE = laborType === 'weekend' ? weekendRate : weekdayRate
   const previewLaborTotal = Math.round(Number(laborHours || 0) * RATE * 100) / 100
@@ -189,12 +189,15 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
         .print-only { display: none; }
       `}</style>
 
-      <div className="min-h-screen bg-[#F4F6F9] p-6 no-print">
+      <div className="min-h-screen bg-[#E8ECF0] px-4 py-6 sm:p-6 no-print">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="flex items-start justify-between mb-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
             <div>
-              <Link href="/admin/work-orders" className="text-[#7A8898] text-sm hover:text-[#0D1B2A]">← Work Orders</Link>
+              <Link href="/admin/work-orders" className="inline-flex items-center gap-1 text-sm font-medium text-[#7A8898] hover:text-[#0D1B2A] transition">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                Back
+              </Link>
               <div className="flex items-center gap-3 mt-1">
                 <h1 className="text-2xl font-bold text-[#0D1B2A] font-mono">{wo.work_order_number}</h1>
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${STATUS_BADGE[wo.status]}`}>
@@ -206,19 +209,19 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
             <div className="flex gap-2 flex-wrap justify-end">
               <button
                 onClick={() => window.print()}
-                className="text-sm border border-[#E8ECF0] bg-white text-[#0D1B2A] px-4 py-2 rounded-xl hover:bg-[#F4F6F9] transition-colors font-medium"
+                className="text-sm border border-[#E8ECF0] bg-white text-[#0D1B2A] px-4 py-2 rounded-xl hover:bg-[#E8ECF0] transition-colors font-medium"
               >
                 Print
               </button>
               <button
                 onClick={handleEmail}
-                className="text-sm border border-[#E8ECF0] bg-white text-[#0D1B2A] px-4 py-2 rounded-xl hover:bg-[#F4F6F9] transition-colors font-medium"
+                className="text-sm border border-[#E8ECF0] bg-white text-[#0D1B2A] px-4 py-2 rounded-xl hover:bg-[#E8ECF0] transition-colors font-medium"
               >
                 Email Customer
               </button>
               <button
                 onClick={handleGenerateInvoice}
-                className="text-sm bg-[#0D1B2A] text-white px-4 py-2 rounded-xl hover:bg-[#1a2e45] transition-colors font-medium"
+                className="text-sm bg-[#0D1B2A] text-white px-4 py-2 rounded-xl hover:bg-[#152436] transition-colors font-medium"
               >
                 Generate Invoice
               </button>
@@ -233,7 +236,7 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
               {/* Customer & Equipment */}
               <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <h2 className="font-semibold text-[#0D1B2A] mb-4">Customer & Equipment</h2>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-[#7A8898] text-xs uppercase font-semibold mb-1">Customer</p>
                     <p className="text-[#0D1B2A] font-medium">{wo.customers?.full_name ?? '—'}</p>
@@ -295,7 +298,7 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Scheduled Date</label>
                     <input
@@ -315,7 +318,7 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Labor Type</label>
                     <select
@@ -345,7 +348,7 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="w-full bg-[#B87333] hover:bg-[#a0632b] text-white font-semibold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-60"
+                  className="w-full bg-[#B87333] hover:opacity-90 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-60"
                 >
                   {saving ? 'Saving…' : 'Save Changes'}
                 </button>
@@ -356,6 +359,7 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                 <h2 className="font-semibold text-[#0D1B2A]">Parts Used</h2>
 
                 {parts.length > 0 ? (
+                  <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-xs text-[#7A8898] uppercase">
@@ -383,6 +387,7 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 ) : (
                   <p className="text-[#7A8898] text-sm">No parts added yet.</p>
                 )}
@@ -445,19 +450,19 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                 <h2 className="font-semibold text-[#0D1B2A] mb-2">Quick Actions</h2>
                 <button
                   onClick={handleGenerateInvoice}
-                  className="w-full bg-[#0D1B2A] hover:bg-[#1a2e45] text-white font-semibold py-2.5 rounded-xl transition-colors"
+                  className="w-full bg-[#0D1B2A] hover:bg-[#152436] text-white font-semibold py-2.5 rounded-xl transition-colors"
                 >
                   Generate Invoice
                 </button>
                 <button
                   onClick={handleEmail}
-                  className="w-full border border-[#E8ECF0] text-[#0D1B2A] hover:bg-[#F4F6F9] font-semibold py-2.5 rounded-xl transition-colors"
+                  className="w-full border border-[#E8ECF0] text-[#0D1B2A] hover:bg-[#E8ECF0] font-semibold py-2.5 rounded-xl transition-colors"
                 >
                   Email Customer
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="w-full border border-[#E8ECF0] text-[#0D1B2A] hover:bg-[#F4F6F9] font-semibold py-2.5 rounded-xl transition-colors"
+                  className="w-full border border-[#E8ECF0] text-[#0D1B2A] hover:bg-[#E8ECF0] font-semibold py-2.5 rounded-xl transition-colors"
                 >
                   Print Work Order
                 </button>
@@ -517,7 +522,7 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
             <p className="text-xs font-bold text-[#7A8898] uppercase mb-2">Parts Used</p>
             <table className="w-full border-collapse border border-[#E8ECF0] text-sm">
               <thead>
-                <tr className="bg-[#F4F6F9]">
+                <tr className="bg-[#E8ECF0]">
                   <th className="border border-[#E8ECF0] px-3 py-2 text-left">Part</th>
                   <th className="border border-[#E8ECF0] px-3 py-2 text-center">Qty</th>
                   <th className="border border-[#E8ECF0] px-3 py-2 text-right">Unit Price</th>

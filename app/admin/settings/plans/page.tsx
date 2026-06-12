@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 
 interface PlanSetting {
@@ -128,14 +129,18 @@ export default function PlanSettingsPage() {
   }
 
   if (loading) {
-    return <div className="min-h-screen bg-[#F4F6F9] flex items-center justify-center text-[#7A8898]">Loading…</div>
+    return <div className="min-h-screen bg-[#E8ECF0] flex items-center justify-center text-[#7A8898]">Loading…</div>
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] p-6">
+    <div className="min-h-screen bg-[#E8ECF0] p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#7A8898]">Settings</p>
+          <Link href="/admin/settings" className="inline-flex items-center gap-1 text-sm font-medium text-[#7A8898] hover:text-[#0D1B2A] transition">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+            Back
+          </Link>
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#7A8898] mt-3">Settings</p>
           <h1 className="text-2xl font-bold text-[#0D1B2A] mt-1">Maintenance Plans</h1>
           <p className="text-sm text-[#7A8898] mt-1">Edit plan names, descriptions, features, and pricing. Price changes automatically create a new Stripe price.</p>
         </div>
@@ -241,7 +246,7 @@ export default function PlanSettingsPage() {
                       <label className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-2">Features</label>
                       <div className="space-y-2 mb-3">
                         {features.map((f, idx) => (
-                          <div key={idx} className="flex items-center gap-2 bg-[#F4F6F9] rounded-xl px-3 py-2">
+                          <div key={idx} className="flex items-center gap-2 bg-[#E8ECF0] rounded-xl px-3 py-2">
                             <span className="text-[#B87333] text-sm">•</span>
                             <span className="flex-1 text-sm text-[#0D1B2A]">{f}</span>
                             <button
@@ -276,7 +281,7 @@ export default function PlanSettingsPage() {
                     </div>
 
                     {/* Stripe info */}
-                    <div className="rounded-xl bg-[#F4F6F9] px-4 py-3 text-xs text-[#7A8898] space-y-0.5">
+                    <div className="rounded-xl bg-[#E8ECF0] px-4 py-3 text-xs text-[#7A8898] space-y-0.5">
                       <p><span className="font-semibold">Stripe Price ID:</span> {plan.stripe_price_id || '—'}</p>
                       <p><span className="font-semibold">Stripe Product ID:</span> {plan.stripe_product_id || '—'}</p>
                       <p><span className="font-semibold">Last updated:</span> {plan.updated_at ? new Date(plan.updated_at).toLocaleString() : '—'}</p>
@@ -290,7 +295,7 @@ export default function PlanSettingsPage() {
                     <button
                       onClick={() => handleSave(plan.id)}
                       disabled={isSaving}
-                      className="w-full bg-[#B87333] hover:bg-[#a0632b] text-white font-semibold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-60"
+                      className="w-full bg-[#B87333] hover:opacity-90 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-60"
                     >
                       {isSaving ? 'Saving…' : 'Save Changes'}
                     </button>

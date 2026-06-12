@@ -32,9 +32,9 @@ type RepairJob = {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  completed:   'border-green-200 bg-green-50 text-green-800',
-  in_progress: 'border-[#0D1B2A] bg-[#0D1B2A] text-[#E8ECF0]',
-  pending:     'border-[#B87333] text-[#B87333] bg-transparent',
+  completed:   'border-green-200 bg-green-100 text-green-800',
+  in_progress: 'border-violet-200 bg-violet-100 text-violet-800',
+  pending:     'border-amber-200 bg-amber-100 text-amber-800',
 }
 
 export default function RepairJobsPage() {
@@ -227,7 +227,7 @@ export default function RepairJobsPage() {
         </div>
         <button
           onClick={() => setShowForm((prev) => !prev)}
-          className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+          className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition"
         >
           {showForm ? 'Close form' : 'Create repair job'}
         </button>
@@ -296,14 +296,14 @@ export default function RepairJobsPage() {
                       type="button"
                       onClick={handleSaveInlineEquipment}
                       disabled={inlineSaving}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
                     >
                       {inlineSaving ? 'Saving…' : 'Save & select'}
                     </button>
                     <button
                       type="button"
                       onClick={() => { setShowInlineEquipment(false); setEquipmentSelection('') }}
-                      className="rounded-lg border border-[#E8ECF0] px-4 py-2 text-xs font-semibold text-[#0D1B2A] hover:bg-[#F4F6F9] transition"
+                      className="rounded-lg border border-[#E8ECF0] px-4 py-2 text-xs font-semibold text-[#0D1B2A] hover:bg-[#E8ECF0] transition"
                     >
                       Cancel
                     </button>
@@ -355,7 +355,7 @@ export default function RepairJobsPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
               >
                 {saving ? 'Saving…' : 'Create job'}
               </button>
@@ -366,7 +366,7 @@ export default function RepairJobsPage() {
 
       {/* Table */}
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#E8ECF0] bg-[#F9FAFB]">
+        <div className="px-6 py-4 border-b border-[#E8ECF0] bg-[#E8ECF0]">
           <h2 className="text-sm font-semibold text-[#0D1B2A]">
             Repair jobs
             {!loading && <span className="ml-2 text-[#7A8898] font-normal">({repairJobs.length})</span>}
@@ -391,7 +391,7 @@ export default function RepairJobsPage() {
                     <tr
                       key={job.id}
                       onClick={() => openModal(job)}
-                      className={`hover:bg-[#F9FAFB] cursor-pointer transition-colors ${isUpdating ? 'opacity-60' : ''}`}
+                      className={`hover:bg-[#E8ECF0] cursor-pointer transition-colors ${isUpdating ? 'opacity-60' : ''}`}
                     >
                       <td className="px-5 py-3.5 whitespace-nowrap text-sm font-medium text-[#0D1B2A]">
                         {findCustomerName(job.customer_id)}
@@ -456,7 +456,7 @@ export default function RepairJobsPage() {
               </div>
               <button
                 onClick={() => setSelectedJob(null)}
-                className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#F4F6F9] transition shrink-0"
+                className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#E8ECF0] transition shrink-0"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -560,7 +560,7 @@ export default function RepairJobsPage() {
                 <button
                   onClick={handleModalSave}
                   disabled={modalSaving}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
                 >
                   {modalSaving ? 'Saving…' : 'Save Changes'}
                 </button>

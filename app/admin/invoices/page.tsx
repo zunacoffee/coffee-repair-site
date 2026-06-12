@@ -34,9 +34,9 @@ type InvoiceDetail = {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  draft: 'bg-[#E8ECF0] text-[#7A8898]',
-  sent:  'bg-blue-100 text-blue-700',
-  paid:  'bg-green-100 text-green-700',
+  draft: 'bg-gray-100 text-gray-500',
+  sent:  'bg-violet-100 text-violet-800',
+  paid:  'bg-green-100 text-green-800',
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -191,7 +191,7 @@ export default function InvoicesPage() {
           </button>
           <Link
             href="/admin/invoices/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -242,7 +242,7 @@ export default function InvoicesPage() {
             <p className="mt-1 text-xs text-[#7A8898]">Create your first invoice to get started.</p>
             <Link
               href="/admin/invoices/new"
-              className="mt-4 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+              className="mt-4 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition"
             >
               Create Invoice
             </Link>
@@ -251,7 +251,7 @@ export default function InvoicesPage() {
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
-                <tr className="border-b border-[#E8ECF0] bg-[#F9FAFB]">
+                <tr className="border-b border-[#E8ECF0] bg-[#E8ECF0]">
                   {['Invoice #', 'Customer', 'Date', 'Amount', 'Status', ''].map((h) => (
                     <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0D1B2A]">{h}</th>
                   ))}
@@ -262,7 +262,7 @@ export default function InvoicesPage() {
                   <tr
                     key={inv.id}
                     onClick={() => openModal(inv)}
-                    className="hover:bg-[#F5F7FA] cursor-pointer transition-colors"
+                    className="hover:bg-[#E8ECF0] cursor-pointer transition-colors"
                   >
                     <td className="px-5 py-3.5">
                       <span className="font-mono text-sm font-bold text-[#0D1B2A]">{inv.invoice_number}</span>
@@ -348,7 +348,7 @@ export default function InvoicesPage() {
             </div>
 
             {/* ── Bill To band ─────────────────────────────────────────── */}
-            <div className="shrink-0 border-b border-[#E8ECF0] bg-[#F9FAFB] px-7 py-4">
+            <div className="shrink-0 border-b border-[#E8ECF0] bg-[#E8ECF0] px-7 py-4">
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#7A8898] mb-1.5">Bill To</p>
@@ -394,7 +394,7 @@ export default function InvoicesPage() {
                         </thead>
                         <tbody>
                           {invDetail.lineItems.map((item, idx) => (
-                            <tr key={item.id} className={`${idx % 2 === 1 ? 'bg-[#F9FAFB]' : ''} border-b border-[#E8ECF0]`}>
+                            <tr key={item.id} className={`${idx % 2 === 1 ? 'bg-[#E8ECF0]' : ''} border-b border-[#E8ECF0]`}>
                               <td className="py-3 pr-4">
                                 <p className="font-medium text-[#0D1B2A]">{item.description}</p>
                                 <span className={`inline-block text-[10px] font-bold uppercase px-1.5 py-0.5 rounded mt-0.5 ${
@@ -431,7 +431,7 @@ export default function InvoicesPage() {
 
                   {/* Notes */}
                   {invDetail.invoice.notes && (
-                    <div className="rounded-xl border border-[#E8ECF0] bg-[#F9FAFB] px-4 py-3">
+                    <div className="rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#7A8898] mb-1">Notes</p>
                       <p className="text-sm text-[#0D1B2A] whitespace-pre-wrap">{invDetail.invoice.notes}</p>
                     </div>
@@ -443,7 +443,7 @@ export default function InvoicesPage() {
                       href={invDetail.invoice.stripe_payment_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 rounded-xl bg-[#B87333] px-4 py-3 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+                      className="flex items-center justify-center gap-2 rounded-xl bg-[#B87333] px-4 py-3 text-sm font-semibold text-white hover:opacity-90 transition"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -471,7 +471,7 @@ export default function InvoicesPage() {
             </div>
 
             {/* ── Footer actions ────────────────────────────────────────── */}
-            <div className="shrink-0 rounded-b-2xl border-t border-[#E8ECF0] bg-[#F9FAFB] px-6 py-4">
+            <div className="shrink-0 rounded-b-2xl border-t border-[#E8ECF0] bg-[#E8ECF0] px-6 py-4">
               <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <button
                   onClick={closeModal}
@@ -511,7 +511,7 @@ export default function InvoicesPage() {
                       <button
                         onClick={handleMarkPaid}
                         disabled={markingPaid}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-[#0D1B2A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1a2d40] disabled:opacity-50 transition whitespace-nowrap"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-[#0D1B2A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#152436] disabled:opacity-50 transition whitespace-nowrap"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />

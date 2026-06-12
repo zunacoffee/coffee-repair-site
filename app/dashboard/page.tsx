@@ -315,7 +315,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <Link
                 href="/service-request"
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition"
               >
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -356,7 +356,7 @@ export default function DashboardPage() {
             <p className="mt-2 text-sm text-[#7A8898]">
               Your login ({userEmail}) hasn't been linked to a customer record. Contact Cafe Works to complete your setup.
             </p>
-            <Link href="/service-request" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#B87333] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">
+            <Link href="/service-request" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#B87333] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">
               Submit a service request
             </Link>
           </div>
@@ -484,7 +484,7 @@ export default function DashboardPage() {
                   <h2 className="text-base font-bold text-[#0D1B2A] mb-4">Preventive Maintenance Schedule</h2>
                   {plan ? (
                     <div className="space-y-4">
-                      <div className="rounded-2xl border border-[#E8ECF0] bg-[#F9FAFB] p-6">
+                      <div className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-6">
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">Current Plan</p>
@@ -538,7 +538,7 @@ export default function DashboardPage() {
                             <p className="mt-1 text-xs text-[#7A8898]">Pick a date and time slot for your next PM visit.</p>
                             <button
                               onClick={() => { setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
-                              className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:bg-[#a0632b] transition"
+                              className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition"
                             >
                               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -557,7 +557,7 @@ export default function DashboardPage() {
 
                         {/* Inline scheduler */}
                         {showSchedulePicker && (
-                          <div className="mt-4 rounded-xl border border-[#E8ECF0] bg-[#F9FAFB] p-4">
+                          <div className="mt-4 rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] p-4">
                             <div className="flex items-center justify-between mb-3">
                               <p className="text-sm font-bold text-[#0D1B2A]">Choose appointment</p>
                               <button onClick={() => setShowSchedulePicker(false)} className="text-[#7A8898] hover:text-[#0D1B2A]">
@@ -576,7 +576,7 @@ export default function DashboardPage() {
                             <button
                               onClick={handleSchedulePM}
                               disabled={pmSaving || !pmDate || !pmSlot}
-                              className="mt-3 w-full rounded-xl bg-[#B87333] py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                              className="mt-3 w-full rounded-xl bg-[#B87333] py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
                             >
                               {pmSaving ? 'Saving…' : 'Confirm appointment'}
                             </button>
@@ -604,7 +604,7 @@ export default function DashboardPage() {
                       icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
                       title="No maintenance plan"
                       body="Subscribe to a plan to see your scheduled preventive maintenance visits here."
-                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">View plans</Link>}
+                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">View plans</Link>}
                     />
                   )}
                 </div>
@@ -615,7 +615,7 @@ export default function DashboardPage() {
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-base font-bold text-[#0D1B2A]">Repair History</h2>
-                    <Link href="/service-request" className="inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:bg-[#a0632b] transition">
+                    <Link href="/service-request" className="inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition">
                       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                       Request Repair
                     </Link>
@@ -635,7 +635,7 @@ export default function DashboardPage() {
                         </thead>
                         <tbody className="divide-y divide-[#E8ECF0]">
                           {workOrders.map((wo) => (
-                            <tr key={wo.id} className="hover:bg-[#F9FAFB]">
+                            <tr key={wo.id} className="hover:bg-[#E8ECF0]">
                               <td className="px-5 sm:px-7 py-3.5 text-sm font-mono font-semibold text-[#B87333] whitespace-nowrap">{wo.work_order_number}</td>
                               <td className="px-4 py-3.5 text-sm text-[#0D1B2A] whitespace-nowrap">
                                 {wo.equipment_list ? `${wo.equipment_list.brand} ${wo.equipment_list.model}` : '—'}
@@ -668,7 +668,7 @@ export default function DashboardPage() {
                         </thead>
                         <tbody className="divide-y divide-[#E8ECF0]">
                           {repairJobs.map((job) => (
-                            <tr key={job.id} className="hover:bg-[#F9FAFB]">
+                            <tr key={job.id} className="hover:bg-[#E8ECF0]">
                               <td className="px-5 sm:px-7 py-3.5 text-sm font-medium text-[#0D1B2A] whitespace-nowrap">{job.equipment_type}</td>
                               <td className="px-4 py-3.5 text-sm text-[#7A8898] max-w-[200px]">
                                 <span className="block truncate">{job.description || '—'}</span>
@@ -687,7 +687,7 @@ export default function DashboardPage() {
                       icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>}
                       title="No repair history"
                       body="Your completed and in-progress repairs will appear here."
-                      cta={<Link href="/service-request" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">Request a repair</Link>}
+                      cta={<Link href="/service-request" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">Request a repair</Link>}
                     />
                   )}
                 </div>
@@ -727,7 +727,7 @@ export default function DashboardPage() {
                   )}
 
                   {showEqForm && (
-                    <form onSubmit={handleAddEquipment} className="mb-5 rounded-2xl border border-[#E8ECF0] bg-[#F9FAFB] p-5">
+                    <form onSubmit={handleAddEquipment} className="mb-5 rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-5">
                       <p className="text-sm font-semibold text-[#0D1B2A] mb-4">Add new equipment</p>
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
@@ -785,14 +785,14 @@ export default function DashboardPage() {
                         <button
                           type="button"
                           onClick={() => { setShowEqForm(false); setEqError(null) }}
-                          className="rounded-xl border border-[#E8ECF0] px-4 py-2 text-sm font-semibold text-[#7A8898] hover:bg-[#F4F6F9] transition"
+                          className="rounded-xl border border-[#E8ECF0] px-4 py-2 text-sm font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={eqSaving}
-                          className="rounded-xl bg-[#B87333] px-5 py-2 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                          className="rounded-xl bg-[#B87333] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
                         >
                           {eqSaving ? 'Saving…' : 'Save equipment'}
                         </button>
@@ -803,7 +803,7 @@ export default function DashboardPage() {
                   {equipment.length > 0 ? (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {equipment.map((eq) => (
-                        <div key={eq.id} className="rounded-2xl border border-[#E8ECF0] bg-[#F9FAFB] p-5">
+                        <div key={eq.id} className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-5">
                           <p className="text-xs font-semibold uppercase tracking-wide text-[#B87333]">{eq.equipment_type}</p>
                           <p className="mt-2 text-base font-bold text-[#0D1B2A]">{eq.brand} {eq.model}</p>
                           {eq.serial_number && (
@@ -828,7 +828,7 @@ export default function DashboardPage() {
                       <p className="mt-1 text-xs text-[#7A8898] max-w-xs">Add your coffee equipment to track service history and maintenance.</p>
                       <button
                         onClick={() => { setShowEqForm(true); setEqError(null) }}
-                        className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:bg-[#a0632b] transition"
+                        className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition"
                       >
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -846,7 +846,7 @@ export default function DashboardPage() {
                   <h2 className="text-base font-bold text-[#0D1B2A] mb-4">My Maintenance Plan</h2>
                   {plan ? (
                     <div className="space-y-4 max-w-xl">
-                      <div className="rounded-2xl border border-[#E8ECF0] bg-[#F9FAFB] p-6 space-y-4">
+                      <div className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-6 space-y-4">
                         <div className="flex items-start justify-between gap-4">
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
@@ -908,7 +908,7 @@ export default function DashboardPage() {
                           </div>
                           <a
                             href={plan.stripe_payment_link}
-                            className="flex w-full items-center justify-center rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+                            className="flex w-full items-center justify-center rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 transition"
                           >
                             Activate My Plan →
                           </a>
@@ -919,7 +919,7 @@ export default function DashboardPage() {
                           <button
                             onClick={handleManagePlan}
                             disabled={portalLoading}
-                            className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                            className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
                           >
                             {portalLoading ? 'Opening billing portal…' : 'Manage plan & billing'}
                           </button>
@@ -934,7 +934,7 @@ export default function DashboardPage() {
                       icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
                       title="No active plan"
                       body="Subscribe to a maintenance plan to keep your equipment in peak condition."
-                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition">See plans & pricing</Link>}
+                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">See plans & pricing</Link>}
                     />
                   )}
                 </div>
@@ -957,7 +957,7 @@ export default function DashboardPage() {
                         </thead>
                         <tbody className="divide-y divide-[#E8ECF0]">
                           {invoices.map((inv) => (
-                            <tr key={inv.id} className="hover:bg-[#F9FAFB]">
+                            <tr key={inv.id} className="hover:bg-[#E8ECF0]">
                               <td className="px-5 sm:px-7 py-3.5 text-sm font-medium text-[#0D1B2A]">{inv.description}</td>
                               <td className="px-4 py-3.5 text-sm text-[#0D1B2A] font-semibold whitespace-nowrap">${inv.amount.toFixed(2)}</td>
                               <td className="px-4 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">{inv.due_date ? fmt(inv.due_date) : '—'}</td>
@@ -998,7 +998,7 @@ export default function DashboardPage() {
                         type="email"
                         value={userEmail ?? ''}
                         disabled
-                        className="block w-full rounded-xl border border-[#E8ECF0] bg-[#F4F6F9] px-4 py-2.5 text-sm text-[#7A8898] cursor-not-allowed"
+                        className="block w-full rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-2.5 text-sm text-[#7A8898] cursor-not-allowed"
                       />
                       <p className="mt-1 text-xs text-[#7A8898]">Email address cannot be changed here.</p>
                     </div>
@@ -1061,7 +1061,7 @@ export default function DashboardPage() {
                     <button
                       type="submit"
                       disabled={profileSaving}
-                      className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                      className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
                     >
                       {profileSaving ? 'Saving…' : 'Save changes'}
                     </button>

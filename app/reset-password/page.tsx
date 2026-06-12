@@ -73,7 +73,7 @@ export default function ResetPasswordPage() {
           </p>
           <a
             href="/forgot-password"
-            className="inline-block py-2 px-4 bg-cafe-bronze text-white rounded-md hover:bg-[#a0632b] text-sm font-medium"
+            className="inline-block py-2 px-4 bg-cafe-bronze text-white rounded-md hover:opacity-90 text-sm font-medium"
           >
             Request a new link
           </a>
@@ -132,7 +132,7 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 px-4 bg-cafe-bronze text-white rounded-md hover:bg-[#a0632b] disabled:opacity-50"
+              className="w-full py-2 px-4 bg-cafe-bronze text-white rounded-md hover:opacity-90 disabled:opacity-50"
             >
               {loading ? 'Updating...' : 'Update password'}
             </button>

@@ -74,7 +74,7 @@ export async function POST(
       <p style="color:#7A8898;font-size:12px;margin:4px 0 0">${STATUS_LABELS[wo.status] ?? wo.status}</p>
     </div>
   </div>
-  <div style="background:#F4F6F9;padding:32px;border-radius:0 0 12px 12px">
+  <div style="background:#E8ECF0;padding:32px;border-radius:0 0 12px 12px">
     <p style="color:#0D1B2A;font-size:15px">Hi ${customer.full_name},</p>
     <p style="color:#0D1B2A">Here are the details for your work order:</p>
 
@@ -101,7 +101,7 @@ export async function POST(
       <p style="color:#7A8898;font-size:11px;font-weight:600;margin:0 0 12px;text-transform:uppercase">Parts Used</p>
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead>
-          <tr style="background:#F4F6F9">
+          <tr style="background:#E8ECF0">
             <th style="padding:8px;text-align:left;color:#7A8898;font-weight:600">Part</th>
             <th style="padding:8px;text-align:center;color:#7A8898;font-weight:600">Qty</th>
             <th style="padding:8px;text-align:right;color:#7A8898;font-weight:600">Unit</th>

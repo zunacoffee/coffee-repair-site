@@ -77,10 +77,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition disabled:opacity-50"
-              style={{ backgroundColor: '#B87333' }}
-              onMouseEnter={(e) => { if (!loading) e.currentTarget.style.backgroundColor = '#a0632b' }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = loading ? '' : '#B87333' }}
+              className="w-full rounded-lg bg-[#B87333] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
             >
               {loading ? 'Checking...' : 'Sign in'}
             </button>

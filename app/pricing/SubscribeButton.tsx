@@ -40,7 +40,7 @@ export default function SubscribeButton({ planKey }: { planKey: string }) {
         type="button"
         disabled={loading}
         onClick={handleSubscribe}
-        className="mt-10 inline-flex w-full items-center justify-center rounded-xl bg-cafe-bronze px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a0632b] disabled:cursor-not-allowed disabled:bg-[#D4D8DC]"
+        className="mt-10 inline-flex w-full items-center justify-center rounded-xl bg-cafe-bronze px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#D4D8DC]"
       >
         {loading ? 'Starting checkout…' : 'Subscribe'}
       </button>

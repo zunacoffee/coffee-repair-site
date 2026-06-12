@@ -62,7 +62,7 @@ export default async function PricingPage() {
   const plans = await getPlans()
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F4F6F9]">
+    <div className="min-h-screen flex flex-col bg-[#E8ECF0]">
       <PublicNavbar />
 
       {/* Hero */}

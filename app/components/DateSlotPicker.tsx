@@ -77,7 +77,7 @@ export default function DateSlotPicker({ selectedDate, selectedSlot, onDateChang
           type="button"
           onClick={prevMonth}
           disabled={!canGoPrev}
-          className="rounded-lg p-2 text-[#7A8898] hover:bg-[#F4F6F9] disabled:opacity-30 disabled:cursor-not-allowed transition"
+          className="rounded-lg p-2 text-[#7A8898] hover:bg-[#E8ECF0] disabled:opacity-30 disabled:cursor-not-allowed transition"
           aria-label="Previous month"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -90,7 +90,7 @@ export default function DateSlotPicker({ selectedDate, selectedSlot, onDateChang
         <button
           type="button"
           onClick={nextMonth}
-          className="rounded-lg p-2 text-[#7A8898] hover:bg-[#F4F6F9] transition"
+          className="rounded-lg p-2 text-[#7A8898] hover:bg-[#E8ECF0] transition"
           aria-label="Next month"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

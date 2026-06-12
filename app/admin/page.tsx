@@ -61,12 +61,12 @@ function todayLabel() {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  pending:    'border border-[#B87333] text-[#B87333] bg-transparent',
-  in_progress:'bg-[#0D1B2A] text-[#E8ECF0]',
-  completed:  'bg-green-100 text-green-700',
-  new:        'bg-[#7A8898] text-white',
-  contacted:  'border border-[#B87333] text-[#B87333] bg-transparent',
-  scheduled:  'bg-[#B87333]/10 text-[#B87333]',
+  pending:    'bg-amber-100 text-amber-800',
+  in_progress:'bg-violet-100 text-violet-800',
+  completed:  'bg-green-100 text-green-800',
+  new:        'bg-blue-100 text-blue-800',
+  contacted:  'bg-orange-100 text-orange-800',
+  scheduled:  'bg-blue-100 text-blue-800',
 }
 
 export default function AdminPage() {
@@ -148,7 +148,7 @@ export default function AdminPage() {
             <div className="flex gap-2 flex-wrap self-start sm:self-auto">
               <button
                 onClick={() => setShowAddCustomer(true)}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] transition"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -157,7 +157,7 @@ export default function AdminPage() {
               </button>
               <Link
                 href="/admin/work-orders/new"
-                className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] transition"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -271,7 +271,7 @@ export default function AdminPage() {
                         <p className="truncate text-sm font-medium text-[#0D1B2A]">{job.equipment_type}</p>
                         <p className="truncate text-xs text-[#7A8898]">{customerMap[job.customer_id?.toString()] ?? 'Unknown'}</p>
                       </div>
-                      <span className="shrink-0 rounded-full bg-[#0D1B2A] px-2.5 py-1 text-[11px] font-semibold text-[#E8ECF0]">
+                      <span className="shrink-0 rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-semibold text-violet-800">
                         In progress
                       </span>
                     </li>
@@ -306,7 +306,7 @@ export default function AdminPage() {
                           </p>
                         )}
                       </div>
-                      <span className="shrink-0 rounded-full bg-[#B87333] px-2.5 py-1 text-[11px] font-semibold text-white">
+                      <span className="shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold text-green-800">
                         Active
                       </span>
                     </li>

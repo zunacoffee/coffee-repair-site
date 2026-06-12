@@ -245,7 +245,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] flex">
+    <div className="min-h-screen bg-[#E8ECF0] flex">
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

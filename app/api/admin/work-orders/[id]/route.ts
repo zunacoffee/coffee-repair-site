@@ -118,7 +118,7 @@ export async function PATCH(
     <h1 style="color:white;margin:0;font-size:20px">${bizName.replace('Works', '<span style="color:#B87333">Works</span>')}</h1>
     <p style="color:#7A8898;margin:4px 0 0;font-size:13px">Work Order Complete</p>
   </div>
-  <div style="background:#F4F6F9;padding:32px;border-radius:0 0 12px 12px">
+  <div style="background:#E8ECF0;padding:32px;border-radius:0 0 12px 12px">
     <p style="color:#0D1B2A;font-size:15px">Hi ${customer.full_name},</p>
     <p style="color:#0D1B2A">Your work order <strong>${wo.work_order_number}</strong> has been completed.</p>
     ${equipment ? `<p style="color:#7A8898;font-size:13px">Equipment: ${equipment.brand} ${equipment.model} (${equipment.equipment_type})</p>` : ''}

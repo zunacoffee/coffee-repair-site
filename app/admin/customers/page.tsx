@@ -95,12 +95,12 @@ export default function CustomersPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-semibold text-gray-900">Customers</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage customer records and address info.</p>
+            <h1 className="text-3xl font-semibold text-[#0D1B2A]">Customers</h1>
+            <p className="text-sm text-[#7A8898] mt-1">Manage customer records and address info.</p>
           </div>
           <button
             onClick={() => setShowForm((prev) => !prev)}
-            className="inline-flex items-center justify-center rounded-md bg-[#B87333] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b]"
+            className="inline-flex items-center justify-center rounded-xl bg-[#B87333] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90"
           >
             {showForm ? 'Hide form' : 'Add customer'}
           </button>
@@ -110,73 +110,73 @@ export default function CustomersPage() {
         {error && <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
         {showForm && (
-          <div className="mb-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">New customer</h2>
+          <div className="mb-8 rounded-2xl border border-[#E8ECF0] bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-[#0D1B2A] mb-4">New customer</h2>
             <form onSubmit={handleAddCustomer} className="grid gap-4 lg:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Full name</label>
+                <label className="block text-sm font-medium text-[#7A8898]">Full name</label>
                 <input
                   value={fullName}
                   onChange={(event) => setFullName(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  className="mt-2 block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   placeholder="Jane Doe"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <label className="block text-sm font-medium text-[#7A8898]">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  className="mt-2 block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   placeholder="jane@example.com"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Phone</label>
+                <label className="block text-sm font-medium text-[#7A8898]">Phone</label>
                 <input
                   value={phone}
                   onChange={(event) => setPhone(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  className="mt-2 block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   placeholder="(123) 456-7890"
                 />
               </div>
               <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">Street Address</label>
+                <label className="block text-sm font-medium text-[#7A8898]">Street Address</label>
                 <input
                   value={street}
                   onChange={(event) => setStreet(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  className="mt-2 block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   placeholder="123 Main St"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">City</label>
+                <label className="block text-sm font-medium text-[#7A8898]">City</label>
                 <input
                   value={city}
                   onChange={(event) => setCity(event.target.value)}
-                  className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  className="mt-2 block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   placeholder="Portland"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">State</label>
+                  <label className="block text-sm font-medium text-[#7A8898]">State</label>
                   <input
                     value={addrState}
                     onChange={(event) => setAddrState(event.target.value)}
                     maxLength={2}
-                    className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                    className="mt-2 block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                     placeholder="OR"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">ZIP Code</label>
+                  <label className="block text-sm font-medium text-[#7A8898]">ZIP Code</label>
                   <input
                     value={zip}
                     onChange={(event) => setZip(event.target.value)}
                     maxLength={10}
-                    className="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                    className="mt-2 block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                     placeholder="97201"
                   />
                 </div>
@@ -185,7 +185,7 @@ export default function CustomersPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center justify-center rounded-xl bg-[#B87333] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-xl bg-[#B87333] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:opacity-90 disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : 'Save customer'}
                 </button>
@@ -194,12 +194,12 @@ export default function CustomersPage() {
           </div>
         )}
 
-        <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
-          <div className="px-6 py-4 border-b bg-gray-50">
-            <h2 className="text-sm font-semibold text-gray-900">Customer list</h2>
+        <div className="overflow-hidden rounded-2xl border border-[#E8ECF0] bg-white shadow-sm">
+          <div className="px-6 py-4 border-b border-[#E8ECF0] bg-[#E8ECF0]/40">
+            <h2 className="text-sm font-semibold text-[#0D1B2A]">Customer list</h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-[#E8ECF0]">
               <thead className="bg-white">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Name</th>
@@ -209,20 +209,20 @@ export default function CustomersPage() {
                   <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
+              <tbody className="divide-y divide-[#E8ECF0] bg-white">
                 {isLoading ? (
-                  <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">Loading customers...</td></tr>
+                  <tr><td colSpan={5} className="px-6 py-12 text-center text-[#7A8898]">Loading customers...</td></tr>
                 ) : customers.length > 0 ? (
                   customers.map((customer) => (
-                    <tr key={customer.id} className="hover:bg-[#F5F7FA] transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        <Link href={`/admin/customers/${customer.id}`} className="text-[#B87333] hover:text-[#a0632b]">
+                    <tr key={customer.id} className="hover:bg-[#E8ECF0] transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#0D1B2A]">
+                        <Link href={`/admin/customers/${customer.id}`} className="text-[#B87333] hover:opacity-90">
                           {customer.full_name}
                         </Link>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{customer.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{customer.phone}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#7A8898]">{customer.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#7A8898]">{customer.phone}</td>
+                      <td className="px-6 py-4 text-sm text-[#7A8898]">
                         {customer.street || customer.city
                           ? [customer.street, [customer.city, [customer.state, customer.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')].filter(Boolean).join(', ')
                           : customer.address || '—'}
@@ -239,7 +239,7 @@ export default function CustomersPage() {
                             </button>
                             <button
                               onClick={() => setConfirmDeleteId(null)}
-                              className="rounded-full border border-[#7A8898] px-3 py-1 text-xs font-semibold text-[#7A8898] hover:bg-[#F4F6F9] transition"
+                              className="rounded-full border border-[#7A8898] px-3 py-1 text-xs font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition"
                             >
                               Cancel
                             </button>
@@ -248,13 +248,13 @@ export default function CustomersPage() {
                           <span className="inline-flex items-center gap-2">
                             <Link
                               href={`/admin/customers/${customer.id}`}
-                              className="rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#a0632b] transition"
+                              className="rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition"
                             >
                               View
                             </Link>
                             <button
                               onClick={() => setConfirmDeleteId(customer.id)}
-                              className="rounded-full border border-[#7A8898] px-3 py-1.5 text-xs font-semibold text-[#7A8898] hover:bg-[#F4F6F9] transition"
+                              className="rounded-full border border-[#7A8898] px-3 py-1.5 text-xs font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition"
                             >
                               Delete
                             </button>
@@ -264,7 +264,7 @@ export default function CustomersPage() {
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">No customers found.</td></tr>
+                  <tr><td colSpan={5} className="px-6 py-12 text-center text-[#7A8898]">No customers found.</td></tr>
                 )}
               </tbody>
             </table>

@@ -1,18 +1,50 @@
 import Link from 'next/link'
 import PublicNavbar from './components/PublicNavbar'
 import PublicFooter from './components/PublicFooter'
+import { supabaseAdmin } from '../lib/supabaseAdmin'
+
+export const revalidate = 300
 
 const MONO = 'font-[family-name:var(--font-ibm-plex-mono)]'
 
-export default function Home() {
+interface Plan {
+  id: number
+  plan_key: string
+  name: string
+  description: string
+  price: number
+  features: string[]
+  is_active: boolean
+}
+
+const FALLBACK_PLANS: Plan[] = [
+  { id: 1, plan_key: 'basic',    name: 'Basic',    description: 'Perfect for small shops that need dependable monthly maintenance.',     price: 29, features: ['1 machine covered', 'Monthly PM visit', 'Email support', '10% parts discount'],                                              is_active: true },
+  { id: 2, plan_key: 'standard', name: 'Standard', description: 'A balanced plan for regular maintenance and ongoing priority support.', price: 59, features: ['Up to 3 machines', 'Bi-monthly PM visits', 'Priority phone support', '15% parts discount', 'Free diagnostics'],           is_active: true },
+  { id: 3, plan_key: 'premium',  name: 'Premium',  description: 'Priority response and full coverage for busy or multi-location cafes.', price: 99, features: ['Unlimited machines', 'Monthly PM visits', '24/7 emergency line', '20% parts discount', 'Free diagnostics', 'Loaner equipment'], is_active: true },
+]
+
+async function getPlans(): Promise<Plan[]> {
+  try {
+    const { data } = await supabaseAdmin
+      .from('plan_settings')
+      .select('id, plan_key, name, description, price, features, is_active')
+      .eq('is_active', true)
+      .order('price', { ascending: true })
+    return data && data.length > 0 ? (data as Plan[]) : FALLBACK_PLANS
+  } catch {
+    return FALLBACK_PLANS
+  }
+}
+
+export default async function Home() {
+  const plans = await getPlans()
   return (
     <main className="bg-[#0D1B2A] text-[#E8ECF0]">
       <PublicNavbar />
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-[#0D1B2A] px-6 py-20 sm:px-10 sm:py-28 lg:px-16">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_#B87333_0%,_transparent_60%)] opacity-[0.07] pointer-events-none" />
-        <div className="relative mx-auto max-w-7xl flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
+      <section className="bg-[#0D1B2A] px-6 py-20 sm:px-10 sm:py-28 lg:px-16">
+        <div className="mx-auto max-w-7xl flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
 
           {/* Left */}
           <div className="max-w-xl space-y-7">
@@ -27,7 +59,7 @@ export default function Home() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/service-request"
-                className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-7 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#a0632b]"
+                className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-7 py-3 text-sm font-semibold text-white shadow-lg transition hover:opacity-90"
               >
                 Book a Repair
               </Link>
@@ -41,7 +73,7 @@ export default function Home() {
           </div>
 
           {/* Right — Repair Tracker */}
-          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30 backdrop-blur-sm lg:shrink-0">
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#152436] p-6 shadow-2xl shadow-black/30 lg:shrink-0">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <p className={`${MONO} text-[10px] tracking-widest text-[#B87333]`}>JOB-ID: CW-2025-0891</p>
@@ -204,7 +236,7 @@ export default function Home() {
       </section>
 
       {/* ── Maintenance Plans ── */}
-      <section className="bg-[#F4F6F9] px-6 py-16 sm:py-24 sm:px-10 lg:px-16">
+      <section className="bg-[#E8ECF0] px-6 py-16 sm:py-24 sm:px-10 lg:px-16">
         <div className="mx-auto max-w-7xl space-y-10">
           <div className="max-w-2xl">
             <p className={`${MONO} text-xs tracking-widest text-[#B87333]`}>// MAINTENANCE-PLANS</p>
@@ -217,69 +249,50 @@ export default function Home() {
           </div>
 
           <div className="grid gap-5 md:grid-cols-3">
-            {[
-              {
-                name:     'Basic',
-                price:    '$99',
-                desc:     'Perfect for small shops that need dependable monthly maintenance.',
-                features: ['1 machine covered', 'Monthly PM visit', 'Email support', '10% parts discount'],
-                featured: false,
-              },
-              {
-                name:     'Standard',
-                price:    '$199',
-                desc:     'A balanced plan for regular maintenance and ongoing priority support.',
-                features: ['Up to 3 machines', 'Bi-monthly PM visits', 'Priority phone support', '15% parts discount', 'Free diagnostics'],
-                featured: true,
-              },
-              {
-                name:     'Premium',
-                price:    '$349',
-                desc:     'Priority response and full coverage for busy or multi-location cafes.',
-                features: ['Unlimited machines', 'Monthly PM visits', '24/7 emergency line', '20% parts discount', 'Free diagnostics', 'Loaner equipment'],
-                featured: false,
-              },
-            ].map(({ name, price, desc, features, featured }) => (
-              <div
-                key={name}
-                className={`relative rounded-2xl p-8 ${
-                  featured
-                    ? 'bg-[#0D1B2A] text-white shadow-xl shadow-[#0D1B2A]/20 ring-2 ring-[#B87333]'
-                    : 'bg-white border border-[#E8ECF0] shadow-sm'
-                }`}
-              >
-                {featured && (
-                  <span className={`${MONO} absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#B87333] px-4 py-0.5 text-[10px] font-semibold tracking-widest text-white`}>
-                    MOST POPULAR
-                  </span>
-                )}
-                <p className={`${MONO} text-[11px] tracking-widest ${featured ? 'text-[#B87333]' : 'text-[#B87333]'}`}>PLAN: {name.toUpperCase()}</p>
-                <p className={`mt-3 text-4xl font-bold ${featured ? 'text-white' : 'text-[#0D1B2A]'}`}>
-                  {price}<span className={`text-base font-normal ${featured ? 'text-white/50' : 'text-[#7A8898]'}`}>/mo</span>
-                </p>
-                <p className={`mt-2 text-sm leading-6 ${featured ? 'text-[#E8ECF0]/60' : 'text-[#7A8898]'}`}>{desc}</p>
-                <ul className="mt-6 space-y-2.5">
-                  {features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm">
-                      <svg className="h-4 w-4 shrink-0 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span className={featured ? 'text-[#E8ECF0]/80' : 'text-[#0D1B2A]'}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/pricing"
-                  className={`mt-8 flex items-center justify-center rounded-full py-3 text-sm font-semibold transition ${
+            {plans.map((plan) => {
+              const featured = plan.plan_key === 'standard'
+              return (
+                <div
+                  key={plan.id}
+                  className={`relative rounded-2xl p-8 ${
                     featured
-                      ? 'bg-[#B87333] text-white hover:bg-[#a0632b]'
-                      : 'border border-[#0D1B2A]/20 text-[#0D1B2A] hover:bg-[#0D1B2A] hover:text-white'
+                      ? 'bg-[#0D1B2A] text-white shadow-xl shadow-[#0D1B2A]/20 ring-2 ring-[#B87333]'
+                      : 'bg-white border border-[#E8ECF0] shadow-sm'
                   }`}
                 >
-                  Get started
-                </Link>
-              </div>
-            ))}
+                  {featured && (
+                    <span className={`${MONO} absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#B87333] px-4 py-0.5 text-[10px] font-semibold tracking-widest text-white`}>
+                      MOST POPULAR
+                    </span>
+                  )}
+                  <p className={`${MONO} text-[11px] tracking-widest text-[#B87333]`}>PLAN: {plan.plan_key.toUpperCase()}</p>
+                  <p className={`mt-3 text-4xl font-bold ${featured ? 'text-white' : 'text-[#0D1B2A]'}`}>
+                    ${plan.price}<span className={`text-base font-normal ${featured ? 'text-white/50' : 'text-[#7A8898]'}`}>/mo</span>
+                  </p>
+                  <p className={`mt-2 text-sm leading-6 ${featured ? 'text-[#E8ECF0]/60' : 'text-[#7A8898]'}`}>{plan.description}</p>
+                  <ul className="mt-6 space-y-2.5">
+                    {(plan.features ?? []).map((f) => (
+                      <li key={f} className="flex items-center gap-2.5 text-sm">
+                        <svg className="h-4 w-4 shrink-0 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className={featured ? 'text-[#E8ECF0]/80' : 'text-[#0D1B2A]'}>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href="/pricing"
+                    className={`mt-8 flex items-center justify-center rounded-full py-3 text-sm font-semibold transition ${
+                      featured
+                        ? 'bg-[#B87333] text-white hover:opacity-90'
+                        : 'border border-[#0D1B2A]/20 text-[#0D1B2A] hover:bg-[#0D1B2A] hover:text-white'
+                    }`}
+                  >
+                    Get started
+                  </Link>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -299,7 +312,7 @@ export default function Home() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/service-request"
-                className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-7 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#a0632b]"
+                className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-7 py-3 text-sm font-semibold text-white shadow-lg transition hover:opacity-90"
               >
                 Book a Repair
               </Link>

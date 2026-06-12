@@ -121,7 +121,7 @@ export default function ServiceRequestPage() {
               </p>
               <button
                 onClick={() => { setForm(EMPTY); setSelectedDate(null); setSelectedSlot(null); setSubmitted(false) }}
-                className="mt-6 inline-flex items-center justify-center rounded-full bg-cafe-bronze px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+                className="mt-6 inline-flex items-center justify-center rounded-full bg-cafe-bronze px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition"
               >
                 Submit another request
               </button>
@@ -246,7 +246,7 @@ export default function ServiceRequestPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3 px-4 bg-cafe-bronze text-white font-semibold rounded-xl hover:bg-[#a0632b] disabled:opacity-50 transition"
+                className="w-full py-3 px-4 bg-cafe-bronze text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition"
               >
                 {submitting ? 'Submitting…' : 'Submit service request'}
               </button>

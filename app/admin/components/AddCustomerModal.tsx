@@ -105,7 +105,7 @@ export default function AddCustomerModal({ open, onClose, onAdded }: Props) {
   }
 
   const inputCls =
-    'block w-full rounded-xl border border-[#E8ECF0] bg-[#F9FAFB] px-4 py-2.5 text-sm text-[#0D1B2A] placeholder:text-[#7A8898] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20'
+    'block w-full rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-2.5 text-sm text-[#0D1B2A] placeholder:text-[#7A8898] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20'
   const labelCls = 'block text-sm font-semibold text-[#0D1B2A] mb-1'
   const eqInputCls =
     'block w-full rounded-lg border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] placeholder:text-[#7A8898] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20'
@@ -126,7 +126,7 @@ export default function AddCustomerModal({ open, onClose, onAdded }: Props) {
             </span>
             <h2 className="text-base font-bold text-[#0D1B2A]">Add Customer</h2>
           </div>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#F4F6F9] hover:text-[#0D1B2A] transition" aria-label="Close">
+          <button onClick={onClose} className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#E8ECF0] hover:text-[#0D1B2A] transition" aria-label="Close">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -153,7 +153,7 @@ export default function AddCustomerModal({ open, onClose, onAdded }: Props) {
               <div className="mt-6 flex flex-col gap-2">
                 <Link
                   href="/admin/invoices/new"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition"
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -162,7 +162,7 @@ export default function AddCustomerModal({ open, onClose, onAdded }: Props) {
                 </Link>
                 <button
                   onClick={onClose}
-                  className="rounded-xl border border-[#E8ECF0] px-5 py-2.5 text-sm font-semibold text-[#0D1B2A] hover:bg-[#F4F6F9] transition"
+                  className="rounded-xl border border-[#E8ECF0] px-5 py-2.5 text-sm font-semibold text-[#0D1B2A] hover:bg-[#E8ECF0] transition"
                 >
                   Done
                 </button>
@@ -216,7 +216,7 @@ export default function AddCustomerModal({ open, onClose, onAdded }: Props) {
                 {equipRows.length > 0 && (
                   <div className="space-y-3 mb-3">
                     {equipRows.map((row, i) => (
-                      <div key={i} className="rounded-xl border border-[#E8ECF0] bg-[#F9FAFB] p-3">
+                      <div key={i} className="rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] p-3">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-xs font-semibold text-[#7A8898]">Equipment {i + 1}</span>
                           <button
@@ -279,7 +279,7 @@ export default function AddCustomerModal({ open, onClose, onAdded }: Props) {
               type="submit"
               form="add-customer-form"
               disabled={saving}
-              className="flex-1 rounded-xl bg-[#B87333] py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+              className="flex-1 rounded-xl bg-[#B87333] py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
             >
               {saving ? 'Saving…' : equipRows.filter((r) => r.equipment_type || r.brand).length > 0
                 ? `Add Customer + ${equipRows.filter((r) => r.equipment_type || r.brand).length} Equipment`
@@ -288,7 +288,7 @@ export default function AddCustomerModal({ open, onClose, onAdded }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-[#E8ECF0] px-4 py-2.5 text-sm font-semibold text-[#0D1B2A] hover:bg-[#F4F6F9] transition"
+              className="rounded-xl border border-[#E8ECF0] px-4 py-2.5 text-sm font-semibold text-[#0D1B2A] hover:bg-[#E8ECF0] transition"
             >
               Cancel
             </button>

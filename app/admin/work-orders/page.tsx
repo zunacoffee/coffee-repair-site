@@ -17,9 +17,9 @@ interface WorkOrder {
 }
 
 const STATUS_BADGE: Record<WorkOrder['status'], string> = {
-  open:        'bg-[#7A8898] text-white',
-  in_progress: 'bg-[#0D1B2A] text-[#E8ECF0]',
-  completed:   'bg-green-100 text-green-700',
+  open:        'bg-amber-100 text-amber-800',
+  in_progress: 'bg-violet-100 text-violet-800',
+  completed:   'bg-green-100 text-green-800',
   cancelled:   'bg-gray-100 text-gray-500',
 }
 const STATUS_LABEL: Record<WorkOrder['status'], string> = {
@@ -43,7 +43,7 @@ export default function WorkOrdersPage() {
     : workOrders.filter(wo => wo.status === filter)
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] p-6">
+    <div className="min-h-screen bg-[#E8ECF0] p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -53,7 +53,7 @@ export default function WorkOrdersPage() {
           </div>
           <Link
             href="/admin/work-orders/new"
-            className="shrink-0 inline-flex items-center justify-center bg-[#B87333] hover:bg-[#a0632b] text-white font-semibold px-5 py-3 rounded-xl text-sm transition-colors"
+            className="shrink-0 inline-flex items-center justify-center bg-[#B87333] hover:opacity-90 text-white font-semibold px-5 py-3 rounded-xl text-sm transition-colors"
           >
             + New Work Order
           </Link>
@@ -85,7 +85,7 @@ export default function WorkOrdersPage() {
           ) : (
             <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[#F4F6F9] border-b border-[#E8ECF0]">
+              <thead className="bg-[#E8ECF0] border-b border-[#E8ECF0]">
                 <tr>
                   <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">WO #</th>
                   <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">Customer</th>
@@ -100,7 +100,7 @@ export default function WorkOrdersPage() {
                 {filtered.map(wo => (
                   <tr
                     key={wo.id}
-                    className="border-b border-[#E8ECF0] last:border-0 hover:bg-[#F5F7FA] cursor-pointer transition-colors"
+                    className="border-b border-[#E8ECF0] last:border-0 hover:bg-[#E8ECF0] cursor-pointer transition-colors"
                     onClick={() => window.location.href = `/admin/work-orders/${wo.id}`}
                   >
                     <td className="px-4 py-3 font-mono font-semibold text-[#B87333]">{wo.work_order_number}</td>

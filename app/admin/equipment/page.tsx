@@ -30,9 +30,9 @@ type RepairJob = {
 const EMPTY_FORM = { customer_id: '', equipment_type: '', brand: '', model: '', serial_number: '' }
 
 const JOB_STATUS_BADGE: Record<string, string> = {
-  completed:   'bg-green-100 text-green-700',
-  in_progress: 'bg-[#0D1B2A] text-[#E8ECF0]',
-  pending:     'border border-[#B87333] text-[#B87333] bg-transparent',
+  completed:   'bg-green-100 text-green-800',
+  in_progress: 'bg-violet-100 text-violet-800',
+  pending:     'bg-amber-100 text-amber-800',
 }
 
 export default function EquipmentPage() {
@@ -176,7 +176,7 @@ export default function EquipmentPage() {
         </div>
         <button
           onClick={() => { setShowForm((p) => !p); setAddError(null) }}
-          className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition"
+          className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition"
         >
           {showForm ? (
             <>
@@ -240,14 +240,14 @@ export default function EquipmentPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
               >
                 {saving ? 'Saving…' : 'Save Equipment'}
               </button>
               <button
                 type="button"
                 onClick={() => { setShowForm(false); setAddError(null); setForm(EMPTY_FORM) }}
-                className="rounded-xl border border-[#E8ECF0] px-5 py-2.5 text-sm font-semibold text-[#0D1B2A] hover:bg-[#F4F6F9] transition"
+                className="rounded-xl border border-[#E8ECF0] px-5 py-2.5 text-sm font-semibold text-[#0D1B2A] hover:bg-[#E8ECF0] transition"
               >
                 Cancel
               </button>
@@ -329,7 +329,7 @@ export default function EquipmentPage() {
                   <tr
                     key={eq.id}
                     onClick={() => setSelectedEq(eq)}
-                    className="hover:bg-[#F5F7FA] cursor-pointer transition-colors"
+                    className="hover:bg-[#E8ECF0] cursor-pointer transition-colors"
                   >
                     <td className="px-5 py-3.5">
                       {eq.customers ? (
@@ -382,7 +382,7 @@ export default function EquipmentPage() {
               </div>
               <button
                 onClick={() => setSelectedEq(null)}
-                className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#F4F6F9] transition shrink-0"
+                className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#E8ECF0] transition shrink-0"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -466,7 +466,7 @@ export default function EquipmentPage() {
               {selectedEq.customers && (
                 <Link
                   href={`/admin/customers/${selectedEq.customers.id}`}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#0D1B2A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1a2d40] transition"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#0D1B2A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#152436] transition"
                 >
                   Customer profile
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

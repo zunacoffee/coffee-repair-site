@@ -58,11 +58,11 @@ const SLOT_TIME: Record<string, string> = {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  pending:     'bg-gray-100 text-gray-600',
-  open:        'bg-blue-100 text-blue-700',
-  in_progress: 'bg-amber-100 text-amber-800',
-  completed:   'bg-green-100 text-green-700',
-  active:      'bg-green-100 text-green-700',
+  pending:     'bg-amber-100 text-amber-800',
+  open:        'bg-amber-100 text-amber-800',
+  in_progress: 'bg-violet-100 text-violet-800',
+  completed:   'bg-green-100 text-green-800',
+  active:      'bg-green-100 text-green-800',
   cancelled:   'bg-gray-100 text-gray-500',
 }
 
@@ -205,7 +205,7 @@ export default function CalendarPage() {
   })
 
   return (
-    <div className="flex-1 bg-[#F4F6F9]">
+    <div className="flex-1 bg-[#E8ECF0]">
 
       {/* Page header */}
       <div className="border-b border-[#E8ECF0] bg-white px-4 py-4 sm:px-8">
@@ -226,7 +226,7 @@ export default function CalendarPage() {
             </button>
             <Link
               href="/admin/repair-jobs"
-              className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl bg-[#B87333] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#a0632b] transition"
+              className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl bg-[#B87333] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -245,7 +245,7 @@ export default function CalendarPage() {
 
             {/* Month nav */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8ECF0]">
-              <button onClick={prevMonth} className="rounded-lg p-2 text-[#7A8898] hover:bg-[#F4F6F9] hover:text-[#0D1B2A] transition" aria-label="Previous month">
+              <button onClick={prevMonth} className="rounded-lg p-2 text-[#7A8898] hover:bg-[#E8ECF0] hover:text-[#0D1B2A] transition" aria-label="Previous month">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -262,7 +262,7 @@ export default function CalendarPage() {
                 )}
               </div>
 
-              <button onClick={nextMonth} className="rounded-lg p-2 text-[#7A8898] hover:bg-[#F4F6F9] hover:text-[#0D1B2A] transition" aria-label="Next month">
+              <button onClick={nextMonth} className="rounded-lg p-2 text-[#7A8898] hover:bg-[#E8ECF0] hover:text-[#0D1B2A] transition" aria-label="Next month">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
@@ -312,11 +312,11 @@ export default function CalendarPage() {
                     } else if (isSelected) {
                       cellCls = 'border-2 border-[#B87333]/40 bg-[#B87333]/5'
                     } else if (!inMonth) {
-                      cellCls = 'border border-[#E8ECF0] bg-[#FAFAFA] hover:bg-[#F4F6F9]'
+                      cellCls = 'border border-[#E8ECF0] bg-[#E8ECF0] hover:bg-[#E8ECF0]'
                     } else if (isWeekend) {
                       cellCls = 'border border-[#E8ECF0] bg-red-50 hover:bg-red-100'
                     } else {
-                      cellCls = 'border border-[#E8ECF0] bg-white hover:bg-[#F4F6F9]'
+                      cellCls = 'border border-[#E8ECF0] bg-white hover:bg-[#E8ECF0]'
                     }
 
                     return (
@@ -495,7 +495,7 @@ export default function CalendarPage() {
                 <p className="mt-3 text-sm font-medium text-[#0D1B2A]">Nothing scheduled</p>
                 <p className="mt-1 text-xs text-[#7A8898]">No repairs or visits on this day.</p>
                 {!selectedBlocked && (
-                  <Link href="/admin/repair-jobs" className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:bg-[#a0632b] transition">
+                  <Link href="/admin/repair-jobs" className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition">
                     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
@@ -523,7 +523,7 @@ export default function CalendarPage() {
           <div className="w-full max-w-sm rounded-2xl bg-white shadow-xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8ECF0]">
               <h2 className="text-base font-bold text-[#0D1B2A]">Block a Date</h2>
-              <button onClick={() => setShowBlockModal(false)} className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#F4F6F9] transition">
+              <button onClick={() => setShowBlockModal(false)} className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#E8ECF0] transition">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -562,7 +562,7 @@ export default function CalendarPage() {
                 <button
                   type="submit"
                   disabled={blockSaving}
-                  className="flex-1 rounded-xl bg-[#0D1B2A] py-2.5 text-sm font-semibold text-white hover:bg-[#1a2d40] disabled:opacity-50 transition"
+                  className="flex-1 rounded-xl bg-[#0D1B2A] py-2.5 text-sm font-semibold text-white hover:bg-[#152436] disabled:opacity-50 transition"
                 >
                   {blockSaving ? 'Blocking…' : 'Block date'}
                 </button>

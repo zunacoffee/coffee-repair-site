@@ -123,7 +123,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             We've put together a custom maintenance plan just for you.
             Click the button below to activate it — it only takes a moment.
           </p>
-          <div style="background:#F4F6F9;border-radius:12px;padding:24px;margin:0 0 28px;">
+          <div style="background:#E8ECF0;border-radius:12px;padding:24px;margin:0 0 28px;">
             <h3 style="margin:0 0 6px;color:#0D1B2A;font-size:18px;">${plan_name.trim()}</h3>
             ${description ? `<p style="color:#7A8898;margin:0 0 16px;font-size:14px;">${description.trim()}</p>` : ''}
             <table style="width:100%;border-collapse:collapse;font-size:14px;">

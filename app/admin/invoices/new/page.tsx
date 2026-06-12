@@ -62,7 +62,7 @@ function LaborRow({
   }
 
   return (
-    <div className="rounded-xl border border-[#E8ECF0] bg-[#F9FAFB] p-4">
+    <div className="rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] p-4">
       <div className="flex items-center justify-between gap-2 mb-3">
         <span className="inline-flex items-center gap-1 rounded-full bg-[#0D1B2A]/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[#0D1B2A]">
           <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -156,7 +156,7 @@ function PartRow({
   const insufficientStock = selectedPart && item.quantity > selectedPart.quantity
 
   return (
-    <div className="rounded-xl border border-[#E8ECF0] bg-[#F9FAFB] p-4">
+    <div className="rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] p-4">
       <div className="flex items-center justify-between gap-2 mb-3">
         <span className="inline-flex items-center gap-1 rounded-full bg-[#B87333]/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[#B87333]">
           <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -369,17 +369,12 @@ export default function NewInvoicePage() {
     <div className="py-8 px-4 lg:px-10 max-w-4xl mx-auto w-full space-y-6">
 
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/admin/invoices"
-          className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#E8ECF0] transition"
-          aria-label="Back"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+      <div>
+        <Link href="/admin/invoices" className="inline-flex items-center gap-1 text-sm font-medium text-[#7A8898] hover:text-[#0D1B2A] transition">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+          Back
         </Link>
-        <h1 className="text-2xl font-bold text-[#0D1B2A]">New Invoice</h1>
+        <h1 className="mt-2 text-2xl font-bold text-[#0D1B2A]">New Invoice</h1>
       </div>
 
       {loadError && (
@@ -479,7 +474,7 @@ export default function NewInvoicePage() {
 
         {/* Totals */}
         {lineItems.length > 0 && (
-          <div className="border-t border-[#E8ECF0] px-6 py-4 bg-[#F9FAFB]">
+          <div className="border-t border-[#E8ECF0] px-6 py-4 bg-[#E8ECF0]">
             <div className="flex justify-end">
               <table className="text-sm">
                 <tbody>
@@ -519,7 +514,7 @@ export default function NewInvoicePage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
         <Link
           href="/admin/invoices"
-          className="rounded-xl border border-[#E8ECF0] px-5 py-2.5 text-sm font-semibold text-[#0D1B2A] hover:bg-[#F4F6F9] transition text-center"
+          className="rounded-xl border border-[#E8ECF0] px-5 py-2.5 text-sm font-semibold text-[#0D1B2A] hover:bg-[#E8ECF0] transition text-center"
         >
           Cancel
         </Link>
@@ -535,7 +530,7 @@ export default function NewInvoicePage() {
           type="button"
           onClick={() => handleSave(true)}
           disabled={saving}
-          className="rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition inline-flex items-center gap-2"
+          className="rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition inline-flex items-center gap-2"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />

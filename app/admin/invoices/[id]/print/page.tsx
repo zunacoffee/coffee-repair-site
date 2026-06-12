@@ -27,9 +27,9 @@ type LineItem = {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-600',
-  sent:  'bg-blue-100 text-blue-700',
-  paid:  'bg-green-100 text-green-700',
+  draft: 'bg-gray-100 text-gray-500',
+  sent:  'bg-violet-100 text-violet-800',
+  paid:  'bg-green-100 text-green-800',
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -114,7 +114,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
             </span>
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#0D1B2A] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1a2d40] transition"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#0D1B2A] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#152436] transition"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -126,7 +126,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
       </div>
 
       {/* Print area */}
-      <div className="min-h-screen bg-[#F4F6F9] py-8 px-4 print-page">
+      <div className="min-h-screen bg-[#E8ECF0] py-8 px-4 print-page">
         {loading ? (
           <div className="flex items-center justify-center py-24 no-print">
             <div className="flex items-center gap-2 text-[#7A8898]">
@@ -172,7 +172,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
             </div>
 
             {/* ── Bill To + Amount ─────────────────────────────────────── */}
-            <div className="border-b border-[#E8ECF0] bg-[#F9FAFB] px-10 py-6">
+            <div className="border-b border-[#E8ECF0] bg-[#E8ECF0] px-10 py-6">
               <div className="grid grid-cols-2 gap-12">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#7A8898] mb-2">Bill To</p>
@@ -215,7 +215,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
                       {lineItems.map((item, idx) => (
                         <tr
                           key={item.id}
-                          className={`border-b border-[#E8ECF0] ${idx % 2 === 1 ? 'bg-[#F9FAFB]' : 'bg-white'}`}
+                          className={`border-b border-[#E8ECF0] ${idx % 2 === 1 ? 'bg-[#E8ECF0]' : 'bg-white'}`}
                         >
                           <td className="py-3.5 pr-4">
                             <p className="font-medium text-[#0D1B2A]">{item.description}</p>
@@ -253,7 +253,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
 
               {/* Notes */}
               {invoice.notes && (
-                <div className="mt-6 rounded-xl border border-[#E8ECF0] bg-[#F9FAFB] px-5 py-4">
+                <div className="mt-6 rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] px-5 py-4">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#7A8898] mb-1.5">Notes</p>
                   <p className="text-sm text-[#0D1B2A] whitespace-pre-wrap">{invoice.notes}</p>
                 </div>
@@ -284,7 +284,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
                         href={invoice.stripe_payment_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="no-print inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-6 py-3 text-sm font-bold text-white hover:bg-[#a0632b] transition shadow-sm"
+                        className="no-print inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-6 py-3 text-sm font-bold text-white hover:opacity-90 transition shadow-sm"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -302,7 +302,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
             </div>
 
             {/* ── Footer ──────────────────────────────────────────────── */}
-            <div className="border-t border-[#E8ECF0] bg-[#F9FAFB] px-10 py-5 text-center">
+            <div className="border-t border-[#E8ECF0] bg-[#E8ECF0] px-10 py-5 text-center">
               <p className="text-sm font-semibold text-[#0D1B2A]">{biz.name}</p>
               <p className="text-xs text-[#7A8898] mt-0.5">Thank you for your business!</p>
               <div className="mt-1 flex items-center justify-center gap-4 text-xs text-[#7A8898]">

@@ -162,7 +162,7 @@ export default function PartsPage() {
         </div>
         <button
           onClick={startAdd}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#a0632b] transition self-start sm:self-auto"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition self-start sm:self-auto"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -275,7 +275,7 @@ export default function PartsPage() {
               <button
                 type="button"
                 onClick={cancelForm}
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#7A8898] hover:bg-[#F4F6F9] hover:text-[#0D1B2A] transition"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#7A8898] hover:bg-[#E8ECF0] hover:text-[#0D1B2A] transition"
                 aria-label="Close"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -355,14 +355,14 @@ export default function PartsPage() {
                 type="submit"
                 form="part-form"
                 disabled={saving}
-                className="flex-1 rounded-xl bg-[#B87333] px-5 py-3 text-sm font-semibold text-white hover:bg-[#a0632b] disabled:opacity-50 transition"
+                className="flex-1 rounded-xl bg-[#B87333] px-5 py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
               >
                 {saving ? 'Saving…' : editingId ? 'Save Changes' : 'Add Part'}
               </button>
               <button
                 type="button"
                 onClick={cancelForm}
-                className="flex-1 rounded-xl border border-[#E8ECF0] px-5 py-3 text-sm font-semibold text-[#0D1B2A] hover:bg-[#F4F6F9] transition"
+                className="flex-1 rounded-xl border border-[#E8ECF0] px-5 py-3 text-sm font-semibold text-[#0D1B2A] hover:bg-[#E8ECF0] transition"
               >
                 Cancel
               </button>
@@ -397,7 +397,7 @@ export default function PartsPage() {
                 {parts.map((part) => {
                   const isLow = part.quantity <= part.low_stock_threshold
                   return (
-                    <tr key={part.id} className={isLow ? 'bg-red-50' : 'hover:bg-[#F5F7FA] transition-colors'}>
+                    <tr key={part.id} className={isLow ? 'bg-red-50' : 'hover:bg-[#E8ECF0] transition-colors'}>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
                           {isLow && (
@@ -432,7 +432,7 @@ export default function PartsPage() {
                               </button>
                               <button
                                 onClick={() => setConfirmDeleteId(null)}
-                                className="rounded-full border border-[#7A8898] px-3 py-1 text-xs font-semibold text-[#7A8898] hover:bg-[#F4F6F9] transition whitespace-nowrap"
+                                className="rounded-full border border-[#7A8898] px-3 py-1 text-xs font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition whitespace-nowrap"
                               >
                                 Cancel
                               </button>
@@ -441,14 +441,14 @@ export default function PartsPage() {
                             <span className="inline-flex items-center gap-2">
                               <button
                                 onClick={() => startEdit(part)}
-                                className="rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#a0632b] transition whitespace-nowrap"
+                                className="rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition whitespace-nowrap"
                               >
                                 Edit
                               </button>
                               <button
                                 onClick={() => setConfirmDeleteId(part.id)}
                                 disabled={deletingId === part.id}
-                                className="rounded-full border border-[#7A8898] px-3 py-1.5 text-xs font-semibold text-[#7A8898] hover:bg-[#F4F6F9] disabled:opacity-50 transition whitespace-nowrap"
+                                className="rounded-full border border-[#7A8898] px-3 py-1.5 text-xs font-semibold text-[#7A8898] hover:bg-[#E8ECF0] disabled:opacity-50 transition whitespace-nowrap"
                               >
                                 Delete
                               </button>

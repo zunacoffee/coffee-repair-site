@@ -23,7 +23,7 @@ export default function PublicFooter() {
   const name = info.public_business_name || 'Cafe Works'
 
   return (
-    <footer style={{ backgroundColor: '#0D1B2A' }} className="text-[#A8B8C8]">
+    <footer style={{ backgroundColor: '#0D1B2A' }} className="text-[#7A8898]">
       <div className="mx-auto max-w-7xl px-6 py-14 sm:px-10 lg:px-16">
         <div className="grid gap-10 sm:grid-cols-3">
           <div>

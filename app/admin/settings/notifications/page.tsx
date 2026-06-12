@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { useEffect, useState, useCallback } from 'react'
 
 type Settings = Record<string, string>
@@ -64,14 +65,18 @@ export default function NotificationsPage() {
   }
 
   if (loading) {
-    return <div className="min-h-screen bg-[#F4F6F9] flex items-center justify-center text-[#7A8898]">Loading…</div>
+    return <div className="min-h-screen bg-[#E8ECF0] flex items-center justify-center text-[#7A8898]">Loading…</div>
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] p-6">
+    <div className="min-h-screen bg-[#E8ECF0] p-6">
       <div className="max-w-3xl mx-auto space-y-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#7A8898]">Settings</p>
+          <Link href="/admin/settings" className="inline-flex items-center gap-1 text-sm font-medium text-[#7A8898] hover:text-[#0D1B2A] transition">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+            Back
+          </Link>
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#7A8898] mt-3">Settings</p>
           <h1 className="text-2xl font-bold text-[#0D1B2A] mt-1">Notification Settings</h1>
           <p className="text-sm text-[#7A8898] mt-1">Configure which events trigger email notifications and where they are sent.</p>
         </div>
@@ -90,11 +95,11 @@ export default function NotificationsPage() {
             <p className="text-xs text-[#7A8898] mt-1">All admin alert emails are sent to this address.</p>
           </div>
 
-          <div className="border-t border-[#F4F6F9] pt-4">
+          <div className="border-t border-[#E8ECF0] pt-4">
             <p className="text-sm font-semibold text-[#0D1B2A] mb-3">Email Triggers</p>
             <div className="space-y-1">
               {TOGGLE_ITEMS.map(item => (
-                <div key={item.key} className="flex items-center justify-between py-3 border-b border-[#F4F6F9] last:border-0">
+                <div key={item.key} className="flex items-center justify-between py-3 border-b border-[#E8ECF0] last:border-0">
                   <div>
                     <p className="text-sm font-medium text-[#0D1B2A]">{item.label}</p>
                     <p className="text-xs text-[#7A8898] mt-0.5">{item.desc}</p>
@@ -115,7 +120,7 @@ export default function NotificationsPage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="bg-[#B87333] hover:bg-[#a0632b] text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-60"
+              className="bg-[#B87333] hover:opacity-90 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-60"
             >
               {saving ? 'Saving…' : 'Save Changes'}
             </button>
