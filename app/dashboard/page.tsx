@@ -10,24 +10,16 @@ const MONO = 'font-[family-name:var(--font-ibm-plex-mono)]'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type Customer = { id: number; full_name: string; email: string; phone: string; address: string; street: string | null; city: string | null; state: string | null; zip: string | null }
+type Customer  = { id: number; full_name: string; email: string; phone: string; address: string; street: string | null; city: string | null; state: string | null; zip: string | null }
 type Equipment = { id: number; equipment_type: string; brand: string; model: string; serial_number: string }
-type RepairJob  = { id: number; equipment_type: string; status: string; description: string; created_at: string; completed_at: string | null }
-type WorkOrder  = { id: number; work_order_number: string; status: string; problem_description: string; grand_total: number; created_at: string; completed_at: string | null; equipment_list: { equipment_type: string; brand: string; model: string } | null }
-type Plan       = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null; next_visit_date?: string | null; next_visit_slot?: string | null; is_custom?: boolean; stripe_payment_link?: string | null; description?: string | null; visit_frequency?: number | null; features?: string[] }
+type RepairJob = { id: number; equipment_type: string; status: string; description: string; created_at: string; completed_at: string | null }
+type WorkOrder = { id: number; work_order_number: string; status: string; problem_description: string; grand_total: number; created_at: string; completed_at: string | null; equipment_list: { equipment_type: string; brand: string; model: string } | null }
+type Plan      = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null; next_visit_date?: string | null; next_visit_slot?: string | null; is_custom?: boolean; stripe_payment_link?: string | null; description?: string | null; visit_frequency?: number | null; features?: string[] }
 type Invoice   = { id: number; amount: number; status: string; due_date: string | null; description: string; created_at: string }
-type Tab = 'schedule' | 'repairs' | 'equipment' | 'plan' | 'invoices' | 'profile'
+type Section   = 'invoices' | 'equipment' | 'plan' | 'repairs' | 'account' | null
+type Nav       = 'home' | 'repairs' | 'schedule' | 'account'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'schedule',  label: 'PM Schedule' },
-  { id: 'repairs',   label: 'Repairs'     },
-  { id: 'equipment', label: 'Equipment'   },
-  { id: 'plan',      label: 'My Plan'     },
-  { id: 'invoices',  label: 'Invoices'    },
-  { id: 'profile',   label: 'Profile'     },
-]
 
 const JOB_STATUS: Record<string, string> = {
   pending:     'bg-gray-100 text-gray-700',
@@ -40,7 +32,6 @@ const WO_STATUS: Record<string, string> = {
   completed:   'bg-green-100 text-green-700',
   cancelled:   'bg-gray-100 text-gray-500',
 }
-
 const INV_STATUS: Record<string, string> = {
   paid:    'bg-green-100 text-green-700',
   unpaid:  'bg-red-100 text-red-700',
@@ -62,11 +53,11 @@ function fmt(dateStr: string) {
 
 function EmptyState({ icon, title, body, cta }: { icon: React.ReactNode; title: string; body: string; cta?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center py-4 sm:py-16 text-center px-4">
-      <div className="mb-2 sm:mb-4 flex h-8 w-8 sm:h-14 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl bg-[#E8ECF0] text-[#7A8898]">{icon}</div>
-      <p className="text-sm sm:text-base font-semibold text-[#0D1B2A]">{title}</p>
-      <p className="mt-1 text-xs sm:text-sm text-[#7A8898] max-w-xs">{body}</p>
-      {cta && <div className="mt-2 sm:mt-5">{cta}</div>}
+    <div className="flex flex-col items-center justify-center py-8 text-center px-4">
+      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E8ECF0] text-[#7A8898]">{icon}</div>
+      <p className="text-sm font-semibold text-[#0D1B2A]">{title}</p>
+      <p className="mt-1 text-xs text-[#7A8898] max-w-xs">{body}</p>
+      {cta && <div className="mt-4">{cta}</div>}
     </div>
   )
 }
@@ -93,7 +84,8 @@ export default function DashboardPage() {
   const [workOrders,    setWorkOrders]    = useState<WorkOrder[]>([])
   const [plan,          setPlan]          = useState<Plan | null>(null)
   const [invoices,      setInvoices]      = useState<Invoice[]>([])
-  const [activeTab,     setActiveTab]     = useState<Tab>('schedule')
+  const [activeSection, setActiveSection] = useState<Section>(null)
+  const [activeNav,     setActiveNav]     = useState<Nav>('home')
   const [portalLoading, setPortalLoading] = useState(false)
   const [portalError,   setPortalError]   = useState<string | null>(null)
 
@@ -116,17 +108,17 @@ export default function DashboardPage() {
   const [pmSuccess,          setPmSuccess]          = useState<string | null>(null)
 
   // Profile form state
-  const [profileName,    setProfileName]    = useState('')
-  const [profilePhone,   setProfilePhone]   = useState('')
-  const [profileStreet,  setProfileStreet]  = useState('')
-  const [profileCity,    setProfileCity]    = useState('')
-  const [profileState,   setProfileState]   = useState('')
-  const [profileZip,     setProfileZip]     = useState('')
-  const [profileSaving,  setProfileSaving]  = useState(false)
-  const [profileMsg,     setProfileMsg]     = useState<string | null>(null)
-  const [profileError,   setProfileError]   = useState<string | null>(null)
+  const [profileName,   setProfileName]   = useState('')
+  const [profilePhone,  setProfilePhone]  = useState('')
+  const [profileStreet, setProfileStreet] = useState('')
+  const [profileCity,   setProfileCity]   = useState('')
+  const [profileState,  setProfileState]  = useState('')
+  const [profileZip,    setProfileZip]    = useState('')
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [profileMsg,    setProfileMsg]    = useState<string | null>(null)
+  const [profileError,  setProfileError]  = useState<string | null>(null)
 
-  const tabBarRef = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let mounted = true
@@ -247,18 +239,39 @@ export default function DashboardPage() {
     setProfileMsg('Profile updated successfully.')
   }
 
-  const switchTab = (tab: Tab) => {
-    setActiveTab(tab)
-    // Scroll the active tab button into view on mobile
-    setTimeout(() => {
-      const btn = tabBarRef.current?.querySelector(`[data-tab="${tab}"]`) as HTMLElement | null
-      btn?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-    }, 0)
-  }
-
   const openRepairs  = workOrders.filter((wo) => wo.status !== 'completed' && wo.status !== 'cancelled')
   const openInvoices = invoices.filter((i) => i.status !== 'paid')
   const displayName  = customer?.full_name ?? userEmail ?? 'there'
+
+  const hour     = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const firstName = displayName.split(' ')[0]
+
+  const activityItems = [
+    ...workOrders.map((wo) => ({
+      key: `wo-${wo.id}`,
+      iconColor: wo.status === 'completed' ? 'green' : wo.status === 'in_progress' ? 'amber' : 'blue',
+      title: `WO ${wo.work_order_number}`,
+      subtitle: wo.problem_description || '',
+      status: wo.status,
+      statusMap: WO_STATUS,
+      date: wo.created_at,
+    })),
+    ...invoices.map((inv) => ({
+      key: `inv-${inv.id}`,
+      iconColor: 'copper',
+      title: inv.description || 'Invoice',
+      subtitle: `$${Number(inv.amount).toFixed(2)}`,
+      status: inv.status,
+      statusMap: INV_STATUS,
+      date: inv.created_at,
+    })),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
+
+  const showSection = (s: Section) => {
+    setActiveSection(s)
+    setTimeout(() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+  }
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
@@ -288,77 +301,49 @@ export default function DashboardPage() {
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#E8ECF0]">
+    <div className="min-h-screen bg-[#E8ECF0] pb-32">
 
       {/* ── Header ── */}
-      <header className="bg-[#0D1B2A]">
-        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-            {/* Identity */}
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#B87333]">
-                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-[#7A8898]">Customer Portal</p>
-                <h1 className="text-lg font-bold text-white leading-tight">
-                  Welcome, {displayName.split(' ')[0]}!
-                </h1>
-                <p className="text-xs text-[#7A8898]">{userEmail}</p>
-              </div>
+      <header className="bg-[#0D1B2A] px-5 pt-12 pb-14">
+        <div className="mx-auto max-w-lg">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className={`${MONO} text-[10px] font-semibold uppercase tracking-widest text-[#7A8898]`}>
+                Cafe Works
+              </p>
+              <h1 className="mt-1 text-2xl font-bold text-white leading-tight">
+                {greeting}, {firstName}
+              </h1>
+              {plan && (
+                <span className={`mt-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                  plan.status === 'active' ? 'bg-green-500/20 text-green-300' : 'bg-amber-500/20 text-amber-300'
+                }`}>
+                  {plan.plan_name}
+                </span>
+              )}
             </div>
-
-            {/* Actions */}
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
-              <Link
-                href="/service-request"
-                className="flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition"
-              >
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                Request Repair
-              </Link>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => switchTab('profile')}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition"
-                >
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  My Profile
-                </button>
-                <button
-                  onClick={handleSignOut}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition"
-                >
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  Sign Out
-                </button>
-              </div>
-            </div>
+            <button
+              onClick={handleSignOut}
+              className="rounded-xl border border-white/20 px-3 py-2 text-xs font-semibold text-white/70 hover:bg-white/10 transition"
+            >
+              Sign out
+            </button>
           </div>
         </div>
       </header>
 
       {/* ── No customer record ── */}
       {!customer && (
-        <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-          <div className="rounded-2xl bg-white border border-[#E8ECF0] p-10 shadow-sm">
-            <svg className="mx-auto h-12 w-12 text-[#7A8898]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <div className="mx-auto max-w-lg px-4 -mt-6">
+          <div className="rounded-2xl bg-white border border-black/5 shadow-lg p-8 text-center">
+            <svg className="mx-auto h-10 w-10 text-[#7A8898]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <h2 className="mt-4 text-xl font-bold text-[#0D1B2A]">Account not linked yet</h2>
+            <h2 className="mt-4 text-lg font-bold text-[#0D1B2A]">Account not linked yet</h2>
             <p className="mt-2 text-sm text-[#7A8898]">
-              Your login ({userEmail}) hasn't been linked to a customer record. Contact Cafe Works to complete your setup.
+              Your login ({userEmail}) hasn&apos;t been linked to a customer record. Contact Cafe Works to complete your setup.
             </p>
-            <Link href="/service-request" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#B87333] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">
+            <Link href="/service-request" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#B87333] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">
               Submit a service request
             </Link>
           </div>
@@ -366,715 +351,624 @@ export default function DashboardPage() {
       )}
 
       {customer && (
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8 space-y-6">
+        <div className="mx-auto max-w-lg px-4 -mt-6 space-y-4">
 
-          {/* ── Stat cards ── */}
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-
-            {/* My Plan */}
-            <div className="rounded-xl sm:rounded-2xl border-l-4 border-l-[#B87333] bg-white px-3 py-2.5 sm:px-5 sm:py-5 shadow-sm">
-              <p className={`${MONO} text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>My Plan</p>
-              {plan ? (
-                <>
-                  <p className="mt-1 text-base sm:text-xl font-bold text-[#0D1B2A] leading-tight">{plan.plan_name}</p>
-                  <p className="mt-0.5 text-[10px] sm:text-sm text-[#7A8898]">
-                    {plan.price ? `$${plan.price}/mo` : '—'}
-                    {' · '}
-                    <span className={`font-semibold ${plan.status === 'active' ? 'text-green-600' : plan.status === 'pending_payment' ? 'text-amber-600' : 'text-[#7A8898]'}`}>
-                      {plan.status === 'pending_payment' ? 'pending' : plan.status}
-                    </span>
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="mt-1 text-base sm:text-xl font-bold text-[#0D1B2A]">No plan</p>
-                  <p className="mt-0.5 text-[10px] sm:text-xs text-[#7A8898]">Subscribe to a maintenance plan</p>
-                </>
-              )}
-            </div>
-
-            {/* Next PM Visit */}
-            <div className="rounded-xl sm:rounded-2xl border-l-4 border-l-blue-500 bg-white px-3 py-2.5 sm:px-5 sm:py-5 shadow-sm">
-              <p className={`${MONO} text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Next PM Visit</p>
-              {plan?.next_visit_date ? (
-                <>
-                  <p className="mt-1 text-base sm:text-xl font-bold text-[#0D1B2A] leading-tight">
-                    {new Date(plan.next_visit_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </p>
-                  <p className="mt-0.5 text-[10px] sm:text-sm text-[#7A8898]">
-                    {(() => {
-                      const d = daysUntil(plan.next_visit_date!)
-                      if (d < 0) return 'Past due'
-                      if (d === 0) return 'Today'
-                      return `in ${d} day${d !== 1 ? 's' : ''}`
-                    })()}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="mt-1 text-base sm:text-xl font-bold text-[#0D1B2A]">—</p>
-                  <p className="mt-0.5 text-[10px] sm:text-xs text-[#7A8898]">
-                    {plan ? (
-                      <button onClick={() => { switchTab('schedule'); setShowSchedulePicker(true) }} className="text-[#B87333] hover:underline">
-                        Schedule visit
-                      </button>
-                    ) : 'No plan active'}
-                  </p>
-                </>
-              )}
-            </div>
-
-            {/* Equipment */}
-            <div className="rounded-xl sm:rounded-2xl border-l-4 border-l-emerald-500 bg-white px-3 py-2.5 sm:px-5 sm:py-5 shadow-sm">
-              <p className={`${MONO} text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Equipment</p>
-              <p className="mt-1 text-xl sm:text-3xl font-bold text-[#0D1B2A]">{equipment.length}</p>
-              <p className="mt-0.5 text-[10px] sm:text-sm text-[#7A8898]">
-                {equipment.length === 1 ? 'registered item' : 'registered items'}
-              </p>
-            </div>
-
-            {/* Open Invoices */}
-            <div className="rounded-xl sm:rounded-2xl border-l-4 border-l-orange-400 bg-white px-3 py-2.5 sm:px-5 sm:py-5 shadow-sm">
-              <p className={`${MONO} text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Open Invoices</p>
-              <p className="mt-1 text-xl sm:text-3xl font-bold text-[#0D1B2A]">{openInvoices.length}</p>
-              <p className="mt-0.5 text-[10px] sm:text-sm text-[#7A8898]">
-                {openInvoices.length === 0 ? 'all paid' : `${openInvoices.length} unpaid`}
-              </p>
-            </div>
-
-          </div>
-
-          {/* ── Tab bar ── */}
-          <div className="-mx-4 sm:mx-0 sm:rounded-xl sm:border sm:border-black/[0.08] sm:overflow-hidden">
-            <div
-              ref={tabBarRef}
-              className="sticky top-0 z-10 bg-white flex overflow-x-auto border-b border-black/[0.08] scrollbar-none"
-              style={{ scrollbarWidth: 'none' }}
-            >
-              {TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  data-tab={tab.id}
-                  onClick={() => switchTab(tab.id)}
-                  className={`shrink-0 px-5 py-3.5 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'border-[#B87333] text-[#B87333]'
-                      : 'border-transparent text-[#7A8898] hover:text-[#0D1B2A]'
-                  }`}
-                >
-                  {tab.label}
-                  {tab.id === 'repairs'   && openRepairs.length  > 0 && (
-                    <span className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#B87333] text-[9px] font-bold text-white">
-                      {openRepairs.length}
-                    </span>
-                  )}
-                  {tab.id === 'invoices'  && openInvoices.length > 0 && (
-                    <span className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-400 text-[9px] font-bold text-white">
-                      {openInvoices.length}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {/* ── Tab panels ── */}
-            <div className="bg-white px-4 py-5 sm:p-7">
-
-              {/* PM Schedule */}
-              {activeTab === 'schedule' && (
-                <div>
-                  <h2 className="text-base font-bold text-[#0D1B2A] mb-4">Preventive Maintenance Schedule</h2>
-                  {plan ? (
-                    <div className="space-y-4">
-                      <div className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-6">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">Current Plan</p>
-                            <p className="mt-1 text-xl font-bold text-[#0D1B2A]">{plan.plan_name}</p>
-                            <p className="text-sm text-[#7A8898]">{plan.price ? `$${plan.price} / month` : ''}</p>
-                          </div>
-                          <span className={`self-start sm:self-auto inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${plan.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                            {plan.status}
-                          </span>
-                        </div>
-
-                            {/* Scheduled visit */}
-                        {plan.next_visit_date ? (
-                          <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex items-start gap-3">
-                                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500 text-white">
-                                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                  </svg>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-bold text-blue-900">Next scheduled visit</p>
-                                  <p className="text-lg font-bold text-blue-800">{fmt(plan.next_visit_date)}</p>
-                                  {plan.next_visit_slot && (
-                                    <p className="text-xs text-blue-700 font-semibold mt-0.5">
-                                      {plan.next_visit_slot === 'morning' ? 'Morning (8am–12pm)' : 'Afternoon (12pm–5pm)'}
-                                    </p>
-                                  )}
-                                  <p className="text-xs text-blue-600 mt-0.5">
-                                    {(() => {
-                                      const d = daysUntil(plan.next_visit_date!)
-                                      if (d < 0) return `${Math.abs(d)} days overdue`
-                                      if (d === 0) return 'Scheduled for today'
-                                      return `${d} day${d !== 1 ? 's' : ''} away`
-                                    })()}
-                                  </p>
-                                </div>
-                              </div>
-                              <button
-                                onClick={() => { setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
-                                className="shrink-0 rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition"
-                              >
-                                Reschedule
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="mt-6 rounded-xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-5 text-center">
-                            <p className="text-sm font-semibold text-[#0D1B2A]">No visit scheduled yet</p>
-                            <p className="mt-1 text-xs text-[#7A8898]">Pick a date and time slot for your next PM visit.</p>
-                            <button
-                              onClick={() => { setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
-                              className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition"
-                            >
-                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                              Schedule Visit
-                            </button>
-                          </div>
-                        )}
-
-                        {/* Success message */}
-                        {pmSuccess && (
-                          <div className="mt-4 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
-                            {pmSuccess}
-                          </div>
-                        )}
-
-                        {/* Inline scheduler */}
-                        {showSchedulePicker && (
-                          <div className="mt-4 rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <p className="text-sm font-bold text-[#0D1B2A]">Choose appointment</p>
-                              <button onClick={() => setShowSchedulePicker(false)} className="text-[#7A8898] hover:text-[#0D1B2A]">
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                            </div>
-                            <DateSlotPicker
-                              selectedDate={pmDate}
-                              selectedSlot={pmSlot}
-                              onDateChange={(d) => { setPmDate(d); setPmSlot(null) }}
-                              onSlotChange={setPmSlot}
-                            />
-                            {pmError && <p className="mt-2 text-xs text-red-600">{pmError}</p>}
-                            <button
-                              onClick={handleSchedulePM}
-                              disabled={pmSaving || !pmDate || !pmSlot}
-                              className="mt-3 w-full rounded-xl bg-[#B87333] py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
-                            >
-                              {pmSaving ? 'Saving…' : 'Confirm appointment'}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      {equipment.length > 0 && (
-                        <div>
-                          <p className="mb-3 text-sm font-semibold text-[#0D1B2A]">Equipment covered by this plan</p>
-                          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                            {equipment.map((eq) => (
-                              <div key={eq.id} className="rounded-xl border border-[#E8ECF0] bg-white p-4">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[#B87333]">{eq.equipment_type}</p>
-                                <p className="mt-1 text-sm font-bold text-[#0D1B2A]">{eq.brand} {eq.model}</p>
-                                <p className="text-xs text-[#7A8898] mt-0.5">S/N: {eq.serial_number}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <EmptyState
-                      icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
-                      title="No maintenance plan"
-                      body="Subscribe to a plan to see your scheduled preventive maintenance visits here."
-                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-4 sm:px-5 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white hover:opacity-90 transition">View plans</Link>}
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* Repairs / Work Orders */}
-              {activeTab === 'repairs' && (
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-base font-bold text-[#0D1B2A]">Repair History</h2>
-                    <Link href="/service-request" className="inline-flex items-center gap-1.5 rounded-full bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition">
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                      Request Repair
-                    </Link>
+          {/* ── Hero card ── */}
+          <div className="rounded-2xl bg-white border border-black/5 shadow-lg p-5">
+            {plan?.next_visit_date ? (
+              <>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>
+                      Next PM Visit
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-[#0D1B2A]">
+                      {new Date(plan.next_visit_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                    {plan.next_visit_slot && (
+                      <p className="text-xs text-[#7A8898] mt-0.5">
+                        {plan.next_visit_slot === 'morning' ? 'Morning (8am–12pm)' : 'Afternoon (12pm–5pm)'}
+                      </p>
+                    )}
                   </div>
-                  {workOrders.length > 0 ? (
-                    <div className="overflow-x-auto -mx-5 sm:-mx-7">
-                      <table className="min-w-full">
-                        <thead>
-                          <tr className="border-b border-[#E8ECF0]">
-                            <th className="px-5 sm:px-7 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">WO #</th>
-                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Equipment</th>
-                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Problem</th>
-                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Status</th>
-                            <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Total</th>
-                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Date</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#E8ECF0]">
-                          {workOrders.map((wo) => (
-                            <tr key={wo.id} className="hover:bg-[#E8ECF0]">
-                              <td className="px-5 sm:px-7 py-3.5 text-sm font-mono font-semibold text-[#B87333] whitespace-nowrap">{wo.work_order_number}</td>
-                              <td className="px-4 py-3.5 text-sm text-[#0D1B2A] whitespace-nowrap">
-                                {wo.equipment_list ? `${wo.equipment_list.brand} ${wo.equipment_list.model}` : '—'}
-                              </td>
-                              <td className="px-4 py-3.5 text-sm text-[#7A8898] max-w-[200px]">
-                                <span className="block truncate">{wo.problem_description || '—'}</span>
-                              </td>
-                              <td className="px-4 py-3.5 whitespace-nowrap"><StatusBadge status={wo.status} map={WO_STATUS} /></td>
-                              <td className="px-4 py-3.5 text-sm font-semibold text-[#0D1B2A] text-right whitespace-nowrap">
-                                ${Number(wo.grand_total).toFixed(2)}
-                              </td>
-                              <td className="px-4 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">
-                                {wo.created_at ? fmt(wo.created_at) : '—'}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : repairJobs.length > 0 ? (
-                    <div className="overflow-x-auto -mx-5 sm:-mx-7">
-                      <table className="min-w-full">
-                        <thead>
-                          <tr className="border-b border-[#E8ECF0]">
-                            <th className="px-5 sm:px-7 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Equipment</th>
-                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Description</th>
-                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Status</th>
-                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Date</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#E8ECF0]">
-                          {repairJobs.map((job) => (
-                            <tr key={job.id} className="hover:bg-[#E8ECF0]">
-                              <td className="px-5 sm:px-7 py-3.5 text-sm font-medium text-[#0D1B2A] whitespace-nowrap">{job.equipment_type}</td>
-                              <td className="px-4 py-3.5 text-sm text-[#7A8898] max-w-[200px]">
-                                <span className="block truncate">{job.description || '—'}</span>
-                              </td>
-                              <td className="px-4 py-3.5 whitespace-nowrap"><StatusBadge status={job.status} map={JOB_STATUS} /></td>
-                              <td className="px-4 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">
-                                {job.created_at ? fmt(job.created_at) : '—'}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <EmptyState
-                      icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>}
-                      title="No repair history"
-                      body="Your completed and in-progress repairs will appear here."
-                      cta={<Link href="/service-request" className="rounded-full bg-[#B87333] px-4 sm:px-5 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white hover:opacity-90 transition">Request a repair</Link>}
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* Equipment */}
-              {activeTab === 'equipment' && (
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-base font-bold text-[#0D1B2A]">Registered Equipment</h2>
+                  <div className="text-right shrink-0">
+                    <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>
+                      {(() => {
+                        const d = daysUntil(plan.next_visit_date!)
+                        if (d < 0) return 'Overdue'
+                        if (d === 0) return 'Today'
+                        return `In ${d} day${d !== 1 ? 's' : ''}`
+                      })()}
+                    </p>
                     <button
-                      onClick={() => { setShowEqForm((v) => !v); setEqError(null); setEqSuccess(null) }}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-[#B87333] px-3 py-2 text-xs font-semibold text-[#B87333] hover:bg-[#B87333]/5 transition"
+                      onClick={() => { setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
+                      className="mt-2 rounded-xl bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition"
                     >
-                      {showEqForm ? (
-                        <>
-                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                          Cancel
-                        </>
-                      ) : (
-                        <>
-                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                          </svg>
-                          Add Equipment
-                        </>
-                      )}
+                      Reschedule
                     </button>
                   </div>
+                </div>
 
-                  {eqSuccess && (
-                    <div className="mb-4 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
-                      {eqSuccess}
+                {plan.renewal_date && (() => {
+                  const today   = new Date()
+                  const renewal = new Date(plan.renewal_date + 'T00:00:00')
+                  const start   = new Date(renewal)
+                  start.setMonth(start.getMonth() - 1)
+                  const total   = renewal.getTime() - start.getTime()
+                  const elapsed = today.getTime() - start.getTime()
+                  const pct     = Math.min(100, Math.max(0, (elapsed / total) * 100))
+                  return (
+                    <div className="mt-4">
+                      <div className="flex justify-between mb-1.5">
+                        <p className={`${MONO} text-[9px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Plan period</p>
+                        <p className={`${MONO} text-[9px] font-semibold uppercase tracking-wide text-[#7A8898]`}>{Math.round(pct)}%</p>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-[#E8ECF0]">
+                        <div className="h-1.5 rounded-full bg-[#B87333] transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                      <p className="mt-1 text-[10px] text-[#7A8898]">Renews {fmt(plan.renewal_date)}</p>
                     </div>
-                  )}
+                  )
+                })()}
 
-                  {showEqForm && (
-                    <form onSubmit={handleAddEquipment} className="mb-5 rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-5">
-                      <p className="text-sm font-semibold text-[#0D1B2A] mb-4">Add new equipment</p>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Equipment type</label>
-                          <select
-                            value={eqType}
-                            onChange={(e) => setEqType(e.target.value)}
-                            required
-                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                          >
-                            <option value="" disabled>Select type…</option>
-                            <option value="Espresso Machine">Espresso Machine</option>
-                            <option value="Grinder">Grinder</option>
-                            <option value="Brewer">Brewer</option>
-                            <option value="Other">Other</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Brand</label>
-                          <input
-                            type="text"
-                            value={eqBrand}
-                            onChange={(e) => setEqBrand(e.target.value)}
-                            required
-                            placeholder="e.g. La Marzocco"
-                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Model</label>
-                          <input
-                            type="text"
-                            value={eqModel}
-                            onChange={(e) => setEqModel(e.target.value)}
-                            required
-                            placeholder="e.g. Linea Mini"
-                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">
-                            Serial number <span className="text-[#7A8898] font-normal">(optional)</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={eqSerial}
-                            onChange={(e) => setEqSerial(e.target.value)}
-                            placeholder="e.g. SN123456"
-                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                          />
-                        </div>
-                      </div>
-                      {eqError && <p className="mt-3 text-xs text-red-600">{eqError}</p>}
-                      <div className="mt-4 flex gap-3">
-                        <button
-                          type="button"
-                          onClick={() => { setShowEqForm(false); setEqError(null) }}
-                          className="rounded-xl border border-[#E8ECF0] px-4 py-2 text-sm font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={eqSaving}
-                          className="rounded-xl bg-[#B87333] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
-                        >
-                          {eqSaving ? 'Saving…' : 'Save equipment'}
-                        </button>
-                      </div>
-                    </form>
-                  )}
+                {pmSuccess && (
+                  <div className="mt-3 rounded-xl bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-700">
+                    {pmSuccess}
+                  </div>
+                )}
+              </>
+            ) : plan ? (
+              <>
+                <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>My Plan</p>
+                <p className="mt-1 text-xl font-bold text-[#0D1B2A]">{plan.plan_name}</p>
+                <p className="mt-1 text-sm text-[#7A8898]">No visit scheduled yet</p>
+                <button
+                  onClick={() => { setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Schedule visit
+                </button>
+                {pmSuccess && (
+                  <div className="mt-3 rounded-xl bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-700">
+                    {pmSuccess}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>No active plan</p>
+                <p className="mt-1 text-xl font-bold text-[#0D1B2A]">Get Covered</p>
+                <p className="mt-1 text-sm text-[#7A8898]">Subscribe to a maintenance plan for regular PM visits and priority service.</p>
+                <Link
+                  href="/pricing"
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition"
+                >
+                  View plans
+                </Link>
+              </>
+            )}
+          </div>
 
-                  {equipment.length > 0 ? (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      {equipment.map((eq) => (
-                        <div key={eq.id} className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-5">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-[#B87333]">{eq.equipment_type}</p>
-                          <p className="mt-2 text-base font-bold text-[#0D1B2A]">{eq.brand} {eq.model}</p>
-                          {eq.serial_number && (
-                            <div className="mt-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-[#7A8898]">Serial number</span>
-                                <span className="text-xs font-mono font-medium text-[#0D1B2A]">{eq.serial_number}</span>
+          {/* ── Quick actions ── */}
+          <div className="grid grid-cols-4 gap-2">
+            <button
+              onClick={() => { setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8ECF0]">
+                <svg className="h-[18px] w-[18px] text-[#0D1B2A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>Schedule</p>
+            </button>
+
+            <Link
+              href="/service-request"
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B87333]/10">
+                <svg className="h-[18px] w-[18px] text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                </svg>
+              </div>
+              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>Repair</p>
+            </Link>
+
+            <button
+              onClick={() => { setActiveNav('home'); showSection('equipment') }}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8ECF0]">
+                <svg className="h-[18px] w-[18px] text-[#0D1B2A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18" />
+                </svg>
+              </div>
+              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>Equipment</p>
+            </button>
+
+            <button
+              onClick={() => { setActiveNav('home'); showSection('invoices') }}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
+            >
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${openInvoices.length > 0 ? 'bg-orange-100' : 'bg-[#E8ECF0]'}`}>
+                <svg className={`h-[18px] w-[18px] ${openInvoices.length > 0 ? 'text-orange-500' : 'text-[#0D1B2A]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-center leading-tight ${openInvoices.length > 0 ? 'text-orange-600' : 'text-[#0D1B2A]'}`}>
+                {openInvoices.length > 0 ? `Bills (${openInvoices.length})` : 'Invoices'}
+              </p>
+            </button>
+          </div>
+
+          {/* ── Active section content ── */}
+          {activeSection && (
+            <div ref={sectionRef} className="rounded-2xl bg-white border border-black/5 shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8ECF0]">
+                <h2 className="text-base font-bold text-[#0D1B2A]">
+                  {activeSection === 'repairs'   ? 'Repair History'   :
+                   activeSection === 'equipment' ? 'Equipment'        :
+                   activeSection === 'plan'      ? 'My Plan'          :
+                   activeSection === 'invoices'  ? 'Invoices'         :
+                   activeSection === 'account'   ? 'Account'          : ''}
+                </h2>
+                <button onClick={() => setActiveSection(null)} className="text-[#7A8898] hover:text-[#0D1B2A] transition">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-5">
+
+                {/* ── Repairs section ── */}
+                {activeSection === 'repairs' && (
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-sm text-[#7A8898]">{workOrders.length + repairJobs.length} total</p>
+                      <Link href="/service-request" className="inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition">
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                        Request repair
+                      </Link>
+                    </div>
+                    {workOrders.length > 0 ? (
+                      <div className="space-y-3">
+                        {workOrders.map((wo) => (
+                          <div key={wo.id} className="rounded-xl border border-[#E8ECF0] p-4 border-l-2 border-l-[#B87333]">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className={`${MONO} text-[10px] font-semibold text-[#B87333]`}>{wo.work_order_number}</p>
+                                <p className="mt-0.5 text-sm font-semibold text-[#0D1B2A] truncate">
+                                  {wo.equipment_list ? `${wo.equipment_list.brand} ${wo.equipment_list.model}` : wo.problem_description || '—'}
+                                </p>
+                                {wo.problem_description && wo.equipment_list && (
+                                  <p className="text-xs text-[#7A8898] truncate mt-0.5">{wo.problem_description}</p>
+                                )}
+                              </div>
+                              <StatusBadge status={wo.status} map={WO_STATUS} />
+                            </div>
+                            <div className="mt-2 flex items-center justify-between">
+                              <p className="text-xs text-[#7A8898]">{wo.created_at ? fmt(wo.created_at) : '—'}</p>
+                              <p className="text-sm font-bold text-[#0D1B2A]">${Number(wo.grand_total).toFixed(2)}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : repairJobs.length > 0 ? (
+                      <div className="space-y-3">
+                        {repairJobs.map((job) => (
+                          <div key={job.id} className="rounded-xl border border-[#E8ECF0] p-4 border-l-2 border-l-[#B87333]">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-[#0D1B2A]">{job.equipment_type}</p>
+                                <p className="text-xs text-[#7A8898] truncate mt-0.5">{job.description || '—'}</p>
+                              </div>
+                              <StatusBadge status={job.status} map={JOB_STATUS} />
+                            </div>
+                            <p className="mt-2 text-xs text-[#7A8898]">{job.created_at ? fmt(job.created_at) : '—'}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyState
+                        icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>}
+                        title="No repair history"
+                        body="Completed and in-progress repairs will appear here."
+                        cta={<Link href="/service-request" className="rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition">Request a repair</Link>}
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* ── Equipment section ── */}
+                {activeSection === 'equipment' && (
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-sm text-[#7A8898]">{equipment.length} registered</p>
+                      <button
+                        onClick={() => { setShowEqForm((v) => !v); setEqError(null); setEqSuccess(null) }}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-[#B87333] px-3 py-1.5 text-xs font-semibold text-[#B87333] hover:bg-[#B87333]/5 transition"
+                      >
+                        {showEqForm ? 'Cancel' : 'Add equipment'}
+                      </button>
+                    </div>
+
+                    {eqSuccess && (
+                      <div className="mb-4 rounded-xl bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-700">{eqSuccess}</div>
+                    )}
+
+                    {showEqForm && (
+                      <form onSubmit={handleAddEquipment} className="mb-4 rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-4 space-y-3">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div>
+                            <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Type</label>
+                            <select value={eqType} onChange={(e) => setEqType(e.target.value)} required
+                              className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none">
+                              <option value="" disabled>Select…</option>
+                              <option value="Espresso Machine">Espresso Machine</option>
+                              <option value="Grinder">Grinder</option>
+                              <option value="Brewer">Brewer</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Brand</label>
+                            <input type="text" value={eqBrand} onChange={(e) => setEqBrand(e.target.value)} required placeholder="e.g. La Marzocco"
+                              className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Model</label>
+                            <input type="text" value={eqModel} onChange={(e) => setEqModel(e.target.value)} required placeholder="e.g. Linea Mini"
+                              className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Serial <span className="font-normal text-[#7A8898]">(optional)</span></label>
+                            <input type="text" value={eqSerial} onChange={(e) => setEqSerial(e.target.value)} placeholder="SN123456"
+                              className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none" />
+                          </div>
+                        </div>
+                        {eqError && <p className="text-xs text-red-600">{eqError}</p>}
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => { setShowEqForm(false); setEqError(null) }}
+                            className="rounded-xl border border-[#E8ECF0] px-4 py-2 text-sm font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition">
+                            Cancel
+                          </button>
+                          <button type="submit" disabled={eqSaving}
+                            className="rounded-xl bg-[#B87333] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
+                            {eqSaving ? 'Saving…' : 'Save'}
+                          </button>
+                        </div>
+                      </form>
+                    )}
+
+                    {equipment.length > 0 ? (
+                      <div className="space-y-3">
+                        {equipment.map((eq) => (
+                          <div key={eq.id} className="rounded-xl border border-[#E8ECF0] p-4 border-l-2 border-l-emerald-500">
+                            <p className={`${MONO} text-[10px] font-semibold text-[#B87333]`}>{eq.equipment_type}</p>
+                            <p className="mt-0.5 text-sm font-bold text-[#0D1B2A]">{eq.brand} {eq.model}</p>
+                            {eq.serial_number && (
+                              <p className="mt-0.5 text-xs font-mono text-[#7A8898]">S/N: {eq.serial_number}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : !showEqForm ? (
+                      <EmptyState
+                        icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18" /></svg>}
+                        title="No equipment yet"
+                        body="Add your coffee equipment to track service history."
+                        cta={
+                          <button onClick={() => { setShowEqForm(true); setEqError(null) }}
+                            className="rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition">
+                            Add Equipment
+                          </button>
+                        }
+                      />
+                    ) : null}
+                  </div>
+                )}
+
+                {/* ── Plan section ── */}
+                {activeSection === 'plan' && (
+                  <div>
+                    {plan ? (
+                      <div className="space-y-4">
+                        <div className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-5 space-y-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-lg font-bold text-[#0D1B2A]">{plan.plan_name}</p>
+                                {plan.is_custom && (
+                                  <span className="inline-flex rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#B87333]">Custom</span>
+                                )}
+                              </div>
+                              {plan.price ? <p className="text-2xl font-bold text-[#B87333] mt-1">${plan.price}<span className="text-sm font-normal text-[#7A8898]">/mo</span></p> : null}
+                              {plan.description && <p className="mt-1 text-sm text-[#7A8898]">{plan.description}</p>}
+                            </div>
+                            <span className={`shrink-0 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+                              plan.status === 'active'          ? 'bg-green-100 text-green-700' :
+                              plan.status === 'pending_payment' ? 'bg-amber-100 text-amber-700' :
+                                                                  'bg-[#E8ECF0] text-[#7A8898]'
+                            }`}>
+                              {plan.status === 'pending_payment' ? 'Pending' : plan.status}
+                            </span>
+                          </div>
+
+                          {plan.visit_frequency && (
+                            <div className="text-sm flex justify-between border-t border-white/60 pt-3">
+                              <span className="text-[#7A8898]">Visits per month</span>
+                              <span className="font-medium text-[#0D1B2A]">{plan.visit_frequency}</span>
+                            </div>
+                          )}
+
+                          {plan.features && plan.features.length > 0 && (
+                            <ul className="space-y-1.5 border-t border-white/60 pt-3">
+                              {plan.features.map((f, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-[#7A8898]">
+                                  <span className="mt-0.5 text-[#B87333] shrink-0">•</span>{f}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+
+                          {plan.status !== 'pending_payment' && (
+                            <div className="border-t border-white/60 pt-3 space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-[#7A8898]">Next renewal</span>
+                                <span className="font-medium text-[#0D1B2A]">{plan.renewal_date ? fmt(plan.renewal_date) : '—'}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-[#7A8898]">Billing</span>
+                                <span className="font-medium text-[#0D1B2A]">Monthly</span>
                               </div>
                             </div>
                           )}
                         </div>
-                      ))}
-                    </div>
-                  ) : !showEqForm ? (
-                    <div className="flex flex-col items-center justify-center py-4 sm:py-12 text-center px-4 rounded-2xl border-2 border-dashed border-[#E8ECF0]">
-                      <div className="mb-2 sm:mb-3 flex h-8 w-8 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-[#E8ECF0] text-[#7A8898]">
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18" />
-                        </svg>
-                      </div>
-                      <p className="text-sm font-semibold text-[#0D1B2A]">No equipment yet</p>
-                      <p className="mt-1 text-xs text-[#7A8898] max-w-xs">Add your coffee equipment to track service history and maintenance.</p>
-                      <button
-                        onClick={() => { setShowEqForm(true); setEqError(null) }}
-                        className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition"
-                      >
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Equipment
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              )}
 
-              {/* My Plan */}
-              {activeTab === 'plan' && (
-                <div>
-                  <h2 className="text-base font-bold text-[#0D1B2A] mb-4">My Maintenance Plan</h2>
-                  {plan ? (
-                    <div className="space-y-4 max-w-xl">
-                      <div className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-6 space-y-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="text-xl font-bold text-[#0D1B2A]">{plan.plan_name}</p>
-                              {plan.is_custom && (
-                                <span className="inline-flex items-center rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#B87333]">
-                                  Custom
-                                </span>
-                              )}
+                        {plan.status === 'pending_payment' && plan.stripe_payment_link ? (
+                          <>
+                            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                              Your plan is ready — complete payment to activate it.
                             </div>
-                            {plan.price ? <p className="text-2xl font-bold text-[#B87333] mt-1">${plan.price}<span className="text-sm font-normal text-[#7A8898]">/mo</span></p> : null}
-                            {plan.description && <p className="mt-1 text-sm text-[#7A8898]">{plan.description}</p>}
+                            <a href={plan.stripe_payment_link}
+                              className="flex w-full items-center justify-center rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 transition">
+                              Activate My Plan →
+                            </a>
+                          </>
+                        ) : (
+                          <>
+                            {portalError && <p className="text-sm text-red-600">{portalError}</p>}
+                            <button onClick={handleManagePlan} disabled={portalLoading}
+                              className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
+                              {portalLoading ? 'Opening billing portal…' : 'Manage plan & billing'}
+                            </button>
+                            <p className="text-xs text-center text-[#7A8898]">Update payment, cancel, or change your plan via the Stripe billing portal.</p>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <EmptyState
+                        icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
+                        title="No active plan"
+                        body="Subscribe to a maintenance plan to keep your equipment in peak condition."
+                        cta={<Link href="/pricing" className="rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition">See plans & pricing</Link>}
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* ── Invoices section ── */}
+                {activeSection === 'invoices' && (
+                  <div>
+                    {invoices.length > 0 ? (
+                      <div className="space-y-3">
+                        {invoices.map((inv) => (
+                          <div key={inv.id} className={`rounded-xl border p-4 border-l-2 ${inv.status === 'paid' ? 'border-[#E8ECF0] border-l-green-400' : inv.status === 'overdue' ? 'border-orange-100 border-l-orange-400' : 'border-[#E8ECF0] border-l-red-400'}`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-sm font-semibold text-[#0D1B2A]">{inv.description}</p>
+                              <StatusBadge status={inv.status} map={INV_STATUS} />
+                            </div>
+                            <div className="mt-2 flex items-center justify-between">
+                              <p className="text-xs text-[#7A8898]">{inv.due_date ? `Due ${fmt(inv.due_date)}` : '—'}</p>
+                              <p className="text-sm font-bold text-[#0D1B2A]">${Number(inv.amount).toFixed(2)}</p>
+                            </div>
                           </div>
-                          <span className={`shrink-0 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
-                            plan.status === 'active'          ? 'bg-green-100 text-green-700' :
-                            plan.status === 'pending_payment' ? 'bg-amber-100 text-amber-700' :
-                                                                'bg-[#E8ECF0] text-[#7A8898]'
-                          }`}>
-                            {plan.status === 'pending_payment' ? 'Pending' : plan.status}
-                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyState
+                        icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
+                        title="No invoices yet"
+                        body="Your invoices will appear here when Cafe Works issues them."
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* ── Account section ── */}
+                {activeSection === 'account' && (
+                  <div>
+                    <form onSubmit={handleSaveProfile} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Full name</label>
+                        <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} required
+                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Email</label>
+                        <input type="email" value={userEmail ?? ''} disabled
+                          className="block w-full rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-2.5 text-sm text-[#7A8898] cursor-not-allowed" />
+                        <p className="mt-1 text-xs text-[#7A8898]">Email cannot be changed here.</p>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Phone</label>
+                        <input type="tel" value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} placeholder="(555) 000-0000"
+                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Street Address</label>
+                        <input type="text" value={profileStreet} onChange={(e) => setProfileStreet(e.target.value)} placeholder="123 Main St"
+                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">City</label>
+                        <input type="text" value={profileCity} onChange={(e) => setProfileCity(e.target.value)} placeholder="Portland"
+                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">State</label>
+                          <input type="text" value={profileState} onChange={(e) => setProfileState(e.target.value)} placeholder="OR" maxLength={2}
+                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                         </div>
-
-                        {plan.visit_frequency && (
-                          <div className="text-sm flex justify-between border-t border-[#E8ECF0] pt-3">
-                            <span className="text-[#7A8898]">Visits per month</span>
-                            <span className="font-medium text-[#0D1B2A]">{plan.visit_frequency}</span>
-                          </div>
-                        )}
-
-                        {plan.features && plan.features.length > 0 && (
-                          <ul className="space-y-1.5 border-t border-[#E8ECF0] pt-3">
-                            {plan.features.map((f, i) => (
-                              <li key={i} className="flex items-start gap-2 text-sm text-[#7A8898]">
-                                <span className="mt-0.5 text-[#B87333] shrink-0">•</span>
-                                {f}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-
-                        {plan.status !== 'pending_payment' && (
-                          <div className="border-t border-[#E8ECF0] pt-4 space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-[#7A8898]">Next renewal</span>
-                              <span className="font-medium text-[#0D1B2A]">{plan.renewal_date ? fmt(plan.renewal_date) : '—'}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-[#7A8898]">Billing</span>
-                              <span className="font-medium text-[#0D1B2A]">Monthly</span>
-                            </div>
-                          </div>
-                        )}
+                        <div>
+                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">ZIP</label>
+                          <input type="text" value={profileZip} onChange={(e) => setProfileZip(e.target.value)} placeholder="97201" maxLength={10}
+                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        </div>
                       </div>
+                      {profileError && <p className="text-sm text-red-600">{profileError}</p>}
+                      {profileMsg   && <p className="text-sm text-green-600">{profileMsg}</p>}
+                      <button type="submit" disabled={profileSaving}
+                        className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
+                        {profileSaving ? 'Saving…' : 'Save changes'}
+                      </button>
+                    </form>
+                    <button
+                      onClick={handleSignOut}
+                      className="mt-4 w-full rounded-xl border border-[#E8ECF0] py-3 text-sm font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                )}
 
-                      {plan.status === 'pending_payment' && plan.stripe_payment_link ? (
-                        <>
-                          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                            Your plan is set up and ready — complete your payment to activate it.
-                          </div>
-                          <a
-                            href={plan.stripe_payment_link}
-                            className="flex w-full items-center justify-center rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 transition"
-                          >
-                            Activate My Plan →
-                          </a>
-                        </>
+              </div>
+            </div>
+          )}
+
+          {/* ── Recent activity ── */}
+          {activityItems.length > 0 && (
+            <div className="rounded-2xl bg-white border border-black/5 shadow-sm p-5">
+              <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-4`}>Recent Activity</p>
+              <div className="space-y-4">
+                {activityItems.map((item) => (
+                  <div key={item.key} className="flex items-center gap-3">
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
+                      item.iconColor === 'green'  ? 'bg-green-100 text-green-600'     :
+                      item.iconColor === 'amber'  ? 'bg-amber-100 text-amber-600'     :
+                      item.iconColor === 'copper' ? 'bg-[#B87333]/10 text-[#B87333]'  :
+                                                    'bg-blue-100 text-blue-600'
+                    }`}>
+                      {item.iconColor === 'copper' ? (
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
                       ) : (
-                        <>
-                          {portalError && <p className="text-sm text-red-600">{portalError}</p>}
-                          <button
-                            onClick={handleManagePlan}
-                            disabled={portalLoading}
-                            className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
-                          >
-                            {portalLoading ? 'Opening billing portal…' : 'Manage plan & billing'}
-                          </button>
-                          <p className="text-xs text-center text-[#7A8898]">
-                            Update payment method, cancel, or change your plan in the Stripe billing portal.
-                          </p>
-                        </>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                        </svg>
                       )}
                     </div>
-                  ) : (
-                    <EmptyState
-                      icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
-                      title="No active plan"
-                      body="Subscribe to a maintenance plan to keep your equipment in peak condition."
-                      cta={<Link href="/pricing" className="rounded-full bg-[#B87333] px-4 sm:px-5 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white hover:opacity-90 transition">See plans & pricing</Link>}
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* Invoices */}
-              {activeTab === 'invoices' && (
-                <div>
-                  <h2 className="text-base font-bold text-[#0D1B2A] mb-4">Invoices</h2>
-                  {invoices.length > 0 ? (
-                    <div className="overflow-x-auto -mx-5 sm:-mx-7">
-                      <table className="min-w-full">
-                        <thead>
-                          <tr className="border-b border-[#E8ECF0]">
-                            <th className="px-5 sm:px-7 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Description</th>
-                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Amount</th>
-                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Due</th>
-                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#7A8898]">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#E8ECF0]">
-                          {invoices.map((inv) => (
-                            <tr key={inv.id} className="hover:bg-[#E8ECF0]">
-                              <td className="px-5 sm:px-7 py-3.5 text-sm font-medium text-[#0D1B2A]">{inv.description}</td>
-                              <td className="px-4 py-3.5 text-sm text-[#0D1B2A] font-semibold whitespace-nowrap">${inv.amount.toFixed(2)}</td>
-                              <td className="px-4 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">{inv.due_date ? fmt(inv.due_date) : '—'}</td>
-                              <td className="px-4 py-3.5 whitespace-nowrap"><StatusBadge status={inv.status} map={INV_STATUS} /></td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[#0D1B2A] truncate">{item.title}</p>
+                      <p className="text-xs text-[#7A8898] truncate">{item.subtitle}</p>
                     </div>
-                  ) : (
-                    <EmptyState
-                      icon={<svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
-                      title="No invoices yet"
-                      body="Your invoices will appear here when the Cafe Works team issues them."
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* Profile */}
-              {activeTab === 'profile' && (
-                <div className="max-w-lg">
-                  <h2 className="text-base font-bold text-[#0D1B2A] mb-4">My Profile</h2>
-                  <form onSubmit={handleSaveProfile} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Full name</label>
-                      <input
-                        type="text"
-                        value={profileName}
-                        onChange={(e) => setProfileName(e.target.value)}
-                        required
-                        className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Email</label>
-                      <input
-                        type="email"
-                        value={userEmail ?? ''}
-                        disabled
-                        className="block w-full rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-2.5 text-sm text-[#7A8898] cursor-not-allowed"
-                      />
-                      <p className="mt-1 text-xs text-[#7A8898]">Email address cannot be changed here.</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Phone</label>
-                      <input
-                        type="tel"
-                        value={profilePhone}
-                        onChange={(e) => setProfilePhone(e.target.value)}
-                        placeholder="(555) 000-0000"
-                        className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Street Address</label>
-                      <input
-                        type="text"
-                        value={profileStreet}
-                        onChange={(e) => setProfileStreet(e.target.value)}
-                        placeholder="123 Main St"
-                        className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">City</label>
-                      <input
-                        type="text"
-                        value={profileCity}
-                        onChange={(e) => setProfileCity(e.target.value)}
-                        placeholder="Portland"
-                        className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">State</label>
-                        <input
-                          type="text"
-                          value={profileState}
-                          onChange={(e) => setProfileState(e.target.value)}
-                          placeholder="OR"
-                          maxLength={2}
-                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">ZIP</label>
-                        <input
-                          type="text"
-                          value={profileZip}
-                          onChange={(e) => setProfileZip(e.target.value)}
-                          placeholder="97201"
-                          maxLength={10}
-                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                        />
-                      </div>
-                    </div>
-                    {profileError && <p className="text-sm text-red-600">{profileError}</p>}
-                    {profileMsg   && <p className="text-sm text-green-600">{profileMsg}</p>}
-                    <button
-                      type="submit"
-                      disabled={profileSaving}
-                      className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
-                    >
-                      {profileSaving ? 'Saving…' : 'Save changes'}
-                    </button>
-                  </form>
-                </div>
-              )}
-
+                    <StatusBadge status={item.status} map={item.statusMap} />
+                  </div>
+                ))}
+              </div>
             </div>
+          )}
+
+        </div>
+      )}
+
+      {/* ── Bottom nav ── */}
+      <nav className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-[#E8ECF0] pb-safe">
+        <div className="mx-auto max-w-lg grid grid-cols-4 pb-2">
+          <button
+            onClick={() => { setActiveNav('home'); setActiveSection(null) }}
+            className={`flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'home' ? 'text-[#B87333]' : 'text-[#7A8898]'}`}
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide`}>Home</p>
+          </button>
+
+          <button
+            onClick={() => { setActiveNav('repairs'); showSection('repairs') }}
+            className={`relative flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'repairs' ? 'text-[#B87333]' : 'text-[#7A8898]'}`}
+          >
+            {openRepairs.length > 0 && (
+              <span className="absolute top-2 right-5 flex h-4 w-4 items-center justify-center rounded-full bg-[#B87333] text-[8px] font-bold text-white">
+                {openRepairs.length}
+              </span>
+            )}
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+            </svg>
+            <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide`}>Repairs</p>
+          </button>
+
+          <button
+            onClick={() => { setActiveNav('schedule'); setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
+            className={`flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'schedule' ? 'text-[#B87333]' : 'text-[#7A8898]'}`}
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide`}>Schedule</p>
+          </button>
+
+          <button
+            onClick={() => { setActiveNav('account'); showSection('account') }}
+            className={`flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'account' ? 'text-[#B87333]' : 'text-[#7A8898]'}`}
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide`}>Account</p>
+          </button>
+        </div>
+      </nav>
+
+      {/* ── DateSlotPicker bottom sheet ── */}
+      {showSchedulePicker && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/50" onClick={() => { setShowSchedulePicker(false); setActiveNav('home') }} />
+          <div className="relative rounded-t-2xl bg-white px-5 pt-5 pb-10 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-base font-bold text-[#0D1B2A]">Schedule PM Visit</p>
+              <button onClick={() => { setShowSchedulePicker(false); setActiveNav('home') }} className="text-[#7A8898] hover:text-[#0D1B2A] transition">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <DateSlotPicker
+              selectedDate={pmDate}
+              selectedSlot={pmSlot}
+              onDateChange={(d) => { setPmDate(d); setPmSlot(null) }}
+              onSlotChange={setPmSlot}
+            />
+            {pmError && <p className="mt-2 text-xs text-red-600">{pmError}</p>}
+            <button
+              onClick={handleSchedulePM}
+              disabled={pmSaving || !pmDate || !pmSlot}
+              className="mt-4 w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
+            >
+              {pmSaving ? 'Saving…' : 'Confirm appointment'}
+            </button>
           </div>
         </div>
       )}
+
     </div>
   )
 }
