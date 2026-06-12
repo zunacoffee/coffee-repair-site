@@ -16,8 +16,8 @@ type RepairJob = { id: number; equipment_type: string; status: string; descripti
 type WorkOrder = { id: number; work_order_number: string; status: string; problem_description: string; grand_total: number; created_at: string; completed_at: string | null; equipment_list: { equipment_type: string; brand: string; model: string } | null }
 type Plan      = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null; next_visit_date?: string | null; next_visit_slot?: string | null; is_custom?: boolean; stripe_payment_link?: string | null; description?: string | null; visit_frequency?: number | null; features?: string[] }
 type Invoice   = { id: number; amount: number; status: string; due_date: string | null; description: string; created_at: string }
-type Section   = 'invoices' | 'equipment' | 'plan' | 'repairs' | 'account' | null
-type Nav       = 'home' | 'repairs' | 'schedule' | 'account'
+type Section   = 'invoices' | 'equipment' | 'plan' | 'repairs' | 'account' | 'contact' | null
+type Nav       = 'home' | 'repairs' | 'contact' | 'account'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -434,19 +434,13 @@ export default function DashboardPage() {
                 {greeting}, {firstName}
               </h1>
               {plan && (
-                <span className={`mt-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                  plan.status === 'active' ? 'bg-green-500/20 text-green-300' : 'bg-amber-500/20 text-amber-300'
+                <span className={`${MONO} mt-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                  plan.status === 'active' ? 'bg-[#B87333]/25 text-[#B87333]' : 'bg-amber-500/20 text-amber-300'
                 }`}>
                   {plan.plan_name}
                 </span>
               )}
             </div>
-            <button
-              onClick={handleSignOut}
-              className="rounded-xl border border-white/20 px-3 py-2 text-xs font-semibold text-white/70 hover:bg-white/10 transition"
-            >
-              Sign out
-            </button>
           </div>
         </div>
       </header>
@@ -582,19 +576,19 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
                 </svg>
               </div>
-              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>Repair</p>
+              <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>Repair</p>
             </button>
 
             <button
               onClick={() => { setActiveNav('home'); showSection('invoices') }}
               className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
             >
-              <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${openInvoices.length > 0 ? 'bg-orange-100' : 'bg-[#E8ECF0]'}`}>
-                <svg className={`h-[18px] w-[18px] ${openInvoices.length > 0 ? 'text-orange-500' : 'text-[#0D1B2A]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${openInvoices.length > 0 ? 'bg-orange-100' : 'bg-[#B87333]/10'}`}>
+                <svg className={`h-[18px] w-[18px] ${openInvoices.length > 0 ? 'text-orange-500' : 'text-[#B87333]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-center leading-tight ${openInvoices.length > 0 ? 'text-orange-600' : 'text-[#0D1B2A]'}`}>
+              <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-center leading-tight ${openInvoices.length > 0 ? 'text-orange-600' : 'text-[#0D1B2A]'}`}>
                 {openInvoices.length > 0 ? `Bills (${openInvoices.length})` : 'Invoices'}
               </p>
             </button>
@@ -603,24 +597,24 @@ export default function DashboardPage() {
               onClick={() => { setActiveNav('home'); showSection('equipment') }}
               className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8ECF0]">
-                <svg className="h-[18px] w-[18px] text-[#0D1B2A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B87333]/10">
+                <svg className="h-[18px] w-[18px] text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18" />
                 </svg>
               </div>
-              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>Equipment</p>
+              <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>Equipment</p>
             </button>
 
             <button
               onClick={() => { setActiveNav('home'); showSection('plan') }}
               className="flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-black/5 shadow-sm py-3.5 px-2 hover:bg-[#E8ECF0] transition"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8ECF0]">
-                <svg className="h-[18px] w-[18px] text-[#0D1B2A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B87333]/10">
+                <svg className="h-[18px] w-[18px] text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               </div>
-              <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>My Plan</p>
+              <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#0D1B2A] text-center leading-tight`}>My Plan</p>
             </button>
           </div>
 
@@ -633,7 +627,8 @@ export default function DashboardPage() {
                    activeSection === 'equipment' ? 'Equipment'        :
                    activeSection === 'plan'      ? 'My Plan'          :
                    activeSection === 'invoices'  ? 'Invoices'         :
-                   activeSection === 'account'   ? 'Account'          : ''}
+                   activeSection === 'account'   ? 'Account'          :
+                   activeSection === 'contact'   ? 'Contact Us'       : ''}
                 </h2>
                 <button onClick={() => setActiveSection(null)} className="text-[#7A8898] hover:text-[#0D1B2A] transition">
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -959,10 +954,65 @@ export default function DashboardPage() {
                     </form>
                     <button
                       onClick={handleSignOut}
-                      className="mt-4 w-full rounded-xl border border-[#E8ECF0] py-3 text-sm font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition"
+                      className="mt-4 w-full rounded-full border border-[#E8ECF0] py-3 text-sm font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition"
                     >
                       Sign out
                     </button>
+                  </div>
+                )}
+
+                {/* ── Contact section ── */}
+                {activeSection === 'contact' && (
+                  <div className="space-y-1">
+                    {/* Phone */}
+                    <a
+                      href="tel:+15550123456"
+                      className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-white px-4 py-4 shadow-sm hover:bg-[#B87333]/5 transition"
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10">
+                        <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Call or Text</p>
+                        <p className="mt-0.5 text-lg font-bold text-[#0D1B2A]">(555) 012-3456</p>
+                      </div>
+                    </a>
+
+                    {/* Email */}
+                    <a
+                      href="mailto:hello@cafeworks.com"
+                      className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-white px-4 py-4 shadow-sm hover:bg-[#B87333]/5 transition"
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10">
+                        <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Email Us</p>
+                        <p className="mt-0.5 text-base font-bold text-[#0D1B2A]">hello@cafeworks.com</p>
+                      </div>
+                    </a>
+
+                    {/* Hours */}
+                    <div className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-white px-4 py-4 shadow-sm">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10">
+                        <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Business Hours</p>
+                        <p className="mt-0.5 text-base font-bold text-[#0D1B2A]">Mon–Sat, 7am–6pm</p>
+                      </div>
+                    </div>
+
+                    {/* Emergency note */}
+                    <p className="pt-2 text-center text-xs text-[#7A8898]">
+                      <span className="font-semibold text-[#0D1B2A]">Emergency?</span> Call or text anytime for urgent repairs.
+                    </p>
                   </div>
                 )}
 
@@ -1004,7 +1054,7 @@ export default function DashboardPage() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[#0D1B2A] truncate">{item.title}</p>
+                          <p className="text-sm font-semibold text-[#0D1B2A] truncate max-w-[180px]">{item.title}</p>
                           <p className="text-xs text-[#7A8898] truncate">{item.subtitle}</p>
                         </div>
                         <StatusBadge status={item.status} map={item.statusMap} />
@@ -1129,13 +1179,13 @@ export default function DashboardPage() {
           </button>
 
           <button
-            onClick={() => { setActiveNav('schedule'); setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
-            className={`flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'schedule' ? 'text-[#B87333]' : 'text-[#7A8898]'}`}
+            onClick={() => { setActiveNav('contact'); showSection('contact') }}
+            className={`flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'contact' ? 'text-[#B87333]' : 'text-[#7A8898]'}`}
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
-            <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide`}>Schedule</p>
+            <p className={`${MONO} text-[8px] font-semibold uppercase tracking-wide`}>Contact</p>
           </button>
 
           <button
