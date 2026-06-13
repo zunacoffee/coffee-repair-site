@@ -262,7 +262,7 @@ export default function DashboardPage() {
   }
 
   const handleSchedulePM = async () => {
-    if (!pmDate || !pmSlot) { setPmError('Please select a date and time slot.'); return }
+    if (!pmDate || !pmSlot) { setPmError('Please select a date and time.'); return }
     setPmSaving(true); setPmError(null); setPmSuccess(null)
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { router.push('/login'); return }
@@ -1740,7 +1740,7 @@ export default function DashboardPage() {
                                 {plan.next_visit_date && (
                                   <div className="flex justify-between text-sm border-t border-white/60 pt-3">
                                     <span className="text-[#7A8898]">Next PM visit</span>
-                                    <span className="font-medium text-[#0D1B2A]">{fmt(plan.next_visit_date)}{plan.next_visit_slot ? ` · ${plan.next_visit_slot === 'morning' ? 'Morning' : 'Afternoon'}` : ''}</span>
+                                    <span className="font-medium text-[#0D1B2A]">{fmt(plan.next_visit_date)}{plan.next_visit_slot ? ` · ${plan.next_visit_slot}` : ''}</span>
                                   </div>
                                 )}
                                 {plan.features && plan.features.length > 0 && (
