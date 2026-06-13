@@ -156,6 +156,10 @@ export default function DashboardPage() {
   const [selectedFeedItem,    setSelectedFeedItem]    = useState<string | null>(null)
   const [desktopNav,          setDesktopNav]          = useState<DesktopNav>('home')
   const [desktopExpandedItem, setDesktopExpandedItem] = useState<string | null>(null)
+  const [selectedWO,          setSelectedWO]          = useState<any>(null)
+  const [selectedInvoice,     setSelectedInvoice]     = useState<any>(null)
+  const [showPlanModal,       setShowPlanModal]       = useState(false)
+  const [selectedEquipment,   setSelectedEquipment]   = useState<any>(null)
 
   // Repair modal state
   const [showRepairModal,    setShowRepairModal]    = useState(false)
@@ -398,6 +402,8 @@ export default function DashboardPage() {
       description: inv.description,
       total: inv.total,
       dueDate: inv.due_date,
+      invoice_number: inv.invoice_number ?? null,
+      stripe_payment_link: inv.stripe_payment_link ?? null,
     })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
 
@@ -789,7 +795,7 @@ export default function DashboardPage() {
                     {equipment.length > 0 ? (
                       <div className="space-y-3">
                         {equipment.map((eq) => (
-                          <div key={eq.id} className="rounded-xl border border-[#E8ECF0] p-4 border-l-2 border-l-emerald-500">
+                          <div key={eq.id} onClick={() => setSelectedEquipment(eq)} className="rounded-xl border border-[#E8ECF0] p-4 border-l-2 border-l-emerald-500 cursor-pointer hover:shadow-sm transition">
                             <p className={`${MONO} text-[10px] font-semibold text-[#B87333]`}>{eq.equipment_type}</p>
                             <p className="mt-0.5 text-sm font-bold text-[#0D1B2A]">{eq.brand} {eq.model}</p>
                             {eq.serial_number && (
@@ -819,7 +825,7 @@ export default function DashboardPage() {
                   <div>
                     {plan ? (
                       <div className="space-y-4">
-                        <div className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-5 space-y-4">
+                        <div className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-5 space-y-4 cursor-pointer hover:shadow-sm transition" onClick={() => setShowPlanModal(true)}>
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
@@ -912,7 +918,7 @@ export default function DashboardPage() {
                           const payable = (inv.status === 'sent' || inv.status === 'unpaid') && inv.stripe_payment_link
                           const displayStatus = inv.status === 'sent' && inv.stripe_payment_link ? 'Payment Due' : null
                           return (
-                            <div key={inv.id} className={`rounded-xl border p-4 border-l-2 ${inv.status === 'paid' ? 'border-[#E8ECF0] border-l-green-400' : inv.status === 'overdue' ? 'border-orange-100 border-l-orange-400' : 'border-[#E8ECF0] border-l-red-400'}`}>
+                            <div key={inv.id} onClick={() => setSelectedInvoice(inv)} className={`rounded-xl border p-4 border-l-2 cursor-pointer hover:shadow-sm transition ${inv.status === 'paid' ? 'border-[#E8ECF0] border-l-green-400' : inv.status === 'overdue' ? 'border-orange-100 border-l-orange-400' : 'border-[#E8ECF0] border-l-red-400'}`}>
                               <div className="flex items-start justify-between gap-2">
                                 <p className="text-sm font-semibold text-[#0D1B2A]">{inv.description}</p>
                                 {displayStatus
@@ -1068,7 +1074,7 @@ export default function DashboardPage() {
               <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-4`}>Recent Activity</p>
               <div>
                 {activityItems.map((item) => (
-                  <div key={item.key} className="flex items-center gap-3 py-3 border-b border-[#E8ECF0] last:border-0">
+                  <div key={item.key} onClick={() => item.type === 'workorder' ? setSelectedWO(item) : setSelectedInvoice(item)} className="flex items-center gap-3 py-3 border-b border-[#E8ECF0] last:border-0 cursor-pointer hover:bg-[#E8ECF0]/50 rounded-lg px-2 -mx-2 transition">
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                       item.iconColor === 'green'  ? 'bg-green-50 text-green-500'     :
                       item.iconColor === 'amber'  ? 'bg-amber-50 text-amber-400'     :
@@ -1633,7 +1639,7 @@ export default function DashboardPage() {
                         <div className="max-w-xl">
                           {plan ? (
                             <div className="space-y-4">
-                              <div className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-5 space-y-4">
+                              <div className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-5 space-y-4 cursor-pointer hover:shadow-sm transition" onClick={() => setShowPlanModal(true)}>
                                 <div className="flex items-start justify-between gap-3">
                                   <div>
                                     <div className="flex items-center gap-2">
@@ -1754,7 +1760,7 @@ export default function DashboardPage() {
                           {equipment.length > 0 ? (
                             <div className="grid grid-cols-3 gap-3">
                               {equipment.map((eq) => (
-                                <div key={eq.id} className="rounded-xl border border-[#E8ECF0] border-l-2 border-l-emerald-500 p-4">
+                                <div key={eq.id} onClick={() => setSelectedEquipment(eq)} className="rounded-xl border border-[#E8ECF0] border-l-2 border-l-emerald-500 p-4 cursor-pointer hover:shadow-sm transition">
                                   <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#B87333]`}>{eq.equipment_type}</p>
                                   <p className="mt-0.5 text-sm font-bold text-[#0D1B2A]">{eq.brand} {eq.model}</p>
                                   {eq.serial_number && <p className={`${MONO} mt-0.5 text-xs text-[#7A8898]`}>S/N {eq.serial_number}</p>}
@@ -2166,6 +2172,158 @@ export default function DashboardPage() {
               {pmSaving ? 'Saving…' : 'Confirm appointment'}
             </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Work Order Modal */}
+      {selectedWO && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setSelectedWO(null)}>
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setSelectedWO(null)} className="absolute top-4 right-4 text-[#7A8898] hover:text-[#0D1B2A] transition">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <p className={`${MONO} text-[10px] font-semibold text-[#B87333] uppercase tracking-wide`}>Work Order</p>
+            <p className="mt-1 text-xl font-bold text-[#0D1B2A]">WO {selectedWO.woNumber}</p>
+            {selectedWO.equipment && <p className="mt-3 text-sm text-[#7A8898]">{selectedWO.equipment}</p>}
+            {selectedWO.problem && <p className="mt-1 text-sm text-[#0D1B2A]">{selectedWO.problem}</p>}
+            <div className="mt-4 space-y-2 border-t border-[#E8ECF0] pt-4">
+              <div className="flex justify-between text-sm items-center">
+                <span className="text-[#7A8898]">Status</span>
+                <StatusBadge status={selectedWO.status} map={WO_STATUS} />
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[#7A8898]">Date</span>
+                <span className="font-medium text-[#0D1B2A]">{fmt(selectedWO.date)}</span>
+              </div>
+              {selectedWO.total != null && Number(selectedWO.total) > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#7A8898]">Total</span>
+                  <span className="font-bold text-[#0D1B2A]">${Number(selectedWO.total).toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+            <Link href="/service-request" onClick={() => setSelectedWO(null)}
+              className="mt-5 flex w-full items-center justify-center rounded-xl bg-[#B87333] py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">
+              Request Follow-up
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Modal */}
+      {selectedInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setSelectedInvoice(null)}>
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setSelectedInvoice(null)} className="absolute top-4 right-4 text-[#7A8898] hover:text-[#0D1B2A] transition">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <p className={`${MONO} text-[10px] font-semibold text-[#B87333] uppercase tracking-wide`}>Invoice</p>
+            {selectedInvoice.invoice_number && (
+              <p className="mt-1 text-xl font-bold text-[#0D1B2A]">{selectedInvoice.invoice_number}</p>
+            )}
+            {selectedInvoice.description && (
+              <p className="mt-1 text-sm text-[#7A8898]">{selectedInvoice.description}</p>
+            )}
+            <div className="mt-4 space-y-2 border-t border-[#E8ECF0] pt-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-[#7A8898]">Amount</span>
+                <span className="font-bold text-[#0D1B2A]">${Number(selectedInvoice.total).toFixed(2)}</span>
+              </div>
+              {(selectedInvoice.due_date ?? selectedInvoice.dueDate) && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#7A8898]">Due date</span>
+                  <span className="font-medium text-[#0D1B2A]">{fmt(selectedInvoice.due_date ?? selectedInvoice.dueDate)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm items-center">
+                <span className="text-[#7A8898]">Status</span>
+                <StatusBadge status={selectedInvoice.status} map={INV_STATUS} />
+              </div>
+            </div>
+            {(selectedInvoice.status === 'unpaid' || selectedInvoice.status === 'sent' || selectedInvoice.status === 'overdue') && selectedInvoice.stripe_payment_link && (
+              <a href={selectedInvoice.stripe_payment_link} target="_blank" rel="noopener noreferrer"
+                className="mt-5 flex w-full items-center justify-center rounded-xl bg-[#B87333] py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">
+                Pay Now →
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Plan Modal */}
+      {showPlanModal && plan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowPlanModal(false)}>
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setShowPlanModal(false)} className="absolute top-4 right-4 text-[#7A8898] hover:text-[#0D1B2A] transition">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <p className={`${MONO} text-[10px] font-semibold text-[#B87333] uppercase tracking-wide`}>Maintenance Plan</p>
+            <div className="mt-1 flex items-center gap-2 flex-wrap">
+              <p className="text-xl font-bold text-[#0D1B2A]">{plan.plan_name}</p>
+              <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
+                plan.status === 'active'          ? 'bg-green-100 text-green-700' :
+                plan.status === 'pending_payment' ? 'bg-amber-100 text-amber-700' :
+                                                    'bg-gray-100 text-gray-500'
+              }`}>{plan.status === 'pending_payment' ? 'Pending' : plan.status}</span>
+            </div>
+            {plan.price ? <p className="mt-1 text-2xl font-bold text-[#B87333]">${plan.price}<span className="text-sm font-normal text-[#7A8898]">/mo</span></p> : null}
+            {plan.description && <p className="mt-2 text-sm text-[#7A8898]">{plan.description}</p>}
+            <div className="mt-4 space-y-2 border-t border-[#E8ECF0] pt-4">
+              {plan.visit_frequency && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#7A8898]">Visits per month</span>
+                  <span className="font-medium text-[#0D1B2A]">{plan.visit_frequency}</span>
+                </div>
+              )}
+              {plan.renewal_date && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#7A8898]">Next renewal</span>
+                  <span className="font-medium text-[#0D1B2A]">{fmt(plan.renewal_date)}</span>
+                </div>
+              )}
+              {plan.next_visit_date && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#7A8898]">Next PM visit</span>
+                  <span className="font-medium text-[#0D1B2A]">{fmt(plan.next_visit_date)}{plan.next_visit_slot ? ` · ${plan.next_visit_slot}` : ''}</span>
+                </div>
+              )}
+            </div>
+            {plan.features && plan.features.length > 0 && (
+              <ul className="mt-4 space-y-1.5 border-t border-[#E8ECF0] pt-4">
+                {plan.features.map((f, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-[#7A8898]">
+                    <span className="mt-0.5 text-[#B87333] shrink-0">•</span>{f}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <button onClick={() => { setShowPlanModal(false); handleManagePlan() }} disabled={portalLoading}
+              className="mt-5 w-full rounded-xl bg-[#B87333] py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
+              {portalLoading ? 'Opening billing portal…' : 'Manage plan'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Equipment Modal */}
+      {selectedEquipment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setSelectedEquipment(null)}>
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setSelectedEquipment(null)} className="absolute top-4 right-4 text-[#7A8898] hover:text-[#0D1B2A] transition">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <p className={`${MONO} text-[10px] font-semibold text-[#B87333] uppercase tracking-wide`}>{selectedEquipment.equipment_type}</p>
+            <p className="mt-1 text-xl font-bold text-[#0D1B2A]">{selectedEquipment.brand} {selectedEquipment.model}</p>
+            {selectedEquipment.serial_number && (
+              <p className="mt-1 text-sm font-mono text-[#7A8898]">S/N: {selectedEquipment.serial_number}</p>
+            )}
+            <button
+              onClick={() => { setSelectedEquipment(null); openRepairModal() }}
+              className="mt-5 w-full rounded-xl bg-[#B87333] py-2.5 text-sm font-semibold text-white hover:opacity-90 transition"
+            >
+              Request Repair
+            </button>
           </div>
         </div>
       )}
