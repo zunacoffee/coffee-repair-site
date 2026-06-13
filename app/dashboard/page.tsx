@@ -14,7 +14,7 @@ type Equipment = { id: number; equipment_type: string; brand: string; model: str
 type RepairJob = { id: number; equipment_type: string; status: string; description: string; created_at: string; completed_at: string | null }
 type WorkOrder = { id: number; work_order_number: string; status: string; problem_description: string; grand_total: number; created_at: string; completed_at: string | null; equipment_list: { equipment_type: string; brand: string; model: string } | null }
 type Plan      = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null; next_visit_date?: string | null; next_visit_slot?: string | null; is_custom?: boolean; stripe_payment_link?: string | null; description?: string | null; visit_frequency?: number | null; features?: string[] }
-type Invoice   = { id: number; total: number; status: string; due_date: string | null; description: string; created_at: string; invoice_number: string | null; stripe_payment_link?: string | null }
+type Invoice   = { id: number; total: number; status: string; due_date: string | null; description: string; created_at: string; invoice_number?: string | null; stripe_payment_link?: string | null }
 type Section   = 'invoices' | 'equipment' | 'plan' | 'repairs' | 'account' | 'contact' | null
 type Nav       = 'home' | 'repairs' | 'contact' | 'account'
 type DesktopNav = 'home' | 'repairs' | 'plan' | 'invoices' | 'equipment' | 'contact' | 'profile'
@@ -1371,7 +1371,7 @@ export default function DashboardPage() {
                   <div className="bg-white rounded-xl border border-black/[0.07] border-l-4 border-l-amber-500 px-5 py-4">
                     <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Outstanding</p>
                     <p className="mt-1 text-lg font-bold text-[#0D1B2A]">
-                      ${invoices.filter((i) => i.status !== 'paid').reduce((s, i) => s + Number(i.amount), 0).toFixed(2)}
+                      ${invoices.filter((i) => i.status !== 'paid').reduce((s, i) => s + Number(i.total), 0).toFixed(2)}
                     </p>
                     <p className="mt-0.5 text-xs text-[#7A8898]">{openInvoices.length} unpaid {openInvoices.length === 1 ? 'invoice' : 'invoices'}</p>
                     {openInvoices.length > 0 && (
