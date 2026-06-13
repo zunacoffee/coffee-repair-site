@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import PublicNavbar from './components/PublicNavbar'
 import PublicFooter from './components/PublicFooter'
+import ContactInfo from './components/ContactInfo'
 import { supabaseAdmin } from '../lib/supabaseAdmin'
 
 export const revalidate = 300
@@ -61,7 +62,7 @@ export default async function Home() {
                 href="/service-request"
                 className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-7 py-3 text-sm font-semibold text-white shadow-lg transition hover:opacity-90"
               >
-                Book a Repair
+                Request a Repair
               </Link>
               <Link
                 href="/pricing"
@@ -72,52 +73,42 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* Right — Repair Tracker */}
-          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#152436] p-6 shadow-2xl shadow-black/30 lg:shrink-0">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <p className={`${MONO} text-[10px] tracking-widest text-[#B87333]`}>JOB-ID: CW-2025-0891</p>
-                <p className="mt-1 text-sm font-semibold text-white">La Marzocco Linea PB</p>
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex items-center gap-4 min-h-[88px]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/20">
+                <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
-              <span className="flex items-center gap-1.5 rounded-full bg-[#B87333]/15 px-3 py-1 text-[11px] font-semibold text-[#B87333]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#B87333] animate-pulse" />
-                In Progress
-              </span>
+              <div>
+                <p className="font-bold text-white">Free First Visit Inspection</p>
+                <p className="mt-0.5 text-sm text-white/60">We inspect all your equipment at no charge on your first visit</p>
+              </div>
             </div>
 
-            <div className="space-y-0">
-              {[
-                { label: 'Job received',      done: true  },
-                { label: 'Diagnostics',        done: true  },
-                { label: 'Parts sourced',      done: true  },
-                { label: 'Repair in progress', done: true, active: true },
-                { label: 'QA & calibration',   done: false },
-                { label: 'Ready for pickup',   done: false },
-              ].map((step, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="flex flex-col items-center">
-                    <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                      step.active ? 'border-[#B87333] bg-[#B87333]'
-                      : step.done  ? 'border-[#B87333] bg-[#B87333]/20'
-                      : 'border-white/20 bg-transparent'
-                    }`}>
-                      {step.done && (
-                        <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </div>
-                    {i < 5 && <div className={`w-px flex-1 my-0.5 ${step.done ? 'bg-[#B87333]/40' : 'bg-white/10'}`} style={{ minHeight: 16 }} />}
-                  </div>
-                  <p className={`pb-4 text-sm leading-5 ${step.active ? 'font-semibold text-white' : step.done ? 'text-[#E8ECF0]/60' : 'text-[#E8ECF0]/30'}`}>
-                    {step.label}
-                  </p>
-                </div>
-              ))}
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex items-center gap-4 min-h-[88px]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/20">
+                <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-bold text-white">Free Service Call</p>
+                <p className="mt-0.5 text-sm text-white/60">No trip charge within 30 miles</p>
+              </div>
             </div>
 
-            <div className="mt-2 pt-4 border-t border-white/10">
-              <p className={`${MONO} text-[10px] text-[#E8ECF0]/40`}>EST. COMPLETION: TODAY 4:30 PM</p>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex items-center gap-4 min-h-[88px]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/20">
+                <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-bold text-white">Fast Response</p>
+                <p className="mt-0.5 text-sm text-white/60">Most requests confirmed within one business day</p>
+              </div>
             </div>
           </div>
         </div>
@@ -314,7 +305,7 @@ export default async function Home() {
                 href="/service-request"
                 className="inline-flex items-center justify-center rounded-full bg-[#B87333] px-7 py-3 text-sm font-semibold text-white shadow-lg transition hover:opacity-90"
               >
-                Book a Repair
+                Request a Repair
               </Link>
               <Link
                 href="/pricing"
@@ -325,21 +316,7 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 space-y-6">
-            <div>
-              <p className={`${MONO} text-[10px] tracking-widest text-[#B87333]`}>// PHONE</p>
-              <p className="mt-2 text-2xl font-bold text-white">(555) 012-3456</p>
-            </div>
-            <div className="border-t border-white/10 pt-6">
-              <p className={`${MONO} text-[10px] tracking-widest text-[#B87333]`}>// EMAIL</p>
-              <p className="mt-2 text-lg font-semibold text-white">hello@cafeworks.com</p>
-            </div>
-            <div className="border-t border-white/10 pt-6">
-              <p className={`${MONO} text-[10px] tracking-widest text-[#B87333]`}>// HOURS</p>
-              <p className="mt-2 text-sm text-[#E8ECF0]/60">Mon – Fri · 8:00 AM – 5:00 PM</p>
-              <p className="mt-0.5 text-sm text-[#E8ECF0]/40">Emergency weekend service available</p>
-            </div>
-          </div>
+          <ContactInfo />
         </div>
       </section>
 

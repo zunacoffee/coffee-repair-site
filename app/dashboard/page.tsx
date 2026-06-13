@@ -1066,125 +1066,41 @@ export default function DashboardPage() {
           {activityItems.length > 0 && (
             <div className="sm:order-1 rounded-2xl bg-white border border-black/5 shadow-sm p-5">
               <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-4`}>Recent Activity</p>
-              <div className="space-y-1">
-                {activityItems.map((item) => {
-                  const expanded = selectedFeedItem === item.key
-                  return (
-                    <div
-                      key={item.key}
-                      className={`rounded-xl overflow-hidden transition-all duration-200 ${expanded ? 'border border-[#B87333]/25 border-l-2 border-l-[#B87333] bg-[#B87333]/5' : ''}`}
-                    >
-                      {/* ── Collapsed header (always visible) ── */}
-                      <button
-                        onClick={() => setSelectedFeedItem(expanded ? null : item.key)}
-                        className={`flex w-full items-center gap-3 px-2 py-2 cursor-pointer text-left transition-all active:scale-[0.98] active:opacity-90 ${expanded ? '' : 'rounded-xl hover:bg-[#E8ECF0]'}`}
-                      >
-                        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
-                          item.iconColor === 'green'  ? 'bg-green-100 text-green-600'    :
-                          item.iconColor === 'amber'  ? 'bg-amber-100 text-amber-600'    :
-                          item.iconColor === 'copper' ? 'bg-[#B87333]/10 text-[#B87333]' :
-                                                        'bg-blue-100 text-blue-600'
-                        }`}>
-                          {item.iconColor === 'copper' ? (
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                          ) : (
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[#0D1B2A] truncate max-w-[180px]">{item.title}</p>
-                          <p className="text-xs text-[#7A8898] truncate">{item.subtitle}</p>
-                        </div>
-                        <StatusBadge status={item.status} map={item.statusMap} />
-                        <svg
-                          className={`h-4 w-4 shrink-0 text-[#7A8898] transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}
-                          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              <div>
+                {activityItems.map((item) => (
+                  <div key={item.key} className="flex items-center gap-3 py-3 border-b border-[#E8ECF0] last:border-0">
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                      item.iconColor === 'green'  ? 'bg-green-50 text-green-500'     :
+                      item.iconColor === 'amber'  ? 'bg-amber-50 text-amber-400'     :
+                      item.iconColor === 'copper' ? 'bg-[#B87333]/10 text-[#B87333]' :
+                                                    'bg-blue-50 text-blue-400'
+                    }`}>
+                      {item.iconColor === 'copper' ? (
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                      </button>
-
-                      {/* ── Expanded detail panel ── */}
-                      <div className={`overflow-hidden transition-all duration-200 ${expanded ? 'max-h-72' : 'max-h-0'}`}>
-                        <div className="px-3 pb-4 pt-1 space-y-2.5 border-t border-[#B87333]/10">
-                          {item.type === 'workorder' && (
-                            <>
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-[#7A8898]">Work order</span>
-                                <span className={`${MONO} text-xs font-semibold text-[#B87333]`}>{item.woNumber}</span>
-                              </div>
-                              {item.equipment && (
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs text-[#7A8898]">Equipment</span>
-                                  <span className="text-xs font-medium text-[#0D1B2A]">{item.equipment}</span>
-                                </div>
-                              )}
-                              {item.problem && (
-                                <div>
-                                  <span className="text-xs text-[#7A8898]">Problem</span>
-                                  <p className="mt-0.5 text-xs text-[#0D1B2A]">{item.problem}</p>
-                                </div>
-                              )}
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-[#7A8898]">Date</span>
-                                <span className="text-xs text-[#0D1B2A]">{fmt(item.date)}</span>
-                              </div>
-                              {item.total != null && Number(item.total) > 0 && (
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs text-[#7A8898]">Total</span>
-                                  <span className="text-sm font-bold text-[#0D1B2A]">${Number(item.total).toFixed(2)}</span>
-                                </div>
-                              )}
-                              <Link
-                                href="/service-request"
-                                className="mt-1 flex w-full items-center justify-center rounded-xl border border-[#B87333] px-4 py-2 text-xs font-semibold text-[#B87333] hover:bg-[#B87333]/5 transition"
-                              >
-                                Request follow-up
-                              </Link>
-                            </>
-                          )}
-
-                          {item.type === 'invoice' && (
-                            <>
-                              {item.description && (
-                                <div>
-                                  <span className="text-xs text-[#7A8898]">Description</span>
-                                  <p className="mt-0.5 text-xs text-[#0D1B2A]">{item.description}</p>
-                                </div>
-                              )}
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-[#7A8898]">Amount</span>
-                                <span className="text-sm font-bold text-[#0D1B2A]">${Number(item.total).toFixed(2)}</span>
-                              </div>
-                              {item.dueDate && (
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs text-[#7A8898]">Due date</span>
-                                  <span className="text-xs text-[#0D1B2A]">{fmt(item.dueDate)}</span>
-                                </div>
-                              )}
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-[#7A8898]">Status</span>
-                                <StatusBadge status={item.status} map={item.statusMap} />
-                              </div>
-                              {item.status !== 'paid' && (
-                                <Link
-                                  href="/pricing"
-                                  className="mt-1 flex w-full items-center justify-center rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition"
-                                >
-                                  Pay now
-                                </Link>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </div>
+                      ) : (
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                        </svg>
+                      )}
                     </div>
-                  )
-                })}
+                    <div className="flex-1 min-w-0">
+                      <p className={`${MONO} text-xs font-semibold text-[#B87333]`}>
+                        {item.type === 'workorder' ? `WO ${item.woNumber}` : 'INVOICE'}
+                      </p>
+                      <p className="text-sm font-bold text-[#0D1B2A] truncate">
+                        {item.type === 'workorder'
+                          ? [item.equipment, item.problem].filter(Boolean).join(' · ') || item.title
+                          : item.description || item.title}
+                      </p>
+                      <p className="text-xs text-[#7A8898]">
+                        {fmt(item.date)}{item.total != null && Number(item.total) > 0 ? ` · $${Number(item.total).toFixed(2)}` : ''}
+                      </p>
+                    </div>
+                    <StatusBadge status={item.status} map={item.statusMap} />
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -2162,10 +2078,10 @@ export default function DashboardPage() {
 
       {/* ── DateSlotPicker bottom sheet ── */}
       {showSchedulePicker && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => { setShowSchedulePicker(false); setActiveNav('home') }} />
-          <div className="relative rounded-t-2xl bg-white px-5 pt-5 pb-10 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
+          <div className="relative w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl bg-white max-h-[85vh] sm:max-h-[90vh] flex flex-col z-50 overflow-y-auto">
+            <div className="flex items-center justify-between px-6 pt-6 pb-4">
               <p className="text-base font-bold text-[#0D1B2A]">Schedule PM Visit</p>
               <button onClick={() => { setShowSchedulePicker(false); setActiveNav('home') }} className="text-[#7A8898] hover:text-[#0D1B2A] transition">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -2173,6 +2089,7 @@ export default function DashboardPage() {
                 </svg>
               </button>
             </div>
+            <div className="px-6 py-4">
             {/* PM calendar */}
             {(() => {
               const pmToday = new Date(); pmToday.setHours(0,0,0,0)
@@ -2239,6 +2156,8 @@ export default function DashboardPage() {
               )
             })()}
             {pmError && <p className="mt-2 text-xs text-red-600">{pmError}</p>}
+            </div>
+            <div className="px-6 pb-6">
             <button
               onClick={handleSchedulePM}
               disabled={pmSaving || !pmDate || !pmSlot}
@@ -2246,6 +2165,7 @@ export default function DashboardPage() {
             >
               {pmSaving ? 'Saving…' : 'Confirm appointment'}
             </button>
+            </div>
           </div>
         </div>
       )}

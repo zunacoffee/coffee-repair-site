@@ -20,7 +20,7 @@ export default function PublicNavbar() {
           <Link href="/" className="text-[#E8ECF0]/60 hover:text-white transition">Home</Link>
           <Link href="/#services" className="text-[#E8ECF0]/60 hover:text-white transition">Services</Link>
           <Link href="/pricing" className="text-[#E8ECF0]/60 hover:text-white transition">Pricing</Link>
-          <Link href="/service-request" className="text-[#E8ECF0]/60 hover:text-white transition">Book a Repair</Link>
+          <Link href="/service-request" className="text-[#E8ECF0]/60 hover:text-white transition">Request a Repair</Link>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export default function PublicNavbar() {
             Pricing
           </Link>
           <Link href="/service-request" onClick={close} className="block rounded-lg px-3 py-3 text-sm font-medium text-[#E8ECF0]/60 hover:text-white hover:bg-white/5 transition">
-            Book a Repair
+            Request a Repair
           </Link>
           <div className="mt-2 pt-3 border-t border-white/10">
             <Link

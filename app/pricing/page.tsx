@@ -76,7 +76,7 @@ export default async function PricingPage() {
             <em className="not-italic font-semibold" style={{ color: '#B87333' }}>emergency repairs.</em>
           </h1>
           <p className="mt-6 text-base text-[#E8ECF0]/60 max-w-xl mx-auto leading-relaxed">
-            A monthly plan costs less than one service call. Keep your espresso machines, grinders, and brewers running — or we fix them for free.
+            A monthly plan costs less than one service call. Keep your espresso machines, grinders, and brewers running.
           </p>
         </div>
       </section>
