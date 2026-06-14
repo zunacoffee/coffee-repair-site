@@ -48,6 +48,8 @@ export default function ServiceRequestsPage() {
   const [modalError,   setModalError]   = useState<string | null>(null)
   const [converting,   setConverting]   = useState(false)
   const [convertMsg,   setConvertMsg]   = useState<{ ok: boolean; text: string } | null>(null)
+  const [search,       setSearch]       = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
 
   const fetchRequests = async () => {
     const res  = await fetch('/api/admin/service-requests')
@@ -124,6 +126,14 @@ export default function ServiceRequestsPage() {
     }
   }
 
+  const filteredRequests = requests.filter(req =>
+    (statusFilter === '' || req.status === statusFilter) &&
+    (search === '' ||
+      req.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      req.email?.toLowerCase().includes(search.toLowerCase()) ||
+      req.issue_description?.toLowerCase().includes(search.toLowerCase()))
+  )
+
   return (
     <div>
       {/* Header */}
@@ -135,9 +145,6 @@ export default function ServiceRequestsPage() {
           <h1 className="mt-1 text-2xl font-bold text-[#0D1B2A]">Service Requests</h1>
           <p className="text-sm text-[#7A8898] mt-0.5">Incoming repair requests from the public form.</p>
         </div>
-        {!loading && (
-          <p className="text-sm font-medium text-[#0D1B2A]">{requests.length} request{requests.length !== 1 ? 's' : ''}</p>
-        )}
       </div>
 
     <div className="py-8 px-4 lg:px-10 max-w-7xl mx-auto w-full">
@@ -146,88 +153,104 @@ export default function ServiceRequestsPage() {
 
       {/* Table */}
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#E8ECF0] bg-[#E8ECF0]">
-          <h2 className="text-sm font-semibold text-[#0D1B2A]">All requests</h2>
+        <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
+          <span className="text-sm font-semibold text-[#0D1B2A]">All requests</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 bg-[#E8ECF0] rounded-xl px-3 py-1.5 w-52">
+              <svg className="h-4 w-4 text-[#7A8898] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search requests…" className="bg-transparent text-sm text-[#0D1B2A] placeholder-[#7A8898] outline-none w-full" />
+            </div>
+            {['All', 'New', 'Contacted', 'Scheduled', 'Completed'].map((s) => (
+              <button key={s} onClick={() => setStatusFilter(s === 'All' ? '' : s.toLowerCase())}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                  (statusFilter === '' && s === 'All') || statusFilter === s.toLowerCase()
+                    ? 'bg-[#0D1B2A] text-white'
+                    : 'bg-[#E8ECF0] text-[#7A8898] hover:text-[#0D1B2A]'
+                }`}>
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-[#E8ECF0]">
-            <thead className="bg-white">
+        <table className="min-w-full divide-y divide-[#E8ECF0]">
+          <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
+            <tr>
+              {['Name', 'Equipment', 'Appointment', 'Issue', 'Status', 'Submitted', ''].map((h) => (
+                <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#E8ECF0] bg-white">
+            {loading ? (
               <tr>
-                {['Name', 'Equipment', 'Appointment', 'Issue', 'Status', 'Submitted', ''].map((h) => (
-                  <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0D1B2A]">{h}</th>
-                ))}
+                <td colSpan={7} className="px-6 py-12 text-center text-[#7A8898] text-sm">Loading…</td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E8ECF0] bg-white">
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-[#7A8898] text-sm">Loading…</td>
-                </tr>
-              ) : requests.length > 0 ? (
-                requests.map((req) => {
-                  const isUpdating = updatingId === req.id
-                  return (
-                    <tr
-                      key={req.id}
-                      onClick={() => openModal(req)}
-                      className={`hover:bg-[#E8ECF0] cursor-pointer transition-colors ${isUpdating ? 'opacity-60' : ''}`}
-                    >
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <p className="text-sm font-medium text-[#0D1B2A]">{req.full_name}</p>
-                        <p className="text-xs text-[#7A8898] mt-0.5">{req.email}</p>
-                      </td>
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <p className="text-sm text-[#0D1B2A]">{req.equipment_type}</p>
-                        <p className="text-xs text-[#7A8898] mt-0.5">{req.brand} {req.model}</p>
-                      </td>
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        {req.scheduled_date ? (
-                          <>
-                            <p className="text-sm font-medium text-[#0D1B2A]">{fmtDate(req.scheduled_date)}</p>
-                            {req.time_slot && (
-                              <p className="mt-0.5 text-xs text-[#7A8898]">{req.time_slot}</p>
-                            )}
-                          </>
-                        ) : (
-                          <span className="text-xs text-[#7A8898]">Not scheduled</span>
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-[#7A8898] max-w-xs">
-                        <p className="line-clamp-2">{req.issue_description}</p>
-                      </td>
-                      <td className="px-5 py-3.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <select
-                          value={req.status}
-                          onChange={(e) => handleInlineStatus(req.id, e.target.value, e as unknown as React.MouseEvent)}
-                          onClick={(e) => e.stopPropagation()}
-                          disabled={isUpdating}
-                          className={`rounded-lg border px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#B87333]/20 disabled:cursor-not-allowed ${STATUS_STYLES[req.status] ?? 'border-gray-200 bg-gray-50 text-gray-800'}`}
-                        >
-                          <option value="new">New</option>
-                          <option value="contacted">Contacted</option>
-                          <option value="scheduled">Scheduled</option>
-                          <option value="completed">Completed</option>
-                        </select>
-                      </td>
-                      <td className="px-5 py-3.5 whitespace-nowrap text-sm text-[#7A8898]">
-                        {new Date(req.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-5 py-3.5 text-right">
-                        <svg className="h-4 w-4 text-[#7A8898] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </td>
-                    </tr>
-                  )
-                })
-              ) : (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-[#7A8898] text-sm">No service requests yet.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            ) : filteredRequests.length > 0 ? (
+              filteredRequests.map((req) => {
+                const isUpdating = updatingId === req.id
+                return (
+                  <tr
+                    key={req.id}
+                    onClick={() => openModal(req)}
+                    className={`hover:bg-[#E8ECF0] cursor-pointer transition-colors ${isUpdating ? 'opacity-60' : ''}`}
+                  >
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      <p className="text-sm font-medium text-[#0D1B2A]">{req.full_name}</p>
+                      <p className="text-xs text-[#7A8898] mt-0.5">{req.email}</p>
+                    </td>
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      <p className="text-sm text-[#0D1B2A]">{req.equipment_type}</p>
+                      <p className="text-xs text-[#7A8898] mt-0.5">{req.brand} {req.model}</p>
+                    </td>
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      {req.scheduled_date ? (
+                        <>
+                          <p className="text-sm font-medium text-[#0D1B2A]">{fmtDate(req.scheduled_date)}</p>
+                          {req.time_slot && (
+                            <p className="mt-0.5 text-xs text-[#7A8898]">{req.time_slot}</p>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-xs text-[#7A8898]">Not scheduled</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-[#7A8898] max-w-xs">
+                      <p className="line-clamp-2">{req.issue_description}</p>
+                    </td>
+                    <td className="px-5 py-3.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <select
+                        value={req.status}
+                        onChange={(e) => handleInlineStatus(req.id, e.target.value, e as unknown as React.MouseEvent)}
+                        onClick={(e) => e.stopPropagation()}
+                        disabled={isUpdating}
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#B87333]/20 disabled:cursor-not-allowed ${STATUS_STYLES[req.status] ?? 'border-gray-200 bg-gray-50 text-gray-800'}`}
+                      >
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </td>
+                    <td className="px-5 py-3.5 whitespace-nowrap text-sm text-[#7A8898]">
+                      {new Date(req.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <svg className="h-4 w-4 text-[#7A8898] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </td>
+                  </tr>
+                )
+              })
+            ) : (
+              <tr>
+                <td colSpan={7} className="px-6 py-12 text-center text-[#7A8898] text-sm">No service requests yet.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Service request detail modal */}

@@ -32,6 +32,8 @@ export default function PartsPage() {
   const [deletingId,      setDeletingId]      = useState<number | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [markupPct,       setMarkupPct]       = useState(30)
+  const [search,          setSearch]          = useState('')
+  const [lowStockOnly,    setLowStockOnly]    = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -141,6 +143,13 @@ export default function PartsPage() {
     )
   }
 
+  const filteredParts = parts.filter(p =>
+    (!lowStockOnly || p.quantity <= p.low_stock_threshold) &&
+    (search === '' ||
+      p.name?.toLowerCase().includes(search.toLowerCase()) ||
+      p.part_number?.toLowerCase().includes(search.toLowerCase()))
+  )
+
   return (
     <div className="py-8 px-4 lg:px-10 max-w-7xl mx-auto w-full space-y-6">
 
@@ -148,17 +157,6 @@ export default function PartsPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#0D1B2A]">Parts Inventory</h1>
-          <p className="mt-0.5 text-sm text-[#7A8898]">
-            {parts.length} part{parts.length !== 1 ? 's' : ''}
-            {lowStockCount > 0 && (
-              <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                {lowStockCount} low stock
-              </span>
-            )}
-          </p>
         </div>
         <button
           onClick={startAdd}
@@ -373,6 +371,23 @@ export default function PartsPage() {
 
       {/* Parts table */}
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
+          <span className="text-sm font-semibold text-[#0D1B2A]">Parts list</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 bg-[#E8ECF0] rounded-xl px-3 py-1.5 w-56">
+              <svg className="h-4 w-4 text-[#7A8898] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search parts…" className="bg-transparent text-sm text-[#0D1B2A] placeholder-[#7A8898] outline-none w-full" />
+            </div>
+            <button onClick={() => setLowStockOnly(!lowStockOnly)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                lowStockOnly ? 'bg-red-500 text-white' : 'bg-[#E8ECF0] text-[#7A8898] hover:text-[#0D1B2A]'
+              }`}>
+              Low stock
+            </button>
+          </div>
+        </div>
         {parts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-4">
             <svg className="h-12 w-12 text-[#E8ECF0] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -382,86 +397,84 @@ export default function PartsPage() {
             <p className="mt-1 text-xs text-[#7A8898]">Add your first part to start tracking inventory.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="border-b border-[#E8ECF0]">
-                  {['Part', 'Part #', 'Cost', 'Sell Price', 'Qty', 'Threshold', ''].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0D1B2A]">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E8ECF0]">
-                {parts.map((part) => {
-                  const isLow = part.quantity <= part.low_stock_threshold
-                  return (
-                    <tr key={part.id} className={isLow ? 'bg-red-50' : 'hover:bg-[#E8ECF0] transition-colors'}>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-2">
-                          {isLow && (
-                            <svg className="h-3.5 w-3.5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                          )}
-                          <span className="text-sm font-medium text-[#0D1B2A]">{part.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-[#7A8898] font-mono">{part.part_number ?? '—'}</td>
-                      <td className="px-5 py-3.5 text-sm text-[#7A8898]">${Number(part.cost_price).toFixed(2)}</td>
-                      <td className="px-5 py-3.5 text-sm font-semibold text-[#0D1B2A]">${Number(part.sell_price).toFixed(2)}</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`text-sm font-bold ${isLow ? 'text-red-600' : 'text-[#0D1B2A]'}`}>
-                          {part.quantity}
-                        </span>
-                        {isLow && <span className="ml-1.5 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">Low</span>}
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-[#7A8898]">{part.low_stock_threshold}</td>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-2 justify-end">
-                          {confirmDeleteId === part.id ? (
-                            <span className="inline-flex items-center gap-2">
-                              <span className="text-xs font-medium text-[#0D1B2A] whitespace-nowrap">Are you sure?</span>
-                              <button
-                                onClick={() => { handleDelete(part.id); setConfirmDeleteId(null) }}
-                                disabled={deletingId === part.id}
-                                className="rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50 transition whitespace-nowrap"
-                              >
-                                Confirm
-                              </button>
-                              <button
-                                onClick={() => setConfirmDeleteId(null)}
-                                className="rounded-full border border-[#7A8898] px-3 py-1 text-xs font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition whitespace-nowrap"
-                              >
-                                Cancel
-                              </button>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-2">
-                              <button
-                                onClick={() => startEdit(part)}
-                                className="rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition whitespace-nowrap"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => setConfirmDeleteId(part.id)}
-                                disabled={deletingId === part.id}
-                                className="rounded-full border border-[#7A8898] px-3 py-1.5 text-xs font-semibold text-[#7A8898] hover:bg-[#E8ECF0] disabled:opacity-50 transition whitespace-nowrap"
-                              >
-                                Delete
-                              </button>
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+          <table className="min-w-full">
+            <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
+              <tr>
+                {['Part', 'Part #', 'Cost', 'Sell Price', 'Qty', 'Threshold', ''].map((h) => (
+                  <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E8ECF0]">
+              {filteredParts.map((part) => {
+                const isLow = part.quantity <= part.low_stock_threshold
+                return (
+                  <tr key={part.id} className={isLow ? 'bg-red-50' : 'hover:bg-[#E8ECF0] transition-colors'}>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2">
+                        {isLow && (
+                          <svg className="h-3.5 w-3.5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                        )}
+                        <span className="text-sm font-medium text-[#0D1B2A]">{part.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-[#7A8898] font-mono">{part.part_number ?? '—'}</td>
+                    <td className="px-5 py-3.5 text-sm text-[#7A8898]">${Number(part.cost_price).toFixed(2)}</td>
+                    <td className="px-5 py-3.5 text-sm font-semibold text-[#0D1B2A]">${Number(part.sell_price).toFixed(2)}</td>
+                    <td className="px-5 py-3.5">
+                      <span className={`text-sm font-bold ${isLow ? 'text-red-600' : 'text-[#0D1B2A]'}`}>
+                        {part.quantity}
+                      </span>
+                      {isLow && <span className="ml-1.5 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">Low</span>}
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-[#7A8898]">{part.low_stock_threshold}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2 justify-end">
+                        {confirmDeleteId === part.id ? (
+                          <span className="inline-flex items-center gap-2">
+                            <span className="text-xs font-medium text-[#0D1B2A] whitespace-nowrap">Are you sure?</span>
+                            <button
+                              onClick={() => { handleDelete(part.id); setConfirmDeleteId(null) }}
+                              disabled={deletingId === part.id}
+                              className="rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50 transition whitespace-nowrap"
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="rounded-full border border-[#7A8898] px-3 py-1 text-xs font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition whitespace-nowrap"
+                            >
+                              Cancel
+                            </button>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-2">
+                            <button
+                              onClick={() => startEdit(part)}
+                              className="rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition whitespace-nowrap"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteId(part.id)}
+                              disabled={deletingId === part.id}
+                              className="rounded-full border border-[#7A8898] px-3 py-1.5 text-xs font-semibold text-[#7A8898] hover:bg-[#E8ECF0] disabled:opacity-50 transition whitespace-nowrap"
+                            >
+                              Delete
+                            </button>
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

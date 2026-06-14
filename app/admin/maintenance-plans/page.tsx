@@ -51,6 +51,8 @@ export default function MaintenancePlansPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
 
   // Modal state
   const [selectedPlan, setSelectedPlan] = useState<MaintenancePlan | null>(null)
@@ -214,6 +216,13 @@ export default function MaintenancePlansPage() {
     }
   }
 
+  const filteredPlans = plans.filter(p =>
+    (statusFilter === '' || p.status === statusFilter) &&
+    (search === '' ||
+      findCustomerName(p.customer_id).toLowerCase().includes(search.toLowerCase()) ||
+      p.plan_name?.toLowerCase().includes(search.toLowerCase()))
+  )
+
   return (
     <div className="py-8 px-4 lg:px-10 max-w-7xl mx-auto w-full space-y-6">
 
@@ -221,9 +230,6 @@ export default function MaintenancePlansPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#0D1B2A]">Maintenance Plans</h1>
-          <p className="mt-0.5 text-sm text-[#7A8898]">
-            {plans.length} plan{plans.length !== 1 ? 's' : ''} total
-          </p>
         </div>
       </div>
 
@@ -260,6 +266,27 @@ export default function MaintenancePlansPage() {
 
       {/* Plans table */}
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
+          <span className="text-sm font-semibold text-[#0D1B2A]">Plan list</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 bg-[#E8ECF0] rounded-xl px-3 py-1.5 w-56">
+              <svg className="h-4 w-4 text-[#7A8898] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search plans…" className="bg-transparent text-sm text-[#0D1B2A] placeholder-[#7A8898] outline-none w-full" />
+            </div>
+            {['All', 'Active', 'Pending', 'Cancelled'].map((s) => (
+              <button key={s} onClick={() => setStatusFilter(s === 'All' ? '' : s.toLowerCase())}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                  (statusFilter === '' && s === 'All') || statusFilter === s.toLowerCase()
+                    ? 'bg-[#0D1B2A] text-white'
+                    : 'bg-[#E8ECF0] text-[#7A8898] hover:text-[#0D1B2A]'
+                }`}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
         {loading ? (
           <div className="flex items-center justify-center py-16 text-sm text-[#7A8898]">
             Loading maintenance plans…
@@ -275,62 +302,60 @@ export default function MaintenancePlansPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="border-b border-[#E8ECF0]">
-                  {['Customer', 'Plan', 'Status', 'Price', 'Renewal date', ''].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0D1B2A]">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E8ECF0]">
-                {plans.map((plan) => (
-                  <tr
-                    key={plan.id}
-                    onClick={() => openModal(plan)}
-                    className="hover:bg-[#E8ECF0] transition-colors cursor-pointer"
-                  >
-                    <td className="px-5 py-3.5">
-                      <p className="text-sm font-medium text-[#0D1B2A]">{findCustomerName(plan.customer_id)}</p>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm text-[#0D1B2A]">{plan.plan_name}</span>
-                        {plan.is_custom && (
-                          <span className="inline-flex items-center rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#B87333]">
-                            Custom
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${STATUS_BADGE[plan.status] ?? 'bg-[#E8ECF0] text-[#7A8898]'}`}>
-                        {plan.status === 'pending_payment' ? 'Pending payment' : plan.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-sm font-semibold text-[#0D1B2A] whitespace-nowrap">
-                      ${Number(plan.price).toFixed(2)}<span className="text-xs font-normal text-[#7A8898]">/mo</span>
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">
-                      {plan.renewal_date ? fmt(plan.renewal_date) : '—'}
-                    </td>
-                    <td className="px-5 py-3.5 text-right whitespace-nowrap">
-                      <Link
-                        href={`/admin/customers/${plan.customer_id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition whitespace-nowrap"
-                      >
-                        View customer
-                      </Link>
-                    </td>
-                  </tr>
+          <table className="min-w-full">
+            <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
+              <tr>
+                {['Customer', 'Plan', 'Status', 'Price', 'Renewal date', ''].map((h) => (
+                  <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">
+                    {h}
+                  </th>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E8ECF0]">
+              {filteredPlans.map((plan) => (
+                <tr
+                  key={plan.id}
+                  onClick={() => openModal(plan)}
+                  className="hover:bg-[#E8ECF0] transition-colors cursor-pointer"
+                >
+                  <td className="px-5 py-3.5">
+                    <p className="text-sm font-medium text-[#0D1B2A]">{findCustomerName(plan.customer_id)}</p>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm text-[#0D1B2A]">{plan.plan_name}</span>
+                      {plan.is_custom && (
+                        <span className="inline-flex items-center rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#B87333]">
+                          Custom
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${STATUS_BADGE[plan.status] ?? 'bg-[#E8ECF0] text-[#7A8898]'}`}>
+                      {plan.status === 'pending_payment' ? 'Pending payment' : plan.status}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5 text-sm font-semibold text-[#0D1B2A] whitespace-nowrap">
+                    ${Number(plan.price).toFixed(2)}<span className="text-xs font-normal text-[#7A8898]">/mo</span>
+                  </td>
+                  <td className="px-5 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">
+                    {plan.renewal_date ? fmt(plan.renewal_date) : '—'}
+                  </td>
+                  <td className="px-5 py-3.5 text-right whitespace-nowrap">
+                    <Link
+                      href={`/admin/customers/${plan.customer_id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition whitespace-nowrap"
+                    >
+                      View customer
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 

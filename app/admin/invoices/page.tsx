@@ -72,6 +72,8 @@ export default function InvoicesPage() {
   const [invDetailLoading, setInvDetailLoading] = useState(false)
   const [markingPaid,      setMarkingPaid]      = useState(false)
   const [modalMsg,         setModalMsg]         = useState<{ msg: string; ok: boolean } | null>(null)
+  const [search,           setSearch]           = useState('')
+  const [statusFilter,     setStatusFilter]     = useState('')
 
   useEffect(() => {
     async function load() {
@@ -170,6 +172,14 @@ export default function InvoicesPage() {
     )
   }
 
+  const filteredInvoices = invoices.filter(inv =>
+    (statusFilter === '' || inv.status === statusFilter) &&
+    (search === '' ||
+      inv.invoice_number?.toLowerCase().includes(search.toLowerCase()) ||
+      inv.customers?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      inv.customers?.email?.toLowerCase().includes(search.toLowerCase()))
+  )
+
   return (
     <div className="py-8 px-4 lg:px-10 max-w-7xl mx-auto w-full space-y-6">
 
@@ -177,7 +187,6 @@ export default function InvoicesPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#0D1B2A]">Invoices</h1>
-          <p className="mt-0.5 text-sm text-[#7A8898]">{invoices.length} total</p>
         </div>
         <div className="flex gap-2 flex-wrap self-start sm:self-auto">
           <button
@@ -233,6 +242,27 @@ export default function InvoicesPage() {
 
       {/* Invoices table */}
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
+          <span className="text-sm font-semibold text-[#0D1B2A]">Invoice list</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 bg-[#E8ECF0] rounded-xl px-3 py-1.5 w-52">
+              <svg className="h-4 w-4 text-[#7A8898] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search invoices…" className="bg-transparent text-sm text-[#0D1B2A] placeholder-[#7A8898] outline-none w-full" />
+            </div>
+            {['All', 'Draft', 'Sent', 'Paid'].map((s) => (
+              <button key={s} onClick={() => setStatusFilter(s === 'All' ? '' : s.toLowerCase())}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                  (statusFilter === '' && s === 'All') || statusFilter === s.toLowerCase()
+                    ? 'bg-[#0D1B2A] text-white'
+                    : 'bg-[#E8ECF0] text-[#7A8898] hover:text-[#0D1B2A]'
+                }`}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
         {invoices.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-4">
             <svg className="h-12 w-12 text-[#E8ECF0] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -248,58 +278,56 @@ export default function InvoicesPage() {
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="border-b border-[#E8ECF0] bg-[#E8ECF0]">
-                  {['Invoice #', 'Customer', 'Date', 'Amount', 'Status', ''].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0D1B2A]">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E8ECF0]">
-                {invoices.map((inv) => (
-                  <tr
-                    key={inv.id}
-                    onClick={() => openModal(inv)}
-                    className="hover:bg-[#E8ECF0] cursor-pointer transition-colors"
-                  >
-                    <td className="px-5 py-3.5">
-                      <span className="font-mono text-sm font-bold text-[#0D1B2A]">{inv.invoice_number}</span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      {inv.customers ? (
-                        <div>
-                          <p className="text-sm font-medium text-[#0D1B2A]">{inv.customers.full_name}</p>
-                          <p className="text-xs text-[#7A8898]">{inv.customers.email}</p>
-                        </div>
-                      ) : (
-                        <span className="text-sm text-[#7A8898]">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">
-                      {new Date(inv.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </td>
-                    <td className="px-5 py-3.5 text-sm font-bold text-[#0D1B2A]">
-                      {fmt(inv.total)}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[inv.status]}`}>
-                        {STATUS_LABEL[inv.status]}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center justify-end">
-                        <svg className="h-4 w-4 text-[#7A8898]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                    </td>
-                  </tr>
+          <table className="min-w-full">
+            <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
+              <tr>
+                {['Invoice #', 'Customer', 'Date', 'Amount', 'Status', ''].map((h) => (
+                  <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">{h}</th>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E8ECF0]">
+              {filteredInvoices.map((inv) => (
+                <tr
+                  key={inv.id}
+                  onClick={() => openModal(inv)}
+                  className="hover:bg-[#E8ECF0] cursor-pointer transition-colors"
+                >
+                  <td className="px-5 py-3.5">
+                    <span className="font-mono text-sm font-bold text-[#0D1B2A]">{inv.invoice_number}</span>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    {inv.customers ? (
+                      <div>
+                        <p className="text-sm font-medium text-[#0D1B2A]">{inv.customers.full_name}</p>
+                        <p className="text-xs text-[#7A8898]">{inv.customers.email}</p>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-[#7A8898]">—</span>
+                    )}
+                  </td>
+                  <td className="px-5 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">
+                    {new Date(inv.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </td>
+                  <td className="px-5 py-3.5 text-sm font-bold text-[#0D1B2A]">
+                    {fmt(inv.total)}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[inv.status]}`}>
+                      {STATUS_LABEL[inv.status]}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center justify-end">
+                      <svg className="h-4 w-4 text-[#7A8898]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 

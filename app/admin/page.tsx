@@ -79,14 +79,16 @@ export default function AdminPage() {
   const [plans, setPlans] = useState<MaintenancePlan[]>([])
   const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([])
   const [parts, setParts] = useState<Part[]>([])
+  const [ownerName, setOwnerName] = useState('')
 
   useEffect(() => {
     let mounted = true
 
     async function load() {
-      const [dashRes, partsRes] = await Promise.all([
+      const [dashRes, partsRes, settingsRes] = await Promise.all([
         fetch('/api/admin-data'),
         fetch('/api/admin/parts'),
+        fetch('/api/admin/site-settings', { credentials: 'include' }),
       ])
       if (dashRes.status === 401) { router.replace('/admin/login'); return }
       const json = await dashRes.json()
@@ -99,6 +101,10 @@ export default function AdminPage() {
       if (partsRes.ok) {
         const partsJson = await partsRes.json()
         setParts(partsJson.parts ?? [])
+      }
+      if (settingsRes.ok) {
+        const settingsJson = await settingsRes.json()
+        setOwnerName(settingsJson.settings?.owner_name ?? '')
       }
       setIsLoading(false)
     }
@@ -143,7 +149,7 @@ export default function AdminPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-[#B87333]">{todayLabel()}</p>
-              <h1 className="mt-1 text-2xl font-bold text-[#0D1B2A] sm:text-3xl">{getGreeting()} —</h1>
+              <h1 className="mt-1 text-2xl font-bold text-[#0D1B2A] sm:text-3xl">{getGreeting()}{ownerName ? `, ${ownerName}` : ''}</h1>
             </div>
             <div className="flex gap-2 flex-wrap self-start sm:self-auto">
               <button

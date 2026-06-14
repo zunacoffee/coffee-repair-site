@@ -7,6 +7,7 @@ type Settings = Record<string, string>
 
 const DEFAULTS: Settings = {
   business_name:    'Cafe Works',
+  owner_name:       '',
   phone:            '',
   email:            '',
   address:          '',
@@ -16,12 +17,6 @@ const DEFAULTS: Settings = {
   labor_rate_weekend: '120',
   parts_markup_pct:   '30',
   parts_low_stock_threshold: '1',
-  max_bookings_per_day: '2',
-  morning_slot_start:   '08:00',
-  morning_slot_end:     '12:00',
-  afternoon_slot_start: '12:00',
-  afternoon_slot_end:   '17:00',
-  emergency_weekends:   'false',
   public_business_name: 'Cafe Works',
   logo_url:             '',
 }
@@ -78,7 +73,6 @@ export default function SettingsPage() {
   const [biz,   setBiz]   = useState<SaveState>(IDLE)
   const [labor, setLabor] = useState<SaveState>(IDLE)
   const [parts, setParts] = useState<SaveState>(IDLE)
-  const [sched, setSched] = useState<SaveState>(IDLE)
   const [brand, setBrand] = useState<SaveState>(IDLE)
 
   useEffect(() => {
@@ -163,6 +157,9 @@ export default function SettingsPage() {
             <Field label="Business Name">
               <Input value={settings.business_name} onChange={v => set('business_name', v)} placeholder="Cafe Works" />
             </Field>
+            <Field label="Owner Name">
+              <Input value={settings.owner_name} onChange={v => set('owner_name', v)} placeholder="e.g. Tyson" />
+            </Field>
             <Field label="Phone Number">
               <Input value={settings.phone} onChange={v => set('phone', v)} placeholder="(555) 000-0000" type="tel" />
             </Field>
@@ -179,7 +176,7 @@ export default function SettingsPage() {
           <Field label="Business Hours">
             <Input value={settings.business_hours} onChange={v => set('business_hours', v)} placeholder="Mon-Fri 8am-5pm" />
           </Field>
-          <SaveBtn st={biz} onSave={() => save(['business_name','phone','email','address','business_hours','emergency_phone'], setBiz)} />
+          <SaveBtn st={biz} onSave={() => save(['business_name','owner_name','phone','email','address','business_hours','emergency_phone'], setBiz)} />
         </div>
 
         {/* ── Labor Rates ── */}
@@ -214,45 +211,6 @@ export default function SettingsPage() {
             </Field>
           </div>
           <SaveBtn st={parts} onSave={() => save(['parts_markup_pct','parts_low_stock_threshold'], setParts)} />
-        </div>
-
-        {/* ── Scheduling ── */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
-          <h2 className="font-semibold text-[#0D1B2A] text-base">Scheduling</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Max Bookings Per Day" hint="Limits service requests that can be scheduled on the same day.">
-              <Input value={settings.max_bookings_per_day} onChange={v => set('max_bookings_per_day', v)} type="number" min="1" step="1" placeholder="2" />
-            </Field>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-2">Morning Slot</p>
-              <div className="flex items-center gap-2">
-                <input type="time" value={settings.morning_slot_start} onChange={e => set('morning_slot_start', e.target.value)}
-                  className="flex-1 border border-[#E8ECF0] rounded-xl px-3 py-2 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]" />
-                <span className="text-[#7A8898] text-sm">to</span>
-                <input type="time" value={settings.morning_slot_end} onChange={e => set('morning_slot_end', e.target.value)}
-                  className="flex-1 border border-[#E8ECF0] rounded-xl px-3 py-2 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]" />
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-2">Afternoon Slot</p>
-              <div className="flex items-center gap-2">
-                <input type="time" value={settings.afternoon_slot_start} onChange={e => set('afternoon_slot_start', e.target.value)}
-                  className="flex-1 border border-[#E8ECF0] rounded-xl px-3 py-2 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]" />
-                <span className="text-[#7A8898] text-sm">to</span>
-                <input type="time" value={settings.afternoon_slot_end} onChange={e => set('afternoon_slot_end', e.target.value)}
-                  className="flex-1 border border-[#E8ECF0] rounded-xl px-3 py-2 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]" />
-              </div>
-            </div>
-          </div>
-          <ToggleField
-            label="Emergency Weekend Service"
-            description="Allow service requests to be scheduled on weekends."
-            value={settings.emergency_weekends === 'true'}
-            onChange={() => toggle('emergency_weekends')}
-          />
-          <SaveBtn st={sched} onSave={() => save(['max_bookings_per_day','morning_slot_start','morning_slot_end','afternoon_slot_start','afternoon_slot_end','emergency_weekends'], setSched)} />
         </div>
 
         {/* ── Branding ── */}

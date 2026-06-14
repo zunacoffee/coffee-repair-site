@@ -90,11 +90,6 @@ export default function EquipmentPage() {
     load()
   }, [router])
 
-  const equipmentTypes = useMemo(
-    () => Array.from(new Set(equipment.map((e) => e.equipment_type))).sort(),
-    [equipment],
-  )
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return equipment.filter((eq) => {
@@ -170,9 +165,6 @@ export default function EquipmentPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#0D1B2A]">Equipment</h1>
-          <p className="mt-0.5 text-sm text-[#7A8898]">
-            {filtered.length} of {equipment.length} item{equipment.length !== 1 ? 's' : ''}
-          </p>
         </div>
         <button
           onClick={() => { setShowForm((p) => !p); setAddError(null) }}
@@ -256,48 +248,26 @@ export default function EquipmentPage() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A8898]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by brand, model, serial number, or customer…"
-            className="block w-full rounded-xl border border-[#E8ECF0] bg-white py-2.5 pl-10 pr-4 text-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-          />
-          {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A8898] hover:text-[#0D1B2A]">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
-        <div className="sm:w-56">
-          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20">
-            <option value="">All types</option>
-            {equipmentTypes.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </div>
-        {(search || typeFilter) && (
-          <button
-            onClick={() => { setSearch(''); setTypeFilter('') }}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[#E8ECF0] px-4 py-2.5 text-sm font-semibold text-[#7A8898] hover:text-[#0D1B2A] hover:border-[#0D1B2A] transition whitespace-nowrap"
-          >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            Clear filters
-          </button>
-        )}
-      </div>
-
       {/* Table */}
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
+          <span className="text-sm font-semibold text-[#0D1B2A]">Equipment list</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 bg-[#E8ECF0] border border-[#E8ECF0] rounded-xl px-3 py-1.5 w-64">
+              <svg className="h-4 w-4 text-[#7A8898] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search equipment…" className="bg-transparent text-sm text-[#0D1B2A] placeholder-[#7A8898] outline-none w-full" />
+            </div>
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="bg-[#E8ECF0] border border-[#E8ECF0] rounded-xl px-3 py-1.5 text-sm text-[#0D1B2A] outline-none">
+              <option value="">All types</option>
+              <option value="Espresso Machine">Espresso Machine</option>
+              <option value="Grinder">Grinder</option>
+              <option value="Brewer">Brewer</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
         {equipment.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-4">
             <svg className="h-12 w-12 text-[#E8ECF0] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -315,52 +285,50 @@ export default function EquipmentPage() {
             </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="border-b border-[#E8ECF0]">
-                  {['Customer', 'Type', 'Brand', 'Model', 'Serial Number', ''].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0D1B2A]">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E8ECF0]">
-                {filtered.map((eq) => (
-                  <tr
-                    key={eq.id}
-                    onClick={() => setSelectedEq(eq)}
-                    className="hover:bg-[#E8ECF0] cursor-pointer transition-colors"
-                  >
-                    <td className="px-5 py-3.5">
-                      {eq.customers ? (
-                        <div>
-                          <p className="text-sm font-medium text-[#0D1B2A]">{eq.customers.full_name}</p>
-                          <p className="text-xs text-[#7A8898]">{eq.customers.email}</p>
-                        </div>
-                      ) : (
-                        <span className="text-sm text-[#7A8898]">Unknown</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className="inline-flex items-center rounded-full bg-[#B87333]/10 px-2.5 py-1 text-xs font-semibold text-[#B87333]">
-                        {eq.equipment_type}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-sm font-medium text-[#0D1B2A] whitespace-nowrap">{eq.brand}</td>
-                    <td className="px-5 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">{eq.model}</td>
-                    <td className="px-5 py-3.5">
-                      <span className="font-mono text-xs text-[#7A8898]">{eq.serial_number || '—'}</span>
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <svg className="h-4 w-4 text-[#7A8898] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </td>
-                  </tr>
+          <table className="min-w-full">
+            <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
+              <tr>
+                {['Customer', 'Type', 'Brand', 'Model', 'Serial Number', ''].map((h) => (
+                  <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">{h}</th>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E8ECF0]">
+              {filtered.map((eq) => (
+                <tr
+                  key={eq.id}
+                  onClick={() => setSelectedEq(eq)}
+                  className="hover:bg-[#E8ECF0] cursor-pointer transition-colors"
+                >
+                  <td className="px-5 py-3.5">
+                    {eq.customers ? (
+                      <div>
+                        <p className="text-sm font-medium text-[#0D1B2A]">{eq.customers.full_name}</p>
+                        <p className="text-xs text-[#7A8898]">{eq.customers.email}</p>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-[#7A8898]">Unknown</span>
+                    )}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <span className="inline-flex items-center rounded-full bg-[#B87333]/10 px-2.5 py-1 text-xs font-semibold text-[#B87333]">
+                      {eq.equipment_type}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5 text-sm font-medium text-[#0D1B2A] whitespace-nowrap">{eq.brand}</td>
+                  <td className="px-5 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">{eq.model}</td>
+                  <td className="px-5 py-3.5">
+                    <span className="font-mono text-xs text-[#7A8898]">{eq.serial_number || '—'}</span>
+                  </td>
+                  <td className="px-5 py-3.5 text-right">
+                    <svg className="h-4 w-4 text-[#7A8898] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 

@@ -45,7 +45,8 @@ function daysUntil(dateStr: string): number {
   return Math.round((target.getTime() - today.getTime()) / 86_400_000)
 }
 
-function fmt(dateStr: string) {
+function fmt(dateStr: string | null | undefined) {
+  if (!dateStr) return '—'
   return new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'))
     .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
@@ -1313,52 +1314,40 @@ export default function DashboardPage() {
                           <p className="text-sm font-bold text-[#0D1B2A]">Recent Activity</p>
                           <button onClick={() => setDesktopNav('repairs')} className="text-xs font-semibold text-[#B87333] hover:underline">See all →</button>
                         </div>
-                        <div className="divide-y divide-black/[0.04]">
-                          {workOrders.length > 0 ? workOrders
-                            .slice()
-                            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                            .slice(0, 5)
-                            .map((wo) => {
-                              const key = `d-wo-${wo.id}`
-                              const exp = desktopExpandedItem === key
-                              return (
-                                <div key={key}>
-                                  <button onClick={() => setDesktopExpandedItem(exp ? null : key)}
-                                    className={`w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-[#E8ECF0]/50 transition-all ${exp ? 'bg-[#B87333]/[0.04] border-l-2 border-[#B87333]' : ''}`}>
-                                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white ${wo.status === 'completed' ? 'bg-green-500' : wo.status === 'in_progress' ? 'bg-amber-500' : 'bg-blue-500'}`}>
-                                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2 min-w-0">
-                                        <span className={`${MONO} text-[10px] font-semibold text-[#B87333] shrink-0`}>{wo.work_order_number}</span>
-                                        <span className="text-xs text-[#7A8898] truncate">
-                                          {[wo.equipment_list ? `${wo.equipment_list.brand} ${wo.equipment_list.model}` : null, wo.problem_description].filter(Boolean).join(' · ')}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-2 mt-0.5">
-                                        <span className="text-xs text-[#7A8898]">{fmt(wo.created_at)}</span>
-                                        {Number(wo.grand_total) > 0 && <span className="text-xs font-semibold text-[#0D1B2A]">${Number(wo.grand_total).toFixed(2)}</span>}
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <StatusBadge status={wo.status} map={WO_STATUS} />
-                                      <svg className={`h-4 w-4 text-[#7A8898] transition-transform ${exp ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-                                    </div>
-                                  </button>
-                                  {exp && (
-                                    <div className="px-5 pb-4 pt-2 border-l-2 border-[#B87333] bg-[#B87333]/[0.03] space-y-2">
-                                      {wo.equipment_list && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Equipment</span><span className="text-[#0D1B2A]">{wo.equipment_list.brand} {wo.equipment_list.model}</span></div>}
-                                      {wo.problem_description && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Problem</span><span className="text-[#0D1B2A]">{wo.problem_description}</span></div>}
-                                      <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Created</span><span className="text-[#0D1B2A]">{fmt(wo.created_at)}</span></div>
-                                      {Number(wo.grand_total) > 0 && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Total</span><span className="font-bold text-[#0D1B2A]">${Number(wo.grand_total).toFixed(2)}</span></div>}
-                                      <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Status</span><StatusBadge status={wo.status} map={WO_STATUS} /></div>
-                                      <Link href="/service-request" className="mt-1 inline-flex text-xs font-semibold text-[#B87333] hover:underline">Request Follow-up →</Link>
-                                    </div>
-                                  )}
-                                </div>
-                              )
-                            }) : (
-                            <p className="text-xs text-[#7A8898] text-center py-8">No repair history yet.</p>
+                        <div>
+                          {activityItems.length > 0 ? activityItems.map((item) => (
+                            <div key={item.key} onClick={() => item.type === 'workorder' ? setSelectedWO(item) : setSelectedInvoice(item)} className="flex items-center gap-3 px-[18px] py-[11px] border-b border-[#E8ECF0] last:border-0 hover:bg-gray-50 cursor-pointer">
+                              <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 ${
+                                item.iconColor === 'amber'  ? 'bg-amber-50'       :
+                                item.iconColor === 'green'  ? 'bg-green-50'       :
+                                item.iconColor === 'copper' ? 'bg-[#B87333]/10'   : 'bg-blue-50'
+                              }`}>
+                                <svg className={`w-[14px] h-[14px] ${
+                                  item.iconColor === 'amber'  ? 'stroke-amber-500'  :
+                                  item.iconColor === 'green'  ? 'stroke-green-500'  :
+                                  item.iconColor === 'copper' ? 'stroke-[#B87333]'  : 'stroke-blue-500'
+                                }`} fill="none" viewBox="0 0 24 24" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                                  {item.type === 'invoice'
+                                    ? <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    : item.iconColor === 'green'
+                                      ? <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      : <path d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                                  }
+                                </svg>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#B87333] font-medium">{item.type === 'invoice' ? 'INVOICE' : item.woNumber}</p>
+                                <p className="text-xs font-semibold text-[#0D1B2A] truncate mt-[1px]">{item.type === 'workorder' ? `${item.equipment || ''} · ${item.problem || item.subtitle}` : item.title}</p>
+                                <p className="text-[11px] text-[#7A8898] mt-[1px]">{fmt(item.date)}{(item.total && Number(item.total) > 0) ? ` · $${Number(item.total).toFixed(2)}` : ''}</p>
+                              </div>
+                              <div className="flex flex-col items-end gap-1 shrink-0">
+                                <p className="text-[10px] text-[#7A8898]">{(() => { const d = new Date(item.date); const t = new Date(); return d.toDateString() === t.toDateString() ? 'Today' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) })()}</p>
+                                <StatusBadge status={item.status} map={item.statusMap} />
+                              </div>
+                              <span className="text-[#ccc] text-sm ml-1">›</span>
+                            </div>
+                          )) : (
+                            <p className="text-xs text-[#7A8898] text-center py-8">No recent activity.</p>
                           )}
                         </div>
                       </div>
@@ -1369,53 +1358,32 @@ export default function DashboardPage() {
                           <p className="text-sm font-bold text-[#0D1B2A]">Invoices</p>
                           <button onClick={() => setDesktopNav('invoices')} className="text-xs font-semibold text-[#B87333] hover:underline">See all →</button>
                         </div>
-                        <div className="divide-y divide-black/[0.04]">
+                        <div>
                           {invoices.length > 0 ? invoices
                             .slice()
                             .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                             .slice(0, 5)
-                            .map((inv) => {
-                              const key = `d-inv-${inv.id}`
-                              const exp = desktopExpandedItem === key
-                              const payable = (inv.status === 'sent' || inv.status === 'unpaid') && inv.stripe_payment_link
-                              const displayStatus = inv.status === 'sent' && inv.stripe_payment_link ? 'Payment Due' : null
-                              return (
-                                <div key={key}>
-                                  <button onClick={() => setDesktopExpandedItem(exp ? null : key)}
-                                    className={`w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-[#E8ECF0]/50 transition-all ${exp ? 'bg-[#B87333]/[0.04] border-l-2 border-[#B87333]' : ''}`}>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-semibold text-[#0D1B2A] truncate">{inv.description || 'Invoice'}</p>
-                                      {inv.due_date && <p className="text-xs text-[#7A8898] mt-0.5">Due {fmt(inv.due_date)}</p>}
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <span className="text-sm font-bold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</span>
-                                      {displayStatus
-                                        ? <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">{displayStatus}</span>
-                                        : <StatusBadge status={inv.status} map={INV_STATUS} />}
-                                      <svg className={`h-4 w-4 text-[#7A8898] transition-transform ${exp ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-                                    </div>
-                                  </button>
-                                  {exp && (
-                                    <div className="px-5 pb-4 pt-2 border-l-2 border-[#B87333] bg-[#B87333]/[0.03] space-y-2">
-                                      {inv.description && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Description</span><span className="text-[#0D1B2A]">{inv.description}</span></div>}
-                                      <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Amount</span><span className="font-bold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</span></div>
-                                      {inv.due_date && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Due date</span><span className="text-[#0D1B2A]">{fmt(inv.due_date)}</span></div>}
-                                      <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Created</span><span className="text-[#0D1B2A]">{fmt(inv.created_at)}</span></div>
-                                      <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Status</span>{displayStatus ? <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">{displayStatus}</span> : <StatusBadge status={inv.status} map={INV_STATUS} />}</div>
-                                      {payable && <a href={inv.stripe_payment_link!} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center rounded-full bg-[#B87333] px-4 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition">Pay Now</a>}
-                                    </div>
-                                  )}
+                            .map((inv) => (
+                              <div key={inv.id} onClick={() => setSelectedInvoice(inv)} className="flex items-center justify-between px-[18px] py-[11px] border-b border-[#E8ECF0] last:border-0 hover:bg-gray-50 cursor-pointer">
+                                <div>
+                                  <p className="text-xs font-semibold text-[#0D1B2A]">{inv.description}</p>
+                                  <p className="text-[11px] text-[#7A8898] mt-[2px]">{inv.status === 'paid' ? `Paid ${inv.due_date ? fmt(inv.due_date) : ''}` : inv.due_date ? `Due ${fmt(inv.due_date)}` : '—'}</p>
                                 </div>
-                              )
-                            }) : (
+                                <div className="flex items-center gap-[10px]">
+                                  <p className="text-[13px] font-semibold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</p>
+                                  <StatusBadge status={inv.status} map={INV_STATUS} />
+                                  <span className="text-[#ccc] text-[13px]">›</span>
+                                </div>
+                              </div>
+                            )) : (
                             <p className="text-xs text-[#7A8898] text-center py-8">No invoices yet.</p>
                           )}
                         </div>
                       </div>
 
                       {/* Card 3: Maintenance Plan */}
-                      <div className="bg-white rounded-xl border border-black/[0.07] p-5">
-                        <div className="flex items-center justify-between mb-4">
+                      <div className="bg-white rounded-xl border border-black/[0.07] overflow-hidden cursor-pointer hover:shadow-sm transition" onClick={() => setShowPlanModal(true)}>
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-black/[0.05]">
                           <p className="text-sm font-bold text-[#0D1B2A]">Maintenance Plan</p>
                           {plan && (
                             <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${plan.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
@@ -1424,49 +1392,26 @@ export default function DashboardPage() {
                           )}
                         </div>
                         {plan ? (
-                          <div className="space-y-4">
-                            <div>
-                              <p className="text-base font-bold text-[#0D1B2A]">{plan.plan_name}</p>
-                              {plan.price ? <p className="text-2xl font-bold text-[#B87333] mt-0.5">${plan.price}<span className="text-sm font-normal text-[#7A8898]">/mo</span></p> : null}
+                          <div className="p-[18px]">
+                            <div className="flex items-start justify-between mb-3">
+                              <p className="text-[15px] font-semibold text-[#0D1B2A]">{plan.plan_name}</p>
                             </div>
-                            <div className="space-y-1.5 border-t border-black/[0.05] pt-3">
-                              {plan.renewal_date && (
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-[#7A8898]">Next renewal</span>
-                                  <span className="font-medium text-[#0D1B2A]">{fmt(plan.renewal_date)}</span>
-                                </div>
-                              )}
-                              {plan.next_visit_date && (
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-[#7A8898]">Next PM visit</span>
-                                  <span className="font-medium text-[#0D1B2A]">{fmt(plan.next_visit_date)}</span>
-                                </div>
-                              )}
-                              {plan.description && (
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-[#7A8898]">Plan</span>
-                                  <span className="font-medium text-[#0D1B2A] text-right max-w-[140px]">{plan.description}</span>
-                                </div>
-                              )}
+                            <p className="text-2xl font-light text-[#B87333] tracking-tight mb-3">${plan.price}<span className="text-xs font-normal text-[#7A8898]">/mo</span></p>
+                            <div className="flex justify-between text-xs text-[#7A8898] py-[6px] border-t border-[#E8ECF0]">
+                              <span>Next renewal</span><strong className="text-[#0D1B2A] font-medium">{plan.renewal_date ? fmt(plan.renewal_date) : '—'}</strong>
                             </div>
-                            {plan.status === 'pending_payment' && plan.stripe_payment_link ? (
-                              <div className="space-y-2 border-t border-black/[0.05] pt-3">
-                                <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700">Payment required to activate.</div>
-                                <a href={plan.stripe_payment_link} className="flex w-full items-center justify-center rounded-xl bg-[#B87333] py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">Activate My Plan →</a>
-                              </div>
-                            ) : (
-                              <div className="border-t border-black/[0.05] pt-3">
-                                {portalError && <p className="text-xs text-red-600 mb-2">{portalError}</p>}
-                                <button onClick={handleManagePlan} disabled={portalLoading}
-                                  className="w-full rounded-xl border border-[#B87333] py-2.5 text-sm font-semibold text-[#B87333] hover:bg-[#B87333]/5 disabled:opacity-50 transition">
-                                  {portalLoading ? 'Opening…' : 'Upgrade, downgrade or cancel →'}
-                                </button>
-                                <p className="text-xs text-center text-[#7A8898] mt-2">You&apos;ll be redirected to our secure billing portal</p>
-                              </div>
-                            )}
+                            <div className="flex justify-between text-xs text-[#7A8898] py-[6px] border-t border-[#E8ECF0]">
+                              <span>Next PM visit</span><strong className="text-[#0D1B2A] font-medium">{plan.next_visit_date ? `${new Date(plan.next_visit_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}${plan.next_visit_slot ? ` · ${plan.next_visit_slot}` : ''}` : '—'}</strong>
+                            </div>
+                            <div className="flex justify-between text-xs text-[#7A8898] py-[6px] border-t border-[#E8ECF0]">
+                              <span>Billing</span><strong className="text-[#0D1B2A] font-medium">Monthly</strong>
+                            </div>
+                            <button onClick={(e) => { e.stopPropagation(); handleManagePlan() }} disabled={portalLoading} className="w-full mt-[14px] border border-[#B87333] text-[#B87333] rounded-full py-2 text-xs font-semibold hover:bg-[#B87333]/5 transition">
+                              {portalLoading ? 'Opening…' : 'Manage plan & billing →'}
+                            </button>
                           </div>
                         ) : (
-                          <div className="text-center py-4">
+                          <div className="p-[18px] text-center">
                             <p className="text-sm text-[#7A8898] mb-3">No active maintenance plan.</p>
                             <Link href="/pricing" className="inline-flex rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition">View plans</Link>
                           </div>
@@ -1514,12 +1459,14 @@ export default function DashboardPage() {
                           </form>
                         )}
                         {equipment.length > 0 ? (
-                          <div className="divide-y divide-black/[0.04]">
+                          <div>
                             {equipment.map((eq) => (
-                              <div key={eq.id} className="px-5 py-3">
-                                <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#B87333]`}>{eq.equipment_type}</p>
-                                <p className="text-sm font-bold text-[#0D1B2A] mt-0.5">{eq.brand} {eq.model}</p>
-                                {eq.serial_number && <p className={`${MONO} text-xs text-[#7A8898] mt-0.5`}>S/N {eq.serial_number}</p>}
+                              <div key={eq.id} onClick={() => setSelectedEquipment(eq)} className="flex items-center justify-between px-[18px] py-[11px] border-b border-[#E8ECF0] last:border-0 hover:bg-gray-50 cursor-pointer">
+                                <div>
+                                  <p className="font-[family-name:var(--font-ibm-plex-mono)] text-[9px] text-[#B87333] uppercase tracking-[0.1em] mb-[2px]">{eq.equipment_type}</p>
+                                  <p className="text-xs font-semibold text-[#0D1B2A]">{eq.brand} {eq.model}</p>
+                                  {eq.serial_number && <p className="font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#7A8898]">S/N: {eq.serial_number}</p>}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -1532,36 +1479,33 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Contact — full width */}
-                    <div className="bg-white rounded-xl border border-black/[0.07] p-5">
-                      <p className="text-sm font-bold text-[#0D1B2A] mb-4">Contact</p>
-                      <div className="grid grid-cols-3 gap-4">
-                        <a href={`tel:${siteSettings.phone || '(555) 012-3456'}`} className="flex items-center gap-3 rounded-xl bg-[#E8ECF0] px-4 py-3 hover:bg-[#B87333]/[0.06] transition">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#B87333]/[0.12]">
-                            <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                          </div>
-                          <div>
-                            <p className={`${MONO} text-[9px] font-semibold uppercase tracking-widest text-[#7A8898]`}>Phone</p>
-                            <p className="text-sm font-bold text-[#0D1B2A] mt-0.5">{siteSettings.phone || '(555) 012-3456'}</p>
-                          </div>
-                        </a>
-                        <a href={`mailto:${siteSettings.email || 'hello@cafeworks.com'}`} className="flex items-center gap-3 rounded-xl bg-[#E8ECF0] px-4 py-3 hover:bg-[#B87333]/[0.06] transition">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#B87333]/[0.12]">
-                            <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                          </div>
-                          <div>
-                            <p className={`${MONO} text-[9px] font-semibold uppercase tracking-widest text-[#7A8898]`}>Email</p>
-                            <p className="text-sm font-bold text-[#0D1B2A] mt-0.5">{siteSettings.email || 'hello@cafeworks.com'}</p>
-                          </div>
-                        </a>
-                        <div className="flex items-center gap-3 rounded-xl bg-[#E8ECF0] px-4 py-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#B87333]/[0.12]">
-                            <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                          </div>
-                          <div>
-                            <p className={`${MONO} text-[9px] font-semibold uppercase tracking-widest text-[#7A8898]`}>Hours</p>
-                            <p className="text-sm font-bold text-[#0D1B2A] mt-0.5">{siteSettings.business_hours || 'Mon–Sat, 7am–6pm'}</p>
-                          </div>
-                        </div>
+                    <div className="bg-white rounded-xl border border-black/[0.07] overflow-hidden">
+                      <div className="flex items-center px-5 py-4 border-b border-black/[0.05]">
+                        <p className="text-sm font-bold text-[#0D1B2A]">Contact</p>
+                      </div>
+                      <div className="grid grid-cols-3 gap-[10px] p-[16px]">
+                        {([
+                          { label: 'Call or Text', value: siteSettings.phone || '(555) 012-3456', href: `tel:${siteSettings.phone || '5550123456'}`, icon: 'phone' },
+                          { label: 'Email', value: siteSettings.email || 'hello@cafeworks.com', href: `mailto:${siteSettings.email || 'hello@cafeworks.com'}`, icon: 'email' },
+                          { label: 'Hours', value: siteSettings.business_hours || 'Mon–Sat, 7am–6pm', href: null, icon: 'clock' },
+                        ] as { label: string; value: string; href: string | null; icon: string }[]).map((item) => {
+                          const card = (
+                            <div className="flex items-center gap-3 bg-[#E8ECF0] rounded-[10px] p-[10px]">
+                              <div className="w-[30px] h-[30px] rounded-lg bg-[#B87333]/[0.12] flex items-center justify-center shrink-0">
+                                {item.icon === 'phone' && <svg className="h-4 w-4 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>}
+                                {item.icon === 'email' && <svg className="h-4 w-4 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
+                                {item.icon === 'clock' && <svg className="h-4 w-4 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                              </div>
+                              <div>
+                                <p className="font-[family-name:var(--font-ibm-plex-mono)] text-[8px] text-[#7A8898] uppercase tracking-[0.1em] mb-[2px]">{item.label}</p>
+                                <p className="text-xs font-semibold text-[#0D1B2A]">{item.value}</p>
+                              </div>
+                            </div>
+                          )
+                          return item.href
+                            ? <a key={item.label} href={item.href} className="block hover:opacity-90 transition">{card}</a>
+                            : <div key={item.label}>{card}</div>
+                        })}
                       </div>
                     </div>
                   </>
@@ -1590,45 +1534,23 @@ export default function DashboardPage() {
                             </button>
                           </div>
                           {workOrders.length > 0 ? (
-                            <div className="divide-y divide-black/[0.04] rounded-xl border border-black/[0.07] overflow-hidden">
-                              {workOrders.slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((wo) => {
-                                const key = `s-wo-${wo.id}`
-                                const exp = desktopExpandedItem === key
-                                return (
-                                  <div key={key}>
-                                    <button onClick={() => setDesktopExpandedItem(exp ? null : key)}
-                                      className={`w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-[#E8ECF0]/50 transition-all ${exp ? 'bg-[#B87333]/[0.04] border-l-2 border-[#B87333]' : ''}`}>
-                                      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white ${wo.status === 'completed' ? 'bg-green-500' : wo.status === 'in_progress' ? 'bg-amber-500' : 'bg-blue-500'}`}>
-                                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 min-w-0">
-                                          <span className={`${MONO} text-[10px] font-semibold text-[#B87333] shrink-0`}>{wo.work_order_number}</span>
-                                          <span className="text-xs text-[#7A8898] truncate">{[wo.equipment_list ? `${wo.equipment_list.brand} ${wo.equipment_list.model}` : null, wo.problem_description].filter(Boolean).join(' · ')}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 mt-0.5">
-                                          <span className="text-xs text-[#7A8898]">{fmt(wo.created_at)}</span>
-                                          {Number(wo.grand_total) > 0 && <span className="text-xs font-semibold text-[#0D1B2A]">${Number(wo.grand_total).toFixed(2)}</span>}
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center gap-2 shrink-0">
-                                        <StatusBadge status={wo.status} map={WO_STATUS} />
-                                        <svg className={`h-4 w-4 text-[#7A8898] transition-transform ${exp ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-                                      </div>
-                                    </button>
-                                    {exp && (
-                                      <div className="px-5 pb-4 pt-2 border-l-2 border-[#B87333] bg-[#B87333]/[0.03] space-y-2">
-                                        {wo.equipment_list && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Equipment</span><span className="text-[#0D1B2A]">{wo.equipment_list.brand} {wo.equipment_list.model}</span></div>}
-                                        {wo.problem_description && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Problem</span><span className="text-[#0D1B2A]">{wo.problem_description}</span></div>}
-                                        <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Created</span><span className="text-[#0D1B2A]">{fmt(wo.created_at)}</span></div>
-                                        {Number(wo.grand_total) > 0 && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Total</span><span className="font-bold text-[#0D1B2A]">${Number(wo.grand_total).toFixed(2)}</span></div>}
-                                        <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Status</span><StatusBadge status={wo.status} map={WO_STATUS} /></div>
-                                        <Link href="/service-request" className="mt-1 inline-flex text-xs font-semibold text-[#B87333] hover:underline">Request Follow-up →</Link>
-                                      </div>
-                                    )}
+                            <div className="rounded-xl border border-black/[0.07] overflow-hidden">
+                              {workOrders.slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((wo) => (
+                                <div key={wo.id} onClick={() => setSelectedWO({ key: `wo-${wo.id}`, type: 'workorder', woNumber: wo.work_order_number, equipment: wo.equipment_list ? `${wo.equipment_list.brand} ${wo.equipment_list.model}` : null, problem: wo.problem_description, total: wo.grand_total, status: wo.status, statusMap: WO_STATUS, date: wo.created_at, iconColor: wo.status === 'completed' ? 'green' : wo.status === 'in_progress' ? 'amber' : 'blue' })} className="flex items-center gap-3 px-[18px] py-[11px] border-b border-[#E8ECF0] last:border-0 hover:bg-gray-50 cursor-pointer">
+                                  <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 ${wo.status === 'completed' ? 'bg-green-50' : wo.status === 'in_progress' ? 'bg-amber-50' : 'bg-blue-50'}`}>
+                                    <svg className={`w-[14px] h-[14px] ${wo.status === 'completed' ? 'stroke-green-500' : wo.status === 'in_progress' ? 'stroke-amber-500' : 'stroke-blue-500'}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                                      {wo.status === 'completed' ? <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /> : <path d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />}
+                                    </svg>
                                   </div>
-                                )
-                              })}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#B87333] font-medium">{wo.work_order_number}</p>
+                                    <p className="text-xs font-semibold text-[#0D1B2A] truncate mt-[1px]">{[wo.equipment_list ? `${wo.equipment_list.brand} ${wo.equipment_list.model}` : null, wo.problem_description].filter(Boolean).join(' · ')}</p>
+                                    <p className="text-[11px] text-[#7A8898] mt-[1px]">{fmt(wo.created_at)}{Number(wo.grand_total) > 0 ? ` · $${Number(wo.grand_total).toFixed(2)}` : ''}</p>
+                                  </div>
+                                  <StatusBadge status={wo.status} map={WO_STATUS} />
+                                  <span className="text-[#ccc] text-sm ml-1">›</span>
+                                </div>
+                              ))}
                             </div>
                           ) : <p className="text-sm text-center text-[#7A8898] py-8">No repair history yet.</p>}
                         </div>
@@ -1636,53 +1558,25 @@ export default function DashboardPage() {
 
                       {/* ── Plan ── */}
                       {desktopNav === 'plan' && (
-                        <div className="max-w-xl">
+                        <div className="max-w-lg">
                           {plan ? (
-                            <div className="space-y-4">
-                              <div className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-5 space-y-4 cursor-pointer hover:shadow-sm transition" onClick={() => setShowPlanModal(true)}>
-                                <div className="flex items-start justify-between gap-3">
-                                  <div>
-                                    <div className="flex items-center gap-2">
-                                      <p className="text-lg font-bold text-[#0D1B2A]">{plan.plan_name}</p>
-                                      {plan.is_custom && <span className={`${MONO} inline-flex rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#B87333]`}>Custom</span>}
-                                    </div>
-                                    {plan.price ? <p className="text-2xl font-bold text-[#B87333] mt-1">${plan.price}<span className="text-sm font-normal text-[#7A8898]">/mo</span></p> : null}
-                                    {plan.description && <p className="mt-1 text-sm text-[#7A8898]">{plan.description}</p>}
-                                  </div>
-                                  <span className={`shrink-0 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase ${plan.status === 'active' ? 'bg-green-100 text-green-700' : plan.status === 'pending_payment' ? 'bg-amber-100 text-amber-700' : 'bg-[#E8ECF0] text-[#7A8898]'}`}>
-                                    {plan.status === 'pending_payment' ? 'Pending' : plan.status}
-                                  </span>
-                                </div>
-                                {plan.renewal_date && (
-                                  <div className="flex justify-between text-sm border-t border-white/60 pt-3">
-                                    <span className="text-[#7A8898]">Next renewal</span>
-                                    <span className="font-medium text-[#0D1B2A]">{fmt(plan.renewal_date)}</span>
-                                  </div>
-                                )}
-                                {plan.next_visit_date && (
-                                  <div className="flex justify-between text-sm border-t border-white/60 pt-3">
-                                    <span className="text-[#7A8898]">Next PM visit</span>
-                                    <span className="font-medium text-[#0D1B2A]">{fmt(plan.next_visit_date)}{plan.next_visit_slot ? ` · ${plan.next_visit_slot}` : ''}</span>
-                                  </div>
-                                )}
-                                {plan.features && plan.features.length > 0 && (
-                                  <ul className="space-y-1.5 border-t border-white/60 pt-3">
-                                    {plan.features.map((f, i) => <li key={i} className="flex items-start gap-2 text-sm text-[#7A8898]"><span className="text-[#B87333]">•</span>{f}</li>)}
-                                  </ul>
-                                )}
+                            <div className="p-[18px]">
+                              <div className="flex items-start justify-between mb-3">
+                                <p className="text-[15px] font-semibold text-[#0D1B2A]">{plan.plan_name}</p>
+                                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase ${plan.status === 'active' ? 'bg-green-100 text-green-700' : plan.status === 'pending_payment' ? 'bg-amber-100 text-amber-700' : 'bg-[#E8ECF0] text-[#7A8898]'}`}>{plan.status === 'pending_payment' ? 'Pending' : plan.status}</span>
                               </div>
+                              <p className="text-2xl font-light text-[#B87333] tracking-tight mb-3">${plan.price}<span className="text-xs font-normal text-[#7A8898]">/mo</span></p>
+                              {plan.description && <p className="text-sm text-[#7A8898] mb-3">{plan.description}</p>}
+                              <div className="flex justify-between text-xs text-[#7A8898] py-[6px] border-t border-[#E8ECF0]"><span>Next renewal</span><strong className="text-[#0D1B2A] font-medium">{plan.renewal_date ? fmt(plan.renewal_date) : '—'}</strong></div>
+                              <div className="flex justify-between text-xs text-[#7A8898] py-[6px] border-t border-[#E8ECF0]"><span>Next PM visit</span><strong className="text-[#0D1B2A] font-medium">{plan.next_visit_date ? `${new Date(plan.next_visit_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}${plan.next_visit_slot ? ` · ${plan.next_visit_slot}` : ''}` : '—'}</strong></div>
+                              <div className="flex justify-between text-xs text-[#7A8898] py-[6px] border-t border-[#E8ECF0]"><span>Billing</span><strong className="text-[#0D1B2A] font-medium">Monthly</strong></div>
+                              {plan.features && plan.features.length > 0 && <ul className="mt-3 space-y-1">{plan.features.map((f, i) => <li key={i} className="flex items-start gap-2 text-xs text-[#7A8898]"><span className="text-[#B87333]">•</span>{f}</li>)}</ul>}
                               {plan.status === 'pending_payment' && plan.stripe_payment_link ? (
-                                <div className="space-y-2">
-                                  <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-700">Payment required to activate your plan.</div>
-                                  <a href={plan.stripe_payment_link} className="flex w-full items-center justify-center rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 transition">Activate My Plan →</a>
-                                </div>
+                                <a href={plan.stripe_payment_link} className="flex w-full items-center justify-center mt-4 border border-[#B87333] text-[#B87333] rounded-full py-2 text-xs font-semibold hover:bg-[#B87333]/5 transition">Activate My Plan →</a>
                               ) : (
-                                <>
-                                  {portalError && <p className="text-sm text-red-600">{portalError}</p>}
-                                  <button onClick={handleManagePlan} disabled={portalLoading} className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
-                                    {portalLoading ? 'Opening billing portal…' : 'Manage plan & billing'}
-                                  </button>
-                                </>
+                                <button onClick={handleManagePlan} disabled={portalLoading} className="w-full mt-4 border border-[#B87333] text-[#B87333] rounded-full py-2 text-xs font-semibold hover:bg-[#B87333]/5 transition disabled:opacity-50">
+                                  {portalLoading ? 'Opening…' : 'Manage plan & billing →'}
+                                </button>
                               )}
                             </div>
                           ) : (
@@ -1698,41 +1592,20 @@ export default function DashboardPage() {
                       {desktopNav === 'invoices' && (
                         <div>
                           {invoices.length > 0 ? (
-                            <div className="divide-y divide-black/[0.04] rounded-xl border border-black/[0.07] overflow-hidden">
-                              {invoices.slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((inv) => {
-                                const key = `sv-inv-${inv.id}`
-                                const exp = desktopExpandedItem === key
-                                const payable = (inv.status === 'sent' || inv.status === 'unpaid') && inv.stripe_payment_link
-                                const displayStatus = inv.status === 'sent' && inv.stripe_payment_link ? 'Payment Due' : null
-                                return (
-                                  <div key={key}>
-                                    <button onClick={() => setDesktopExpandedItem(exp ? null : key)}
-                                      className={`w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-[#E8ECF0]/50 transition-all ${exp ? 'bg-[#B87333]/[0.04] border-l-2 border-[#B87333]' : ''}`}>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-[#0D1B2A] truncate">{inv.description || 'Invoice'}</p>
-                                        {inv.due_date && <p className="text-xs text-[#7A8898] mt-0.5">Due {fmt(inv.due_date)}</p>}
-                                      </div>
-                                      <div className="flex items-center gap-2 shrink-0">
-                                        <span className="text-sm font-bold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</span>
-                                        {displayStatus
-                                          ? <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">{displayStatus}</span>
-                                          : <StatusBadge status={inv.status} map={INV_STATUS} />}
-                                        <svg className={`h-4 w-4 text-[#7A8898] transition-transform ${exp ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-                                      </div>
-                                    </button>
-                                    {exp && (
-                                      <div className="px-5 pb-4 pt-2 border-l-2 border-[#B87333] bg-[#B87333]/[0.03] space-y-2">
-                                        {inv.description && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Description</span><span className="text-[#0D1B2A]">{inv.description}</span></div>}
-                                        <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Amount</span><span className="font-bold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</span></div>
-                                        {inv.due_date && <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Due date</span><span className="text-[#0D1B2A]">{fmt(inv.due_date)}</span></div>}
-                                        <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Created</span><span className="text-[#0D1B2A]">{fmt(inv.created_at)}</span></div>
-                                        <div className="flex gap-3 text-xs"><span className="text-[#7A8898] w-24 shrink-0">Status</span>{displayStatus ? <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">{displayStatus}</span> : <StatusBadge status={inv.status} map={INV_STATUS} />}</div>
-                                        {payable && <a href={inv.stripe_payment_link!} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center rounded-full bg-[#B87333] px-4 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition">Pay Now</a>}
-                                      </div>
-                                    )}
+                            <div className="rounded-xl border border-black/[0.07] overflow-hidden">
+                              {invoices.slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((inv) => (
+                                <div key={inv.id} onClick={() => setSelectedInvoice(inv)} className="flex items-center justify-between px-[18px] py-[11px] border-b border-[#E8ECF0] last:border-0 hover:bg-gray-50 cursor-pointer">
+                                  <div>
+                                    <p className="text-xs font-semibold text-[#0D1B2A]">{inv.description}</p>
+                                    <p className="text-[11px] text-[#7A8898] mt-[2px]">{inv.status === 'paid' ? `Paid ${fmt(inv.due_date)}` : inv.due_date ? `Due ${fmt(inv.due_date)}` : '—'}</p>
                                   </div>
-                                )
-                              })}
+                                  <div className="flex items-center gap-[10px]">
+                                    <p className="text-[13px] font-semibold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</p>
+                                    <StatusBadge status={inv.status} map={INV_STATUS} />
+                                    <span className="text-[#ccc] text-[13px]">›</span>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           ) : <p className="text-sm text-center text-[#7A8898] py-8">No invoices yet.</p>}
                         </div>
@@ -1758,12 +1631,15 @@ export default function DashboardPage() {
                             </form>
                           )}
                           {equipment.length > 0 ? (
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="rounded-xl border border-black/[0.07] overflow-hidden">
                               {equipment.map((eq) => (
-                                <div key={eq.id} onClick={() => setSelectedEquipment(eq)} className="rounded-xl border border-[#E8ECF0] border-l-2 border-l-emerald-500 p-4 cursor-pointer hover:shadow-sm transition">
-                                  <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#B87333]`}>{eq.equipment_type}</p>
-                                  <p className="mt-0.5 text-sm font-bold text-[#0D1B2A]">{eq.brand} {eq.model}</p>
-                                  {eq.serial_number && <p className={`${MONO} mt-0.5 text-xs text-[#7A8898]`}>S/N {eq.serial_number}</p>}
+                                <div key={eq.id} onClick={() => setSelectedEquipment(eq)} className="flex items-center justify-between px-[18px] py-[11px] border-b border-[#E8ECF0] last:border-0 hover:bg-gray-50 cursor-pointer">
+                                  <div>
+                                    <p className="font-[family-name:var(--font-ibm-plex-mono)] text-[9px] text-[#B87333] uppercase tracking-[0.1em] mb-[2px]">{eq.equipment_type}</p>
+                                    <p className="text-xs font-semibold text-[#0D1B2A]">{eq.brand} {eq.model}</p>
+                                    {eq.serial_number && <p className="font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#7A8898]">S/N: {eq.serial_number}</p>}
+                                  </div>
+                                  <span className="text-[#ccc] text-sm">›</span>
                                 </div>
                               ))}
                             </div>
@@ -1773,25 +1649,40 @@ export default function DashboardPage() {
 
                       {/* ── Contact ── */}
                       {desktopNav === 'contact' && (
-                        <div className="grid grid-cols-3 gap-4">
-                          <a href={`tel:${siteSettings.phone || '(555) 012-3456'}`} className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-[#E8ECF0] px-4 py-4 hover:bg-[#B87333]/5 transition">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10"><svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg></div>
-                            <div><p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Call or Text</p><p className="mt-0.5 text-lg font-bold text-[#0D1B2A]">{siteSettings.phone || '(555) 012-3456'}</p></div>
+                        <div className="grid grid-cols-3 gap-[10px] p-[16px]">
+                          <a href={`tel:${(siteSettings.phone || '').replace(/\D/g,'')}`} className="flex items-center gap-3 bg-[#E8ECF0] rounded-[10px] p-[10px] hover:bg-[#E0E4E8] transition">
+                            <div className="w-[30px] h-[30px] rounded-lg bg-[#B87333]/10 flex items-center justify-center shrink-0">
+                              <svg className="w-[13px] h-[13px] stroke-[#B87333]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                            </div>
+                            <div>
+                              <p className="font-[family-name:var(--font-ibm-plex-mono)] text-[8px] text-[#7A8898] uppercase tracking-[0.1em] mb-[2px]">Call or Text</p>
+                              <p className="text-xs font-semibold text-[#0D1B2A]">{siteSettings.phone || '(555) 012-3456'}</p>
+                            </div>
                           </a>
-                          <a href={`mailto:${siteSettings.email || 'hello@cafeworks.com'}`} className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-[#E8ECF0] px-4 py-4 hover:bg-[#B87333]/5 transition">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10"><svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg></div>
-                            <div><p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Email Us</p><p className="mt-0.5 text-base font-bold text-[#0D1B2A]">{siteSettings.email || 'hello@cafeworks.com'}</p></div>
+                          <a href={`mailto:${siteSettings.email || 'hello@cafeworks.com'}`} className="flex items-center gap-3 bg-[#E8ECF0] rounded-[10px] p-[10px] hover:bg-[#E0E4E8] transition">
+                            <div className="w-[30px] h-[30px] rounded-lg bg-[#B87333]/10 flex items-center justify-center shrink-0">
+                              <svg className="w-[13px] h-[13px] stroke-[#B87333]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            </div>
+                            <div>
+                              <p className="font-[family-name:var(--font-ibm-plex-mono)] text-[8px] text-[#7A8898] uppercase tracking-[0.1em] mb-[2px]">Email</p>
+                              <p className="text-xs font-semibold text-[#0D1B2A]">{siteSettings.email || 'hello@cafeworks.com'}</p>
+                            </div>
                           </a>
-                          <div className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-[#E8ECF0] px-4 py-4">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10"><svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
-                            <div><p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Hours</p><p className="mt-0.5 text-base font-bold text-[#0D1B2A]">{siteSettings.business_hours || 'Mon–Sat, 7am–6pm'}</p><p className="text-xs text-[#7A8898]">Emergency? Call anytime.</p></div>
+                          <div className="flex items-center gap-3 bg-[#E8ECF0] rounded-[10px] p-[10px]">
+                            <div className="w-[30px] h-[30px] rounded-lg bg-[#B87333]/10 flex items-center justify-center shrink-0">
+                              <svg className="w-[13px] h-[13px] stroke-[#B87333]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                              <p className="font-[family-name:var(--font-ibm-plex-mono)] text-[8px] text-[#7A8898] uppercase tracking-[0.1em] mb-[2px]">Hours</p>
+                              <p className="text-xs font-semibold text-[#0D1B2A]">{siteSettings.business_hours || 'Mon–Sat, 7am–6pm'}</p>
+                            </div>
                           </div>
                         </div>
                       )}
 
                       {/* ── Profile ── */}
                       {desktopNav === 'profile' && (
-                        <div className="max-w-md">
+                        <div className="max-w-lg">
                           <form onSubmit={handleSaveProfile} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                               <div><label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Full name</label><input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} required className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" /></div>

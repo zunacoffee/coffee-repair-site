@@ -29,7 +29,8 @@ const STATUS_LABEL: Record<WorkOrder['status'], string> = {
 export default function WorkOrdersPage() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter]   = useState<'all' | WorkOrder['status']>('all')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     fetch('/api/admin/work-orders', { credentials: 'include' })
@@ -38,9 +39,14 @@ export default function WorkOrdersPage() {
       .catch(() => setLoading(false))
   }, [])
 
-  const filtered = filter === 'all'
-    ? workOrders
-    : workOrders.filter(wo => wo.status === filter)
+  const filteredOrders = workOrders.filter(wo => {
+    const matchesStatus = statusFilter === '' || wo.status === statusFilter
+    const matchesSearch = search === '' ||
+      wo.work_order_number?.toLowerCase().includes(search.toLowerCase()) ||
+      wo.customers?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      wo.problem_description?.toLowerCase().includes(search.toLowerCase())
+    return matchesStatus && matchesSearch
+  })
 
   return (
     <div className="min-h-screen bg-[#E8ECF0] p-6">
@@ -49,7 +55,6 @@ export default function WorkOrdersPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[#0D1B2A]">Work Orders</h1>
-            <p className="text-sm text-[#7A8898] mt-1">{workOrders.length} total work orders</p>
           </div>
           <Link
             href="/admin/work-orders/new"
@@ -59,45 +64,48 @@ export default function WorkOrdersPage() {
           </Link>
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          {(['all', 'open', 'in_progress', 'completed', 'cancelled'] as const).map(s => (
-            <button
-              key={s}
-              onClick={() => setFilter(s)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                filter === s
-                  ? 'bg-[#0D1B2A] text-white'
-                  : 'bg-white text-[#7A8898] hover:bg-[#E8ECF0]'
-              }`}
-            >
-              {s === 'all' ? 'All' : STATUS_LABEL[s as WorkOrder['status']]}
-            </button>
-          ))}
-        </div>
-
         {/* Table */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-[#E8ECF0] shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
+            <span className="text-sm font-semibold text-[#0D1B2A]">Work order list</span>
+            <div className="flex items-center gap-2">
+              {['All', 'Open', 'In Progress', 'Completed', 'Cancelled'].map((s) => (
+                <button key={s} onClick={() => setStatusFilter(s === 'All' ? '' : s.toLowerCase().replace(' ', '_'))}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                    (statusFilter === '' && s === 'All') || statusFilter === s.toLowerCase().replace(' ', '_')
+                      ? 'bg-[#0D1B2A] text-white'
+                      : 'bg-[#E8ECF0] text-[#7A8898] hover:text-[#0D1B2A]'
+                  }`}>
+                  {s}
+                </button>
+              ))}
+              <div className="flex items-center gap-2 bg-[#E8ECF0] rounded-xl px-3 py-1.5 w-52">
+                <svg className="h-4 w-4 text-[#7A8898] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…" className="bg-transparent text-sm text-[#0D1B2A] placeholder-[#7A8898] outline-none w-full" />
+              </div>
+            </div>
+          </div>
           {loading ? (
             <div className="p-12 text-center text-[#7A8898]">Loading…</div>
-          ) : filtered.length === 0 ? (
+          ) : filteredOrders.length === 0 ? (
             <div className="p-12 text-center text-[#7A8898]">No work orders found.</div>
           ) : (
-            <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[#E8ECF0] border-b border-[#E8ECF0]">
+              <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
                 <tr>
-                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">WO #</th>
-                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">Customer</th>
-                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">Equipment</th>
-                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">Problem</th>
-                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">Status</th>
-                  <th className="px-4 py-3 text-right text-[#0D1B2A] font-semibold">Total</th>
-                  <th className="px-4 py-3 text-left text-[#0D1B2A] font-semibold">Created</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">WO #</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Customer</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Equipment</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Problem</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Status</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Total</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Created</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(wo => (
+                {filteredOrders.map(wo => (
                   <tr
                     key={wo.id}
                     className="border-b border-[#E8ECF0] last:border-0 hover:bg-[#E8ECF0] cursor-pointer transition-colors"
@@ -128,7 +136,6 @@ export default function WorkOrdersPage() {
                 ))}
               </tbody>
             </table>
-            </div>
           )}
         </div>
       </div>

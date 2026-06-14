@@ -33,6 +33,7 @@ function CustomersPageInner() {
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | string | null>(null)
+  const [search, setSearch] = useState('')
 
   const fetchCustomers = async () => {
     const res = await fetch('/api/admin/customers')
@@ -100,6 +101,20 @@ function CustomersPageInner() {
     setSaveMessage('Customer deleted successfully.')
     await fetchCustomers()
   }
+
+  function formatPhone(phone: string | null) {
+    if (!phone) return '—'
+    const digits = phone.replace(/\D/g, '')
+    if (digits.length === 10) return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`
+    return phone
+  }
+
+  const filteredCustomers = customers.filter(c =>
+    search === '' ||
+    (c.full_name?.toLowerCase().includes(search.toLowerCase())) ||
+    (c.email?.toLowerCase().includes(search.toLowerCase())) ||
+    (c.phone?.includes(search))
+  )
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-10 max-w-7xl mx-auto w-full">
@@ -206,25 +221,36 @@ function CustomersPageInner() {
         )}
 
         <div className="overflow-hidden rounded-2xl border border-[#E8ECF0] bg-white shadow-sm">
-          <div className="px-6 py-4 border-b border-[#E8ECF0] bg-[#E8ECF0]/40">
-            <h2 className="text-sm font-semibold text-[#0D1B2A]">Customer list</h2>
+          <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
+            <span className="text-sm font-semibold text-[#0D1B2A]">Customer list</span>
+            <div className="flex items-center gap-2 bg-[#E8ECF0] border border-[#E8ECF0] rounded-xl px-3 py-1.5 w-64">
+              <svg className="h-4 w-4 text-[#7A8898] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search customers…"
+                className="bg-transparent text-sm text-[#0D1B2A] placeholder-[#7A8898] outline-none w-full"
+              />
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-[#E8ECF0]">
-              <thead className="bg-white">
+          <table className="min-w-full divide-y divide-[#E8ECF0]">
+              <thead className="bg-[#0D1B2A] sticky top-[60px] z-10">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Name</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Email</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Phone</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Address</th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-[#0D1B2A]">Actions</th>
+                  <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Name</th>
+                  <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Email</th>
+                  <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Phone</th>
+                  <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Address</th>
+                  <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E8ECF0] bg-white">
                 {isLoading ? (
                   <tr><td colSpan={5} className="px-6 py-12 text-center text-[#7A8898]">Loading customers...</td></tr>
-                ) : customers.length > 0 ? (
-                  customers.map((customer) => (
+                ) : filteredCustomers.length > 0 ? (
+                  filteredCustomers.map((customer) => (
                     <tr key={customer.id} className="hover:bg-[#E8ECF0] transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#0D1B2A]">
                         <Link href={`/admin/customers/${customer.id}`} className="text-[#B87333] hover:opacity-90">
@@ -232,7 +258,7 @@ function CustomersPageInner() {
                         </Link>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[#7A8898]">{customer.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#7A8898]">{customer.phone}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#7A8898]">{formatPhone(customer.phone)}</td>
                       <td className="px-6 py-4 text-sm text-[#7A8898]">
                         {customer.street || customer.city
                           ? [customer.street, [customer.city, [customer.state, customer.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')].filter(Boolean).join(', ')
@@ -278,8 +304,7 @@ function CustomersPageInner() {
                   <tr><td colSpan={5} className="px-6 py-12 text-center text-[#7A8898]">No customers found.</td></tr>
                 )}
               </tbody>
-            </table>
-          </div>
+          </table>
         </div>
       </div>
     </div>
