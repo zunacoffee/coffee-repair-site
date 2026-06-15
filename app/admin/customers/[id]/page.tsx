@@ -242,7 +242,7 @@ export default function CustomerDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#E8ECF0] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="w-full overflow-hidden min-h-screen bg-[#E8ECF0] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
@@ -306,7 +306,7 @@ export default function CustomerDetailPage() {
                         <label className="block text-sm font-medium text-[#0D1B2A]">City</label>
                         <input value={contactForm.city} onChange={(e) => updateFormField('city', e.target.value)} placeholder="Portland" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-sm font-medium text-[#0D1B2A]">State</label>
                           <input value={contactForm.state} onChange={(e) => updateFormField('state', e.target.value)} placeholder="OR" maxLength={2} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
@@ -614,7 +614,7 @@ export default function CustomerDetailPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Monthly Price ($) *</label>
                     <div className="relative">
