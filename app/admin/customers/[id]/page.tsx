@@ -271,13 +271,13 @@ export default function CustomerDetailPage() {
         {saveMessage && <div className="mb-6 rounded-3xl border border-green-200 bg-green-50 p-5 text-sm text-green-700">{saveMessage}</div>}
 
         {loading ? (
-          <div className="rounded-3xl border border-[#E8ECF0] bg-white p-8 shadow-sm">
+          <div className="rounded-3xl border border-[#E8ECF0] bg-white p-4 sm:p-8 shadow-sm">
             <p className="text-sm text-[#7A8898]">Loading customer details...</p>
           </div>
         ) : (
           <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]">
             <div className="space-y-8">
-              <section className="rounded-3xl border border-[#E8ECF0] bg-white p-8 shadow-sm">
+              <section className="rounded-3xl border border-[#E8ECF0] bg-white p-4 sm:p-8 shadow-sm">
                 <div>
                   <h2 className="text-xl font-semibold text-[#0D1B2A]">Contact information</h2>
                   <p className="mt-2 text-sm text-[#7A8898]">Customer contact info and billing address.</p>
@@ -358,7 +358,7 @@ export default function CustomerDetailPage() {
                 ) : null}
               </section>
 
-              <section className="rounded-3xl border border-[#E8ECF0] bg-white p-8 shadow-sm">
+              <section className="rounded-3xl border border-[#E8ECF0] bg-white p-4 sm:p-8 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <h2 className="text-xl font-semibold text-[#0D1B2A]">Equipment</h2>
@@ -445,7 +445,7 @@ export default function CustomerDetailPage() {
                 </div>
               </section>
 
-              <section className="rounded-3xl border border-[#E8ECF0] bg-white p-8 shadow-sm">
+              <section className="rounded-3xl border border-[#E8ECF0] bg-white p-4 sm:p-8 shadow-sm">
                 <div>
                   <h2 className="text-xl font-semibold text-[#0D1B2A]">Repair history</h2>
                   <p className="mt-2 text-sm text-[#7A8898]">Recent repair jobs for this customer.</p>
@@ -474,7 +474,7 @@ export default function CustomerDetailPage() {
             </div>
 
             <aside className="space-y-6">
-              <section className="rounded-3xl border border-[#E8ECF0] bg-white p-8 shadow-sm">
+              <section className="rounded-3xl border border-[#E8ECF0] bg-white p-4 sm:p-8 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 className="text-xl font-semibold text-[#0D1B2A]">Maintenance plan</h2>
