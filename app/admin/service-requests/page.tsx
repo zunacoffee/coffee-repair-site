@@ -230,7 +230,7 @@ export default function ServiceRequestsPage() {
         </div>
         <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-[#E8ECF0]">
-          <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
+          <thead className="bg-[#0D1B2A]">
             <tr>
               {['Name', 'Equipment', 'Appointment', 'Issue', 'Status', 'Submitted', ''].map((h) => (
                 <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">{h}</th>

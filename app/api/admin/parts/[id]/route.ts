@@ -44,8 +44,9 @@ export async function PATCH(
   }
 
   const updates: Record<string, unknown> = {}
-  if (typeof body.name       === 'string')  updates.name        = body.name.trim()
+  if (typeof body.name        === 'string') updates.name        = body.name.trim()
   if (typeof body.part_number === 'string') updates.part_number = body.part_number.trim() || null
+  if (typeof body.supplier    === 'string') updates.supplier    = body.supplier.trim() || null
   if (body.cost_price !== undefined)        updates.cost_price  = Number(body.cost_price)
   if (body.sell_price !== undefined)        updates.sell_price  = Number(body.sell_price)
   if (body.quantity   !== undefined)        updates.quantity    = Math.max(0, parseInt(String(body.quantity), 10))

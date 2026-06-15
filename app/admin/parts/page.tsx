@@ -7,6 +7,7 @@ type Part = {
   id: number
   name: string
   part_number: string | null
+  supplier: string | null
   cost_price: number
   sell_price: number
   quantity: number
@@ -15,7 +16,7 @@ type Part = {
 }
 
 const EMPTY = {
-  name: '', part_number: '', cost_price: '', sell_price: '',
+  name: '', part_number: '', supplier: '', cost_price: '', sell_price: '',
   quantity: '0', low_stock_threshold: '1',
 }
 
@@ -34,6 +35,9 @@ export default function PartsPage() {
   const [markupPct,       setMarkupPct]       = useState(30)
   const [search,          setSearch]          = useState('')
   const [lowStockOnly,    setLowStockOnly]    = useState(false)
+  const [sortKey, setSortKey] = useState<'name' | 'cost_price' | 'sell_price' | 'quantity'>('name')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const [adjustingIds, setAdjustingIds] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     async function load() {
@@ -76,6 +80,7 @@ export default function PartsPage() {
     setForm({
       name: p.name,
       part_number: p.part_number ?? '',
+      supplier: p.supplier ?? '',
       cost_price: String(p.cost_price),
       sell_price: String(p.sell_price),
       quantity: String(p.quantity),
@@ -87,12 +92,13 @@ export default function PartsPage() {
 
   const cancelForm = () => { setShowForm(false); setEditingId(null) }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSaving(true); setSaveError(null)
     const payload = {
       name:               form.name.trim(),
       part_number:        form.part_number.trim() || null,
+      supplier:           form.supplier.trim() || null,
       cost_price:         parseFloat(form.cost_price) || 0,
       sell_price:         parseFloat(form.sell_price) || 0,
       quantity:           parseInt(form.quantity, 10) || 0,
@@ -125,6 +131,29 @@ export default function PartsPage() {
     else alert('Failed to delete part.')
   }
 
+  const handleSort = (key: typeof sortKey) => {
+    if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else { setSortKey(key); setSortDir('asc') }
+  }
+
+  const handleQtyAdjust = async (part: Part, delta: number) => {
+    const newQty = Math.max(0, part.quantity + delta)
+    setParts((prev) => prev.map((p) => (p.id === part.id ? { ...p, quantity: newQty } : p)))
+    setAdjustingIds((prev) => new Set(prev).add(part.id))
+    try {
+      const res = await fetch(`/api/admin/parts/${part.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: newQty }),
+      })
+      if (!res.ok) setParts((prev) => prev.map((p) => (p.id === part.id ? { ...p, quantity: part.quantity } : p)))
+    } catch {
+      setParts((prev) => prev.map((p) => (p.id === part.id ? { ...p, quantity: part.quantity } : p)))
+    } finally {
+      setAdjustingIds((prev) => { const next = new Set(prev); next.delete(part.id); return next })
+    }
+  }
+
   const lowStockCount   = parts.filter((p) => p.quantity <= p.low_stock_threshold).length
   const totalCostValue  = parts.reduce((sum, p) => sum + Number(p.cost_price)  * p.quantity, 0)
   const totalRetailValue = parts.reduce((sum, p) => sum + Number(p.sell_price) * p.quantity, 0)
@@ -143,12 +172,18 @@ export default function PartsPage() {
     )
   }
 
-  const filteredParts = parts.filter(p =>
-    (!lowStockOnly || p.quantity <= p.low_stock_threshold) &&
-    (search === '' ||
-      p.name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.part_number?.toLowerCase().includes(search.toLowerCase()))
-  )
+  const filteredParts = parts
+    .filter(p =>
+      (!lowStockOnly || p.quantity <= p.low_stock_threshold) &&
+      (search === '' ||
+        p.name?.toLowerCase().includes(search.toLowerCase()) ||
+        p.part_number?.toLowerCase().includes(search.toLowerCase()))
+    )
+    .sort((a, b) => {
+      const dir = sortDir === 'asc' ? 1 : -1
+      if (sortKey === 'name') return a.name.localeCompare(b.name) * dir
+      return (Number(a[sortKey]) - Number(b[sortKey])) * dir
+    })
 
   return (
     <div className="py-8 px-4 lg:px-10 max-w-7xl mx-auto w-full space-y-6">
@@ -302,6 +337,15 @@ export default function PartsPage() {
                     className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   />
                 </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Supplier</label>
+                  <input
+                    value={form.supplier}
+                    onChange={(e) => setForm((f) => ({ ...f, supplier: e.target.value }))}
+                    placeholder="e.g. Rocket Espresso Supply"
+                    className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Cost Price ($)</label>
                   <input
@@ -433,11 +477,27 @@ export default function PartsPage() {
         ) : (
           <div className="overflow-x-auto">
           <table className="min-w-full">
-            <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
+            <thead className="bg-[#0D1B2A]">
               <tr>
-                {['Part', 'Part #', 'Cost', 'Sell Price', 'Qty', 'Threshold', ''].map((h) => (
-                  <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">
-                    {h}
+                {([
+                  { label: 'Part',       key: 'name'       as const },
+                  { label: 'Part #',     key: null },
+                  { label: 'Supplier',   key: null },
+                  { label: 'Cost',       key: 'cost_price' as const },
+                  { label: 'Sell Price', key: 'sell_price' as const },
+                  { label: 'Qty',        key: 'quantity'   as const },
+                  { label: 'Threshold',  key: null },
+                  { label: '',           key: null },
+                ] as { label: string; key: typeof sortKey | null }[]).map(({ label, key }) => (
+                  <th key={label} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">
+                    {key ? (
+                      <button onClick={() => handleSort(key)} className="flex items-center gap-0.5 hover:text-[#B87333] transition-colors">
+                        {label}
+                        <span className={`ml-0.5 text-xs ${sortKey === key ? 'text-[#B87333]' : 'opacity-0'}`}>
+                          {sortDir === 'asc' ? '↑' : '↓'}
+                        </span>
+                      </button>
+                    ) : label}
                   </th>
                 ))}
               </tr>
@@ -458,13 +518,26 @@ export default function PartsPage() {
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-sm text-[#7A8898] font-mono">{part.part_number ?? '—'}</td>
+                    <td className="whitespace-nowrap px-5 py-3.5 text-sm text-[#7A8898]">{part.supplier ?? '—'}</td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-sm text-[#7A8898]">${Number(part.cost_price).toFixed(2)}</td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-sm font-semibold text-[#0D1B2A]">${Number(part.sell_price).toFixed(2)}</td>
                     <td className="whitespace-nowrap px-5 py-3.5">
-                      <span className={`text-sm font-bold ${isLow ? 'text-red-600' : 'text-[#0D1B2A]'}`}>
-                        {part.quantity}
-                      </span>
-                      {isLow && <span className="ml-1.5 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">Low</span>}
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleQtyAdjust(part, -1) }}
+                          disabled={adjustingIds.has(part.id) || part.quantity === 0}
+                          className="flex h-6 w-6 items-center justify-center rounded-md border border-[#E8ECF0] bg-white text-[#7A8898] hover:border-[#B87333] hover:text-[#B87333] disabled:opacity-30 transition text-base leading-none select-none"
+                        >−</button>
+                        <span className={`text-sm font-bold min-w-[2ch] text-center ${isLow ? 'text-red-600' : 'text-[#0D1B2A]'}`}>
+                          {part.quantity}
+                        </span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleQtyAdjust(part, 1) }}
+                          disabled={adjustingIds.has(part.id)}
+                          className="flex h-6 w-6 items-center justify-center rounded-md border border-[#E8ECF0] bg-white text-[#7A8898] hover:border-[#B87333] hover:text-[#B87333] disabled:opacity-30 transition text-base leading-none select-none"
+                        >+</button>
+                        {isLow && <span className="ml-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">Low</span>}
+                      </div>
                     </td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-sm text-[#7A8898]">{part.low_stock_threshold}</td>
                     <td className="whitespace-nowrap px-5 py-3.5">

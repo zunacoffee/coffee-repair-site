@@ -321,7 +321,7 @@ export default function EquipmentPage() {
         ) : (
           <div className="overflow-x-auto">
           <table className="min-w-full">
-            <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
+            <thead className="bg-[#0D1B2A]">
               <tr>
                 {['Customer', 'Type', 'Brand', 'Model', 'Serial Number', ''].map((h) => (
                   <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">{h}</th>

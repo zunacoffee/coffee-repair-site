@@ -628,11 +628,11 @@ export default function DashboardPage() {
       )}
 
       {/* ── Bottom nav (mobile only) ── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-[#E8ECF0] pb-safe sm:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-20 bg-[#0D1B2A] border-t border-white/10 pb-safe sm:hidden">
         <div className="mx-auto max-w-lg grid grid-cols-4 pb-2">
           <button
             onClick={() => { setActiveNav('home'); setActiveSection(null) }}
-            className={`flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'home' ? 'text-[#B87333]' : 'text-[#7A8898]'}`}
+            className={`flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'home' ? 'text-[#B87333]' : 'text-white/55'}`}
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -642,7 +642,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => { setActiveNav('repairs'); showSection('repairs') }}
-            className={`relative flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'repairs' ? 'text-[#B87333]' : 'text-[#7A8898]'}`}
+            className={`relative flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'repairs' ? 'text-[#B87333]' : 'text-white/55'}`}
           >
             {openRepairs.length > 0 && (
               <span className="absolute top-2 right-5 flex h-4 w-4 items-center justify-center rounded-full bg-[#B87333] text-[8px] font-bold text-white">
@@ -657,7 +657,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => { setActiveNav('contact'); showSection('contact') }}
-            className={`flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'contact' ? 'text-[#B87333]' : 'text-[#7A8898]'}`}
+            className={`flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'contact' ? 'text-[#B87333]' : 'text-white/55'}`}
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -667,7 +667,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => { setActiveNav('account'); showSection('account') }}
-            className={`flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'account' ? 'text-[#B87333]' : 'text-[#7A8898]'}`}
+            className={`flex flex-col items-center gap-1 pt-3 pb-1 transition ${activeNav === 'account' ? 'text-[#B87333]' : 'text-white/55'}`}
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />

@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
     .insert([{
       name,
       part_number: typeof body.part_number === 'string' ? body.part_number.trim() : null,
+      supplier: typeof body.supplier === 'string' ? body.supplier.trim() || null : null,
       cost_price,
       sell_price,
       quantity,

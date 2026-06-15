@@ -261,7 +261,7 @@ function CustomersPageInner() {
           </div>
           <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[#E8ECF0]">
-              <thead className="bg-[#0D1B2A] sticky top-[60px] z-10">
+              <thead className="bg-[#0D1B2A]">
                 <tr>
                   <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Name</th>
                   <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Email</th>

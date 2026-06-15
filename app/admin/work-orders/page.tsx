@@ -121,7 +121,7 @@ export default function WorkOrdersPage() {
           ) : (
             <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
+              <thead className="bg-[#0D1B2A]">
                 <tr>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">WO #</th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Customer</th>
