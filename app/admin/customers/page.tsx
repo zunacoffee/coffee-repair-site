@@ -118,7 +118,6 @@ function CustomersPageInner() {
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-10 max-w-7xl mx-auto w-full">
-      <div className="max-w-7xl mx-auto">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-semibold text-[#0D1B2A]">Customers</h1>
@@ -220,6 +219,30 @@ function CustomersPageInner() {
           </div>
         )}
 
+        <div className="md:hidden bg-white rounded-2xl border border-[#E8ECF0] shadow-sm divide-y divide-[#E8ECF0]">
+          {isLoading ? (
+            <p className="px-4 py-8 text-center text-sm text-[#7A8898]">Loading customers…</p>
+          ) : filteredCustomers.length === 0 ? (
+            <p className="px-4 py-8 text-center text-sm text-[#7A8898]">No customers found.</p>
+          ) : filteredCustomers.map((customer) => (
+            <Link
+              key={customer.id}
+              href={`/admin/customers/${customer.id}`}
+              className="flex items-center gap-3 px-4 py-4 hover:bg-[#E8ECF0] transition-colors"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-[#B87333] truncate">{customer.full_name}</p>
+                <p className="text-xs text-[#7A8898] truncate mt-0.5">{customer.email}</p>
+                <p className="text-xs text-[#7A8898] mt-0.5">{formatPhone(customer.phone)}</p>
+              </div>
+              <svg className="h-4 w-4 shrink-0 text-[#7A8898]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          ))}
+        </div>
+
+        <div className="hidden md:block">
         <div className="overflow-hidden rounded-2xl border border-[#E8ECF0] bg-white shadow-sm">
           <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
             <span className="text-sm font-semibold text-[#0D1B2A]">Customer list</span>
@@ -236,6 +259,7 @@ function CustomersPageInner() {
               />
             </div>
           </div>
+          <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[#E8ECF0]">
               <thead className="bg-[#0D1B2A] sticky top-[60px] z-10">
                 <tr>
@@ -259,12 +283,12 @@ function CustomersPageInner() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[#7A8898]">{customer.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[#7A8898]">{formatPhone(customer.phone)}</td>
-                      <td className="px-6 py-4 text-sm text-[#7A8898]">
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-[#7A8898]">
                         {customer.street || customer.city
                           ? [customer.street, [customer.city, [customer.state, customer.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')].filter(Boolean).join(', ')
                           : customer.address || '—'}
                       </td>
-                      <td className="px-6 py-4 text-right text-sm font-medium">
+                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                         {confirmDeleteId === customer.id ? (
                           <span className="inline-flex items-center gap-2">
                             <span className="text-xs text-[#0D1B2A] font-medium">Are you sure?</span>
@@ -305,8 +329,9 @@ function CustomersPageInner() {
                 )}
               </tbody>
           </table>
+          </div>
         </div>
-      </div>
+        </div>
     </div>
   )
 }

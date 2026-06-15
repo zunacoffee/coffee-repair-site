@@ -369,7 +369,41 @@ export default function PartsPage() {
         </div>
       )}
 
+      <div className="md:hidden bg-white rounded-2xl border border-[#E8ECF0] shadow-sm divide-y divide-[#E8ECF0]">
+        {parts.length === 0 ? (
+          <p className="px-4 py-8 text-center text-sm text-[#7A8898]">No parts yet.</p>
+        ) : filteredParts.map((part) => {
+          const isLow = part.quantity <= part.low_stock_threshold
+          return (
+            <div
+              key={part.id}
+              onClick={() => startEdit(part)}
+              className="flex items-center gap-3 px-4 py-4 hover:bg-[#E8ECF0] transition-colors cursor-pointer"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  {isLow && (
+                    <svg className="h-3.5 w-3.5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  )}
+                  <p className="text-sm font-bold text-[#0D1B2A]">{part.name}</p>
+                </div>
+                {part.part_number && (
+                  <p className="mt-0.5 font-mono text-xs text-[#7A8898]">{part.part_number}</p>
+                )}
+                <p className="mt-0.5 text-xs text-[#7A8898]">${Number(part.sell_price).toFixed(2)}</p>
+              </div>
+              <p className={`text-lg font-bold shrink-0 ${isLow ? 'text-red-600' : 'text-[#0D1B2A]'}`}>
+                {part.quantity}
+              </p>
+            </div>
+          )
+        })}
+      </div>
+
       {/* Parts table */}
+      <div className="hidden md:block">
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
           <span className="text-sm font-semibold text-[#0D1B2A]">Parts list</span>
@@ -397,6 +431,7 @@ export default function PartsPage() {
             <p className="mt-1 text-xs text-[#7A8898]">Add your first part to start tracking inventory.</p>
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
               <tr>
@@ -412,7 +447,7 @@ export default function PartsPage() {
                 const isLow = part.quantity <= part.low_stock_threshold
                 return (
                   <tr key={part.id} className={isLow ? 'bg-red-50' : 'hover:bg-[#E8ECF0] transition-colors'}>
-                    <td className="px-5 py-3.5">
+                    <td className="whitespace-nowrap px-5 py-3.5">
                       <div className="flex items-center gap-2">
                         {isLow && (
                           <svg className="h-3.5 w-3.5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -422,17 +457,17 @@ export default function PartsPage() {
                         <span className="text-sm font-medium text-[#0D1B2A]">{part.name}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 text-sm text-[#7A8898] font-mono">{part.part_number ?? '—'}</td>
-                    <td className="px-5 py-3.5 text-sm text-[#7A8898]">${Number(part.cost_price).toFixed(2)}</td>
-                    <td className="px-5 py-3.5 text-sm font-semibold text-[#0D1B2A]">${Number(part.sell_price).toFixed(2)}</td>
-                    <td className="px-5 py-3.5">
+                    <td className="whitespace-nowrap px-5 py-3.5 text-sm text-[#7A8898] font-mono">{part.part_number ?? '—'}</td>
+                    <td className="whitespace-nowrap px-5 py-3.5 text-sm text-[#7A8898]">${Number(part.cost_price).toFixed(2)}</td>
+                    <td className="whitespace-nowrap px-5 py-3.5 text-sm font-semibold text-[#0D1B2A]">${Number(part.sell_price).toFixed(2)}</td>
+                    <td className="whitespace-nowrap px-5 py-3.5">
                       <span className={`text-sm font-bold ${isLow ? 'text-red-600' : 'text-[#0D1B2A]'}`}>
                         {part.quantity}
                       </span>
                       {isLow && <span className="ml-1.5 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">Low</span>}
                     </td>
-                    <td className="px-5 py-3.5 text-sm text-[#7A8898]">{part.low_stock_threshold}</td>
-                    <td className="px-5 py-3.5">
+                    <td className="whitespace-nowrap px-5 py-3.5 text-sm text-[#7A8898]">{part.low_stock_threshold}</td>
+                    <td className="whitespace-nowrap px-5 py-3.5">
                       <div className="flex items-center gap-2 justify-end">
                         {confirmDeleteId === part.id ? (
                           <span className="inline-flex items-center gap-2">
@@ -475,7 +510,9 @@ export default function PartsPage() {
               })}
             </tbody>
           </table>
+          </div>
         )}
+      </div>
       </div>
     </div>
   )

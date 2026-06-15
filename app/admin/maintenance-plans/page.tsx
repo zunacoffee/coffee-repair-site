@@ -53,6 +53,8 @@ export default function MaintenancePlansPage() {
   const [message, setMessage] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [markingVisitId, setMarkingVisitId] = useState<number | string | null>(null)
+  const [visitCompleteMsg, setVisitCompleteMsg] = useState<Record<string | number, string>>({})
 
   // Modal state
   const [selectedPlan, setSelectedPlan] = useState<MaintenancePlan | null>(null)
@@ -216,6 +218,33 @@ export default function MaintenancePlansPage() {
     }
   }
 
+  async function handleMarkVisitComplete(plan: MaintenancePlan, e: React.MouseEvent) {
+    e.stopPropagation()
+    setMarkingVisitId(plan.id)
+    setVisitCompleteMsg((prev) => ({ ...prev, [plan.id]: '' }))
+    const res  = await fetch(`/api/admin/maintenance-plans/${plan.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mark_visit_complete: true }),
+    })
+    const json = await res.json()
+    setMarkingVisitId(null)
+    if (!res.ok) {
+      setVisitCompleteMsg((prev) => ({ ...prev, [plan.id]: json.error ?? 'Failed to update.' }))
+      return
+    }
+    setPlans((prev) => prev.map((p) =>
+      p.id === plan.id
+        ? { ...p, next_visit_date: json.plan.next_visit_date, next_visit_slot: null }
+        : p
+    ))
+    if (selectedPlan?.id === plan.id) {
+      setSelectedPlan((prev) => prev ? { ...prev, next_visit_date: json.plan.next_visit_date, next_visit_slot: null } : null)
+    }
+    setVisitCompleteMsg((prev) => ({ ...prev, [plan.id]: `Done! Next visit: ${fmt(json.plan.next_visit_date)}` }))
+    setTimeout(() => setVisitCompleteMsg((prev) => { const n = { ...prev }; delete n[plan.id]; return n }), 4000)
+  }
+
   const filteredPlans = plans.filter(p =>
     (statusFilter === '' || p.status === statusFilter) &&
     (search === '' ||
@@ -264,7 +293,43 @@ export default function MaintenancePlansPage() {
         </div>
       </div>
 
+      <div className="md:hidden bg-white rounded-2xl border border-[#E8ECF0] shadow-sm divide-y divide-[#E8ECF0]">
+        {loading ? (
+          <p className="px-4 py-8 text-center text-sm text-[#7A8898]">Loading maintenance plans…</p>
+        ) : filteredPlans.length === 0 ? (
+          <p className="px-4 py-8 text-center text-sm text-[#7A8898]">No plans found.</p>
+        ) : filteredPlans.map((plan) => (
+          <div
+            key={plan.id}
+            onClick={() => openModal(plan)}
+            className="px-4 py-4 hover:bg-[#E8ECF0] transition-colors cursor-pointer"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-[#0D1B2A]">{findCustomerName(plan.customer_id)}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <p className="text-xs text-[#7A8898]">{plan.plan_name}</p>
+                  {plan.is_custom && (
+                    <span className="inline-flex rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700">Custom</span>
+                  )}
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-sm font-bold text-[#B87333]">${Number(plan.price).toFixed(2)}<span className="text-xs font-normal text-[#7A8898]">/mo</span></p>
+                <span className={`mt-1 inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${STATUS_BADGE[plan.status] ?? 'bg-[#E8ECF0] text-[#7A8898]'}`}>
+                  {plan.status === 'pending_payment' ? 'Pending' : plan.status}
+                </span>
+              </div>
+            </div>
+            <p className="mt-1 text-xs text-[#7A8898]">
+              {plan.renewal_date ? `Renews ${fmt(plan.renewal_date)}` : 'No renewal date'}
+            </p>
+          </div>
+        ))}
+      </div>
+
       {/* Plans table */}
+      <div className="hidden md:block">
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
           <span className="text-sm font-semibold text-[#0D1B2A]">Plan list</span>
@@ -302,6 +367,7 @@ export default function MaintenancePlansPage() {
             </p>
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
               <tr>
@@ -319,10 +385,10 @@ export default function MaintenancePlansPage() {
                   onClick={() => openModal(plan)}
                   className="hover:bg-[#E8ECF0] transition-colors cursor-pointer"
                 >
-                  <td className="px-5 py-3.5">
+                  <td className="whitespace-nowrap px-5 py-3.5">
                     <p className="text-sm font-medium text-[#0D1B2A]">{findCustomerName(plan.customer_id)}</p>
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="whitespace-nowrap px-5 py-3.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm text-[#0D1B2A]">{plan.plan_name}</span>
                       {plan.is_custom && (
@@ -332,7 +398,7 @@ export default function MaintenancePlansPage() {
                       )}
                     </div>
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="whitespace-nowrap px-5 py-3.5">
                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${STATUS_BADGE[plan.status] ?? 'bg-[#E8ECF0] text-[#7A8898]'}`}>
                       {plan.status === 'pending_payment' ? 'Pending payment' : plan.status}
                     </span>
@@ -344,19 +410,37 @@ export default function MaintenancePlansPage() {
                     {plan.renewal_date ? fmt(plan.renewal_date) : '—'}
                   </td>
                   <td className="px-5 py-3.5 text-right whitespace-nowrap">
-                    <Link
-                      href={`/admin/customers/${plan.customer_id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition whitespace-nowrap"
-                    >
-                      View customer
-                    </Link>
+                    <div className="flex items-center justify-end gap-2 flex-wrap">
+                      {visitCompleteMsg[plan.id] && (
+                        <span className={`text-xs font-medium ${visitCompleteMsg[plan.id].startsWith('Done') ? 'text-green-600' : 'text-red-600'}`}>
+                          {visitCompleteMsg[plan.id]}
+                        </span>
+                      )}
+                      {plan.next_visit_date && (
+                        <button
+                          onClick={(e) => handleMarkVisitComplete(plan, e)}
+                          disabled={markingVisitId === plan.id}
+                          className="inline-flex items-center rounded-full border border-[#B87333] px-3 py-1.5 text-xs font-semibold text-[#B87333] hover:bg-[#B87333] hover:text-white disabled:opacity-50 transition whitespace-nowrap"
+                        >
+                          {markingVisitId === plan.id ? 'Saving…' : 'Mark Complete'}
+                        </button>
+                      )}
+                      <Link
+                        href={`/admin/customers/${plan.customer_id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center rounded-full bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition whitespace-nowrap"
+                      >
+                        View customer
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         )}
+      </div>
       </div>
 
       {/* PM Visit Modal */}

@@ -165,6 +165,7 @@ export default function EquipmentPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#0D1B2A]">Equipment</h1>
+          <p className="text-sm text-[#7A8898] mt-0.5">All equipment across every customer account.</p>
         </div>
         <button
           onClick={() => { setShowForm((p) => !p); setAddError(null) }}
@@ -248,7 +249,40 @@ export default function EquipmentPage() {
         </div>
       )}
 
+      <div className="md:hidden bg-white rounded-2xl border border-[#E8ECF0] shadow-sm divide-y divide-[#E8ECF0]">
+        {equipment.length === 0 ? (
+          <p className="px-4 py-8 text-center text-sm text-[#7A8898]">No equipment registered yet.</p>
+        ) : filtered.length === 0 ? (
+          <p className="px-4 py-8 text-center text-sm text-[#7A8898]">No results. <button onClick={() => { setSearch(''); setTypeFilter('') }} className="font-semibold text-[#B87333]">Clear filters</button></p>
+        ) : filtered.map((eq) => (
+          <div
+            key={eq.id}
+            onClick={() => setSelectedEq(eq)}
+            className="flex items-start gap-3 px-4 py-4 hover:bg-[#E8ECF0] transition-colors cursor-pointer"
+          >
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-[#0D1B2A] truncate">{eq.customers?.full_name ?? 'Unknown'}</p>
+                  <p className="text-xs text-[#7A8898] mt-0.5">{eq.brand} {eq.model}</p>
+                </div>
+                <span className="shrink-0 inline-flex items-center rounded-full bg-[#B87333]/10 px-2.5 py-0.5 text-xs font-semibold text-[#B87333]">
+                  {eq.equipment_type}
+                </span>
+              </div>
+              {eq.serial_number && (
+                <p className="mt-1 font-mono text-[10px] text-[#7A8898]">{eq.serial_number}</p>
+              )}
+            </div>
+            <svg className="h-4 w-4 shrink-0 text-[#7A8898] mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        ))}
+      </div>
+
       {/* Table */}
+      <div className="hidden md:block">
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
           <span className="text-sm font-semibold text-[#0D1B2A]">Equipment list</span>
@@ -285,6 +319,7 @@ export default function EquipmentPage() {
             </button>
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
               <tr>
@@ -300,7 +335,7 @@ export default function EquipmentPage() {
                   onClick={() => setSelectedEq(eq)}
                   className="hover:bg-[#E8ECF0] cursor-pointer transition-colors"
                 >
-                  <td className="px-5 py-3.5">
+                  <td className="whitespace-nowrap px-5 py-3.5">
                     {eq.customers ? (
                       <div>
                         <p className="text-sm font-medium text-[#0D1B2A]">{eq.customers.full_name}</p>
@@ -310,17 +345,17 @@ export default function EquipmentPage() {
                       <span className="text-sm text-[#7A8898]">Unknown</span>
                     )}
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="whitespace-nowrap px-5 py-3.5">
                     <span className="inline-flex items-center rounded-full bg-[#B87333]/10 px-2.5 py-1 text-xs font-semibold text-[#B87333]">
                       {eq.equipment_type}
                     </span>
                   </td>
                   <td className="px-5 py-3.5 text-sm font-medium text-[#0D1B2A] whitespace-nowrap">{eq.brand}</td>
                   <td className="px-5 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">{eq.model}</td>
-                  <td className="px-5 py-3.5">
+                  <td className="whitespace-nowrap px-5 py-3.5">
                     <span className="font-mono text-xs text-[#7A8898]">{eq.serial_number || '—'}</span>
                   </td>
-                  <td className="px-5 py-3.5 text-right">
+                  <td className="whitespace-nowrap px-5 py-3.5 text-right">
                     <svg className="h-4 w-4 text-[#7A8898] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
@@ -329,7 +364,9 @@ export default function EquipmentPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
+      </div>
       </div>
 
       {/* Equipment detail modal */}

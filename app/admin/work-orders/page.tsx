@@ -49,12 +49,12 @@ export default function WorkOrdersPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[#E8ECF0] p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="py-8 px-4 lg:px-10 max-w-7xl mx-auto w-full space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[#0D1B2A]">Work Orders</h1>
+            <p className="text-sm text-[#7A8898] mt-0.5">Manage work orders, parts, labor, and invoicing.</p>
           </div>
           <Link
             href="/admin/work-orders/new"
@@ -64,7 +64,34 @@ export default function WorkOrdersPage() {
           </Link>
         </div>
 
+        <div className="md:hidden bg-white rounded-2xl border border-[#E8ECF0] shadow-sm divide-y divide-[#E8ECF0]">
+          {loading ? (
+            <p className="px-4 py-8 text-center text-sm text-[#7A8898]">Loading…</p>
+          ) : filteredOrders.length === 0 ? (
+            <p className="px-4 py-8 text-center text-sm text-[#7A8898]">No work orders found.</p>
+          ) : filteredOrders.map((wo) => (
+            <div
+              key={wo.id}
+              onClick={() => { window.location.href = `/admin/work-orders/${wo.id}` }}
+              className="px-4 py-4 hover:bg-[#E8ECF0] transition-colors cursor-pointer"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-mono text-sm font-bold text-[#B87333] shrink-0">{wo.work_order_number}</span>
+                  <span className={`shrink-0 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_BADGE[wo.status]}`}>
+                    {STATUS_LABEL[wo.status]}
+                  </span>
+                </div>
+                <p className="text-sm font-bold text-[#0D1B2A] shrink-0">${Number(wo.grand_total).toFixed(2)}</p>
+              </div>
+              <p className="mt-0.5 text-xs text-[#7A8898]">{wo.customers?.full_name ?? '—'}</p>
+              <p className="mt-1 text-xs text-[#7A8898] truncate">{wo.problem_description}</p>
+            </div>
+          ))}
+        </div>
+
         {/* Table */}
+        <div className="hidden md:block">
         <div className="bg-white rounded-2xl border border-[#E8ECF0] shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
             <span className="text-sm font-semibold text-[#0D1B2A]">Work order list</span>
@@ -92,6 +119,7 @@ export default function WorkOrdersPage() {
           ) : filteredOrders.length === 0 ? (
             <div className="p-12 text-center text-[#7A8898]">No work orders found.</div>
           ) : (
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
                 <tr>
@@ -111,34 +139,35 @@ export default function WorkOrdersPage() {
                     className="border-b border-[#E8ECF0] last:border-0 hover:bg-[#E8ECF0] cursor-pointer transition-colors"
                     onClick={() => window.location.href = `/admin/work-orders/${wo.id}`}
                   >
-                    <td className="px-4 py-3 font-mono font-semibold text-[#B87333]">{wo.work_order_number}</td>
-                    <td className="px-4 py-3 text-[#0D1B2A] font-medium">{wo.customers?.full_name ?? '—'}</td>
-                    <td className="px-4 py-3 text-[#7A8898]">
+                    <td className="whitespace-nowrap px-4 py-3 font-mono font-semibold text-[#B87333]">{wo.work_order_number}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-[#0D1B2A] font-medium">{wo.customers?.full_name ?? '—'}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-[#7A8898]">
                       {wo.equipment_list
                         ? `${wo.equipment_list.brand} ${wo.equipment_list.model}`
                         : '—'}
                     </td>
-                    <td className="px-4 py-3 text-[#0D1B2A] max-w-[220px]">
+                    <td className="whitespace-nowrap px-4 py-3 text-[#0D1B2A] max-w-[220px]">
                       <span className="truncate block">{wo.problem_description}</span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="whitespace-nowrap px-4 py-3">
                       <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_BADGE[wo.status]}`}>
                         {STATUS_LABEL[wo.status]}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right text-[#0D1B2A] font-semibold">
+                    <td className="whitespace-nowrap px-4 py-3 text-right text-[#0D1B2A] font-semibold">
                       ${Number(wo.grand_total).toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-[#7A8898]">
+                    <td className="whitespace-nowrap px-4 py-3 text-[#7A8898]">
                       {new Date(wo.created_at).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
-      </div>
+        </div>
     </div>
   )
 }

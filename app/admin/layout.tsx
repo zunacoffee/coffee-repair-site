@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 
 const SETTINGS_NAV = [
@@ -69,7 +69,7 @@ const NAV = [
     label: 'Work Orders',
     icon: (
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
       </svg>
     ),
   },
@@ -120,6 +120,130 @@ const NAV = [
   },
 ]
 
+interface SearchResults {
+  customers: { id: number; full_name: string; email: string }[]
+  workOrders: { id: number; work_order_number: string; status: string; problem_description: string; customers: { full_name: string } | null }[]
+  invoices: { id: number; invoice_number: string; status: string; total: number; customers: { full_name: string } | null }[]
+}
+
+function SearchBar({ onNavigate }: { onNavigate: () => void }) {
+  const router = useRouter()
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<SearchResults | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    if (query.length < 2) { setResults(null); setOpen(false); return }
+    timerRef.current = setTimeout(async () => {
+      setLoading(true)
+      try {
+        const res = await fetch(`/api/admin/search?q=${encodeURIComponent(query)}`)
+        const data = await res.json()
+        setResults(data)
+        setOpen(true)
+      } finally {
+        setLoading(false)
+      }
+    }, 300)
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [query])
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  function navigate(href: string) {
+    setOpen(false)
+    setQuery('')
+    setResults(null)
+    onNavigate()
+    router.push(href)
+  }
+
+  const hasResults = results && (results.customers.length > 0 || results.workOrders.length > 0 || results.invoices.length > 0)
+
+  return (
+    <div ref={containerRef} className="relative px-3 py-3 border-b border-white/10">
+      <div className="relative">
+        <svg className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#7A8898]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+        </svg>
+        {loading && (
+          <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-[#7A8898]" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+          </svg>
+        )}
+        <input
+          type="text"
+          placeholder="Search…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => { if (results && query.length >= 2) setOpen(true) }}
+          className="w-full rounded-lg bg-white/8 border border-white/10 pl-8 pr-8 py-2 text-sm text-white placeholder-[#7A8898] focus:outline-none focus:border-[#B87333]/50 focus:bg-white/12 transition"
+        />
+      </div>
+
+      {open && (
+        <div className="absolute left-3 right-3 top-full mt-1 z-50 rounded-xl bg-white shadow-xl border border-[#E8ECF0] overflow-hidden max-h-80 overflow-y-auto">
+          {!hasResults ? (
+            <p className="px-4 py-3 text-sm text-[#7A8898]">No results for &ldquo;{query}&rdquo;</p>
+          ) : (
+            <>
+              {results.customers.length > 0 && (
+                <div>
+                  <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]">Customers</p>
+                  {results.customers.map((c) => (
+                    <button key={c.id} onClick={() => navigate(`/admin/customers/${c.id}`)}
+                      className="flex w-full flex-col items-start gap-0.5 px-4 py-2 hover:bg-[#E8ECF0] transition text-left">
+                      <span className="text-sm font-medium text-[#0D1B2A]">{c.full_name}</span>
+                      <span className="text-xs text-[#7A8898]">{c.email}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {results.workOrders.length > 0 && (
+                <div className={results.customers.length > 0 ? 'border-t border-[#E8ECF0]' : ''}>
+                  <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]">Work Orders</p>
+                  {results.workOrders.map((wo) => (
+                    <button key={wo.id} onClick={() => navigate(`/admin/work-orders/${wo.id}`)}
+                      className="flex w-full flex-col items-start gap-0.5 px-4 py-2 hover:bg-[#E8ECF0] transition text-left">
+                      <span className="text-sm font-medium text-[#0D1B2A]">{wo.work_order_number}</span>
+                      <span className="text-xs text-[#7A8898]">{wo.customers?.full_name ?? ''}{wo.problem_description ? ` · ${wo.problem_description.slice(0, 40)}` : ''}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {results.invoices.length > 0 && (
+                <div className={(results.customers.length > 0 || results.workOrders.length > 0) ? 'border-t border-[#E8ECF0]' : ''}>
+                  <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]">Invoices</p>
+                  {results.invoices.map((inv) => (
+                    <button key={inv.id} onClick={() => navigate('/admin/invoices')}
+                      className="flex w-full flex-col items-start gap-0.5 px-4 py-2 hover:bg-[#E8ECF0] transition text-left">
+                      <span className="text-sm font-medium text-[#0D1B2A]">{inv.invoice_number}</span>
+                      <span className="text-xs text-[#7A8898]">{inv.customers?.full_name ?? ''}{inv.total != null ? ` · $${Number(inv.total).toFixed(2)}` : ''}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function Sidebar({
   open,
   onClose,
@@ -161,6 +285,8 @@ function Sidebar({
             </svg>
           </button>
         </div>
+
+        <SearchBar onNavigate={onClose} />
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
@@ -252,7 +378,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         onSignOut={handleSignOut}
       />
 
-      <main className="flex-1 min-w-0 overflow-auto flex flex-col">
+      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden flex flex-col">
         {/* Mobile top bar */}
         <div className="flex items-center gap-3 px-4 py-4 bg-white border-b border-[#E8ECF0] md:hidden">
           <button

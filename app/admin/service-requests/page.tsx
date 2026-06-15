@@ -51,6 +51,14 @@ export default function ServiceRequestsPage() {
   const [search,       setSearch]       = useState('')
   const [statusFilter, setStatusFilter] = useState('')
 
+  // Inline create-customer form (shown when convert fails with "No customer")
+  const [showCreateCustomer, setShowCreateCustomer] = useState(false)
+  const [ccName,   setCcName]   = useState('')
+  const [ccEmail,  setCcEmail]  = useState('')
+  const [ccPhone,  setCcPhone]  = useState('')
+  const [ccSaving, setCcSaving] = useState(false)
+  const [ccError,  setCcError]  = useState<string | null>(null)
+
   const fetchRequests = async () => {
     const res  = await fetch('/api/admin/service-requests')
     if (res.status === 401) { router.replace('/admin/login'); return }
@@ -126,6 +134,23 @@ export default function ServiceRequestsPage() {
     }
   }
 
+  const handleCreateCustomerAndConvert = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setCcSaving(true)
+    setCcError(null)
+    const res  = await fetch('/api/admin/customers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ full_name: ccName, email: ccEmail, phone: ccPhone }),
+    })
+    const json = await res.json()
+    setCcSaving(false)
+    if (!res.ok) { setCcError(json.error ?? 'Failed to create customer.'); return }
+    setShowCreateCustomer(false)
+    setConvertMsg(null)
+    await handleConvert()
+  }
+
   const filteredRequests = requests.filter(req =>
     (statusFilter === '' || req.status === statusFilter) &&
     (search === '' ||
@@ -151,7 +176,36 @@ export default function ServiceRequestsPage() {
 
       {error && <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">{error}</div>}
 
+      <div className="md:hidden bg-white rounded-2xl border border-[#E8ECF0] shadow-sm divide-y divide-[#E8ECF0]">
+        {loading ? (
+          <p className="px-4 py-8 text-center text-sm text-[#7A8898]">Loading…</p>
+        ) : filteredRequests.length === 0 ? (
+          <p className="px-4 py-8 text-center text-sm text-[#7A8898]">No service requests yet.</p>
+        ) : filteredRequests.map((req) => (
+          <div
+            key={req.id}
+            onClick={() => openModal(req)}
+            className="px-4 py-4 hover:bg-[#E8ECF0] transition-colors cursor-pointer"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-[#0D1B2A]">{req.full_name}</p>
+                <p className="text-xs text-[#7A8898] mt-0.5">{req.equipment_type}{req.brand ? ` · ${req.brand}` : ''}</p>
+              </div>
+              <span className={`shrink-0 inline-flex rounded-lg border px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[req.status] ?? 'border-gray-200 bg-gray-50 text-gray-800'}`}>
+                {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+              </span>
+            </div>
+            <p className="mt-1.5 text-xs text-[#7A8898] line-clamp-2">{req.issue_description}</p>
+            {req.scheduled_date && (
+              <p className="mt-1 text-xs font-semibold text-[#B87333]">{fmtDate(req.scheduled_date)}</p>
+            )}
+          </div>
+        ))}
+      </div>
+
       {/* Table */}
+      <div className="hidden md:block">
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
           <span className="text-sm font-semibold text-[#0D1B2A]">All requests</span>
@@ -174,6 +228,7 @@ export default function ServiceRequestsPage() {
             ))}
           </div>
         </div>
+        <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-[#E8ECF0]">
           <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
             <tr>
@@ -185,7 +240,7 @@ export default function ServiceRequestsPage() {
           <tbody className="divide-y divide-[#E8ECF0] bg-white">
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-[#7A8898] text-sm">Loading…</td>
+                <td colSpan={7} className="whitespace-nowrap px-6 py-12 text-center text-[#7A8898] text-sm">Loading…</td>
               </tr>
             ) : filteredRequests.length > 0 ? (
               filteredRequests.map((req) => {
@@ -216,7 +271,7 @@ export default function ServiceRequestsPage() {
                         <span className="text-xs text-[#7A8898]">Not scheduled</span>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-sm text-[#7A8898] max-w-xs">
+                    <td className="whitespace-nowrap px-5 py-3.5 text-sm text-[#7A8898] max-w-xs">
                       <p className="line-clamp-2">{req.issue_description}</p>
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
@@ -236,7 +291,7 @@ export default function ServiceRequestsPage() {
                     <td className="px-5 py-3.5 whitespace-nowrap text-sm text-[#7A8898]">
                       {new Date(req.created_at).toLocaleDateString()}
                     </td>
-                    <td className="px-5 py-3.5 text-right">
+                    <td className="whitespace-nowrap px-5 py-3.5 text-right">
                       <svg className="h-4 w-4 text-[#7A8898] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
@@ -246,11 +301,13 @@ export default function ServiceRequestsPage() {
               })
             ) : (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-[#7A8898] text-sm">No service requests yet.</td>
+                <td colSpan={7} className="whitespace-nowrap px-6 py-12 text-center text-[#7A8898] text-sm">No service requests yet.</td>
               </tr>
             )}
           </tbody>
         </table>
+        </div>
+      </div>
       </div>
 
       {/* Service request detail modal */}
@@ -360,12 +417,47 @@ export default function ServiceRequestsPage() {
                       {convertMsg.text}
                     </p>
                     {!convertMsg.ok && convertMsg.text.includes('No customer') && selectedReq && (
-                      <Link
-                        href={`/admin/customers?name=${encodeURIComponent(selectedReq.full_name)}&email=${encodeURIComponent(selectedReq.email)}`}
-                        className="mb-3 inline-flex items-center gap-1.5 rounded-lg border border-[#B87333] px-3 py-1.5 text-xs font-semibold text-[#B87333] hover:bg-[#B87333]/5 transition"
-                      >
-                        Create Customer Account →
-                      </Link>
+                      showCreateCustomer ? (
+                        <form onSubmit={handleCreateCustomerAndConvert} className="mb-3 rounded-xl border border-[#E8ECF0] bg-white p-3 space-y-2">
+                          <p className="text-xs font-semibold text-[#0D1B2A]">Create Customer</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Full Name</label>
+                              <input type="text" value={ccName} onChange={(e) => setCcName(e.target.value)} required
+                                className="w-full rounded-lg border border-[#E8ECF0] px-2.5 py-1.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Email</label>
+                              <input type="email" value={ccEmail} onChange={(e) => setCcEmail(e.target.value)} required
+                                className="w-full rounded-lg border border-[#E8ECF0] px-2.5 py-1.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                            </div>
+                            <div className="col-span-2">
+                              <label className="block text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Phone</label>
+                              <input type="tel" value={ccPhone} onChange={(e) => setCcPhone(e.target.value)} placeholder="(555) 000-0000"
+                                className="w-full rounded-lg border border-[#E8ECF0] px-2.5 py-1.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                            </div>
+                          </div>
+                          {ccError && <p className="text-xs text-red-600">{ccError}</p>}
+                          <div className="flex items-center gap-2 pt-1">
+                            <button type="submit" disabled={ccSaving}
+                              className="rounded-lg bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
+                              {ccSaving ? 'Saving…' : 'Save & Convert'}
+                            </button>
+                            <button type="button" onClick={() => setShowCreateCustomer(false)}
+                              className="rounded-lg border border-[#E8ECF0] px-3 py-1.5 text-xs font-semibold text-[#7A8898] hover:text-[#0D1B2A] transition">
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => { setCcName(selectedReq.full_name); setCcEmail(selectedReq.email); setCcPhone(''); setCcError(null); setShowCreateCustomer(true) }}
+                          className="mb-3 inline-flex items-center gap-1.5 rounded-lg border border-[#B87333] px-3 py-1.5 text-xs font-semibold text-[#B87333] hover:bg-[#B87333]/5 transition"
+                        >
+                          Create Customer
+                        </button>
+                      )
                     )}
                   </>
                 )}

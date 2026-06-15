@@ -240,7 +240,36 @@ export default function InvoicesPage() {
         </div>
       </div>
 
+      <div className="md:hidden bg-white rounded-2xl border border-[#E8ECF0] shadow-sm divide-y divide-[#E8ECF0]">
+        {invoices.length === 0 ? (
+          <p className="px-4 py-8 text-center text-sm text-[#7A8898]">No invoices yet.</p>
+        ) : filteredInvoices.map((inv) => (
+          <div
+            key={inv.id}
+            onClick={() => openModal(inv)}
+            className="flex items-start gap-3 px-4 py-4 hover:bg-[#E8ECF0] transition-colors cursor-pointer"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="font-mono text-sm font-bold text-[#B87333]">{inv.invoice_number}</p>
+              {inv.customers && (
+                <p className="text-xs text-[#7A8898] mt-0.5 truncate">{inv.customers.full_name}</p>
+              )}
+              <p className="text-xs text-[#7A8898] mt-0.5">
+                {new Date(inv.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </p>
+            </div>
+            <div className="text-right shrink-0">
+              <p className="text-sm font-bold text-[#0D1B2A]">{fmt(inv.total)}</p>
+              <span className={`mt-1 inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[inv.status]}`}>
+                {STATUS_LABEL[inv.status]}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Invoices table */}
+      <div className="hidden md:block">
       <div className="rounded-2xl border border-[#E8ECF0] bg-white shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-[#E8ECF0] sticky top-0 z-10 bg-white">
           <span className="text-sm font-semibold text-[#0D1B2A]">Invoice list</span>
@@ -278,6 +307,7 @@ export default function InvoicesPage() {
             </Link>
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-[#0D1B2A] sticky top-[57px] z-10">
               <tr>
@@ -293,10 +323,10 @@ export default function InvoicesPage() {
                   onClick={() => openModal(inv)}
                   className="hover:bg-[#E8ECF0] cursor-pointer transition-colors"
                 >
-                  <td className="px-5 py-3.5">
+                  <td className="whitespace-nowrap px-5 py-3.5">
                     <span className="font-mono text-sm font-bold text-[#0D1B2A]">{inv.invoice_number}</span>
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="whitespace-nowrap px-5 py-3.5">
                     {inv.customers ? (
                       <div>
                         <p className="text-sm font-medium text-[#0D1B2A]">{inv.customers.full_name}</p>
@@ -309,15 +339,15 @@ export default function InvoicesPage() {
                   <td className="px-5 py-3.5 text-sm text-[#7A8898] whitespace-nowrap">
                     {new Date(inv.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </td>
-                  <td className="px-5 py-3.5 text-sm font-bold text-[#0D1B2A]">
+                  <td className="whitespace-nowrap px-5 py-3.5 text-sm font-bold text-[#0D1B2A]">
                     {fmt(inv.total)}
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="whitespace-nowrap px-5 py-3.5">
                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[inv.status]}`}>
                       {STATUS_LABEL[inv.status]}
                     </span>
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="whitespace-nowrap px-5 py-3.5">
                     <div className="flex items-center justify-end">
                       <svg className="h-4 w-4 text-[#7A8898]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -328,7 +358,9 @@ export default function InvoicesPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
+      </div>
       </div>
 
       {/* ── Invoice modal ─────────────────────────────────────────────────── */}

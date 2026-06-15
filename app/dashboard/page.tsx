@@ -4,6 +4,9 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../supabase'
+import { RepairScheduler } from './components/RepairScheduler'
+import { PMScheduler } from './components/PMScheduler'
+import { DashboardSections } from './components/DashboardSections'
 
 const MONO = 'font-[family-name:var(--font-ibm-plex-mono)]'
 
@@ -11,8 +14,7 @@ const MONO = 'font-[family-name:var(--font-ibm-plex-mono)]'
 
 type Customer  = { id: number; full_name: string; email: string; phone: string; address: string; street: string | null; city: string | null; state: string | null; zip: string | null }
 type Equipment = { id: number; equipment_type: string; brand: string; model: string; serial_number: string }
-type RepairJob = { id: number; equipment_type: string; status: string; description: string; created_at: string; completed_at: string | null }
-type WorkOrder = { id: number; work_order_number: string; status: string; problem_description: string; grand_total: number; created_at: string; completed_at: string | null; equipment_list: { equipment_type: string; brand: string; model: string } | null }
+type WorkOrder ={ id: number; work_order_number: string; status: string; problem_description: string; grand_total: number; created_at: string; completed_at: string | null; equipment_list: { equipment_type: string; brand: string; model: string } | null }
 type Plan      = { id: number; plan_name: string; status: string; price: number; renewal_date: string | null; next_visit_date?: string | null; next_visit_slot?: string | null; is_custom?: boolean; stripe_payment_link?: string | null; description?: string | null; visit_frequency?: number | null; features?: string[] }
 type Invoice   = { id: number; total: number; status: string; due_date: string | null; description: string; created_at: string; invoice_number?: string | null; stripe_payment_link?: string | null }
 type Section   = 'invoices' | 'equipment' | 'plan' | 'repairs' | 'account' | 'contact' | null
@@ -21,11 +23,6 @@ type DesktopNav = 'home' | 'repairs' | 'plan' | 'invoices' | 'equipment' | 'cont
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const JOB_STATUS: Record<string, string> = {
-  pending:     'bg-gray-100 text-gray-700',
-  in_progress: 'bg-amber-100 text-amber-800',
-  completed:   'bg-green-100 text-green-700',
-}
 const WO_STATUS: Record<string, string> = {
   open:        'bg-blue-100 text-blue-700',
   in_progress: 'bg-amber-100 text-amber-800',
@@ -72,35 +69,6 @@ function StatusBadge({ status, map }: { status: string; map: Record<string, stri
   )
 }
 
-// ─── Repair modal helpers ─────────────────────────────────────────────────────
-
-const R_MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
-const R_DAY_LABELS  = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
-const R_WEEKDAY_SLOTS = [
-  '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-  '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
-]
-const R_SATURDAY_SLOTS = [
-  '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-  '1:00 PM', '2:00 PM',
-]
-const REPAIR_EQUIPMENT_TYPES = ['Espresso Machine', 'Grinder', 'Brewer', 'Other']
-
-function rPadDate(y: number, m: number, d: number): string {
-  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-}
-function rBuildGrid(year: number, month: number): (Date | null)[] {
-  const firstDow    = new Date(year, month, 1).getDay()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const cells: (Date | null)[] = []
-  for (let i = 0; i < firstDow; i++) cells.push(null)
-  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d))
-  return cells
-}
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -111,7 +79,6 @@ export default function DashboardPage() {
   const [userEmail,     setUserEmail]     = useState<string | null>(null)
   const [customer,      setCustomer]      = useState<Customer | null>(null)
   const [equipment,     setEquipment]     = useState<Equipment[]>([])
-  const [repairJobs,    setRepairJobs]    = useState<RepairJob[]>([])
   const [workOrders,    setWorkOrders]    = useState<WorkOrder[]>([])
   const [plan,          setPlan]          = useState<Plan | null>(null)
   const [invoices,      setInvoices]      = useState<Invoice[]>([])
@@ -133,10 +100,6 @@ export default function DashboardPage() {
 
   // PM scheduling state
   const [showSchedulePicker, setShowSchedulePicker] = useState(false)
-  const [pmDate,             setPmDate]             = useState<string | null>(null)
-  const [pmSlot,             setPmSlot]             = useState<string | null>(null)
-  const [pmViewYear,         setPmViewYear]         = useState(() => new Date().getFullYear())
-  const [pmViewMonth,        setPmViewMonth]        = useState(() => new Date().getMonth())
   const [pmSaving,           setPmSaving]           = useState(false)
   const [pmError,            setPmError]            = useState<string | null>(null)
   const [pmSuccess,          setPmSuccess]          = useState<string | null>(null)
@@ -163,20 +126,8 @@ export default function DashboardPage() {
   const [selectedEquipment,   setSelectedEquipment]   = useState<any>(null)
 
   // Repair modal state
-  const [showRepairModal,    setShowRepairModal]    = useState(false)
-  const [repairEqType,       setRepairEqType]       = useState('')
-  const [repairBrand,        setRepairBrand]        = useState('')
-  const [repairModel,        setRepairModel]        = useState('')
-  const [repairDescription,  setRepairDescription]  = useState('')
-  const [repairDate,         setRepairDate]         = useState<string | null>(null)
-  const [repairTime,         setRepairTime]         = useState<string | null>(null)
-  const [repairBookedTimes,  setRepairBookedTimes]  = useState<string[]>([])
-  const [repairAvailLoading, setRepairAvailLoading] = useState(false)
-  const [repairSaving,       setRepairSaving]       = useState(false)
-  const [repairError,        setRepairError]        = useState<string | null>(null)
-  const [repairViewYear,     setRepairViewYear]     = useState(() => new Date().getFullYear())
-  const [repairViewMonth,    setRepairViewMonth]    = useState(() => new Date().getMonth())
-  const [successToast,       setSuccessToast]       = useState<string | null>(null)
+  const [showRepairModal, setShowRepairModal] = useState(false)
+  const [successToast,    setSuccessToast]    = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -204,7 +155,6 @@ export default function DashboardPage() {
 
       setCustomer(json.customer ?? null)
       setEquipment(json.equipment ?? [])
-      setRepairJobs(json.repairJobs ?? [])
       setWorkOrders(json.workOrders ?? [])
       setPlan(json.plan ?? null)
       setInvoices(json.invoices ?? [])
@@ -266,20 +216,19 @@ export default function DashboardPage() {
     setEqSuccess('Equipment added successfully.')
   }
 
-  const handleSchedulePM = async () => {
-    if (!pmDate || !pmSlot) { setPmError('Please select a date and time.'); return }
+  const handleSchedulePM = async (date: string, slot: string) => {
     setPmSaving(true); setPmError(null); setPmSuccess(null)
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { router.push('/login'); return }
     const res  = await fetch('/api/customer/pm-visit', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-      body: JSON.stringify({ next_visit_date: pmDate, next_visit_slot: pmSlot }),
+      body: JSON.stringify({ next_visit_date: date, next_visit_slot: slot }),
     })
     const data = await res.json()
     setPmSaving(false)
     if (!res.ok) { setPmError(data.error ?? 'Failed to schedule visit.'); return }
-    setPlan((prev) => prev ? { ...prev, next_visit_date: pmDate, next_visit_slot: pmSlot } : prev)
+    setPlan((prev) => prev ? { ...prev, next_visit_date: date, next_visit_slot: slot } : prev)
     setShowSchedulePicker(false)
     setPmSuccess('Visit scheduled! A confirmation email has been sent to you.')
   }
@@ -301,69 +250,7 @@ export default function DashboardPage() {
     setProfileMsg('Profile updated successfully.')
   }
 
-  const openRepairModal = () => {
-    const now = new Date()
-    setRepairViewYear(now.getFullYear())
-    setRepairViewMonth(now.getMonth())
-    setRepairEqType('')
-    setRepairBrand('')
-    setRepairModel('')
-    setRepairDescription('')
-    setRepairDate(null)
-    setRepairTime(null)
-    setRepairBookedTimes([])
-    setRepairError(null)
-    setShowRepairModal(true)
-  }
-
-  const handleRepairDateChange = async (d: string) => {
-    setRepairDate(d)
-    setRepairTime(null)
-    setRepairBookedTimes([])
-    setRepairAvailLoading(true)
-    try {
-      const res  = await fetch(`/api/availability?start=${d}&end=${d}`)
-      const data = await res.json()
-      setRepairBookedTimes(data.booked?.[d] ?? [])
-    } catch {
-      // availability fetch failed — show all slots as available
-    } finally {
-      setRepairAvailLoading(false)
-    }
-  }
-
-  const handleRepairSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setRepairError(null)
-    if (!repairDate || !repairTime) { setRepairError('Please select a date and time.'); return }
-    setRepairSaving(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { router.push('/login'); return }
-      const res  = await fetch('/api/service-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({
-          full_name:         customer?.full_name ?? '',
-          email:             userEmail ?? '',
-          phone:             customer?.phone ?? '',
-          equipment_type:    repairEqType,
-          brand:             repairBrand,
-          model:             repairModel,
-          issue_description: repairDescription,
-          scheduled_date:    repairDate,
-          time_slot:         repairTime,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) { setRepairError(data.error ?? 'Submission failed. Please try again.'); return }
-      setShowRepairModal(false)
-      setSuccessToast('Repair request submitted! We\'ll confirm shortly.')
-      setTimeout(() => setSuccessToast(null), 3000)
-    } finally {
-      setRepairSaving(false)
-    }
-  }
+  const openRepairModal = () => setShowRepairModal(true)
 
   const openRepairs  = workOrders.filter((wo) => wo.status !== 'completed' && wo.status !== 'cancelled')
   const openInvoices = invoices.filter((i) => i.status !== 'paid')
@@ -524,7 +411,7 @@ export default function DashboardPage() {
                       })()}
                     </p>
                     <button
-                      onClick={() => { setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
+                      onClick={() => { setShowSchedulePicker(true); setPmError(null); setPmSuccess(null) }}
                       className="mt-2 rounded-xl bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition"
                     >
                       Reschedule
@@ -566,7 +453,7 @@ export default function DashboardPage() {
                 <p className="mt-1 text-xl font-bold text-[#0D1B2A]">{plan.plan_name}</p>
                 <p className="mt-1 text-sm text-[#7A8898]">No visit scheduled yet</p>
                 <button
-                  onClick={() => { setShowSchedulePicker(true); setPmDate(null); setPmSlot(null); setPmError(null); setPmSuccess(null) }}
+                  onClick={() => { setShowSchedulePicker(true); setPmError(null); setPmSuccess(null) }}
                   className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition"
                 >
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -655,418 +542,41 @@ export default function DashboardPage() {
 
           {/* ── Active section content ── */}
           {activeSection && (
-            <div ref={sectionRef} className="sm:order-2 rounded-2xl bg-white border border-black/5 shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8ECF0]">
-                <h2 className="text-base font-bold text-[#0D1B2A]">
-                  {activeSection === 'repairs'   ? 'Repair History'   :
-                   activeSection === 'equipment' ? 'Equipment'        :
-                   activeSection === 'plan'      ? 'My Plan'          :
-                   activeSection === 'invoices'  ? 'Invoices'         :
-                   activeSection === 'account'   ? 'Account'          :
-                   activeSection === 'contact'   ? 'Contact Us'       : ''}
-                </h2>
-                <button onClick={() => setActiveSection(null)} className="text-[#7A8898] hover:text-[#0D1B2A] transition">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <div className="p-5">
-
-                {/* ── Repairs section ── */}
-                {activeSection === 'repairs' && (
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-sm text-[#7A8898]">{workOrders.length + repairJobs.length} total</p>
-                      <Link href="/service-request" className="inline-flex items-center gap-1.5 rounded-xl bg-[#B87333] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition">
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                        Request repair
-                      </Link>
-                    </div>
-                    {workOrders.length > 0 ? (
-                      <div className="space-y-3">
-                        {workOrders.map((wo) => (
-                          <div key={wo.id} className="rounded-xl border border-[#E8ECF0] p-4 border-l-2 border-l-[#B87333]">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <p className={`${MONO} text-[10px] font-semibold text-[#B87333]`}>{wo.work_order_number}</p>
-                                <p className="mt-0.5 text-sm font-semibold text-[#0D1B2A] truncate">
-                                  {wo.equipment_list ? `${wo.equipment_list.brand} ${wo.equipment_list.model}` : wo.problem_description || '—'}
-                                </p>
-                                {wo.problem_description && wo.equipment_list && (
-                                  <p className="text-xs text-[#7A8898] truncate mt-0.5">{wo.problem_description}</p>
-                                )}
-                              </div>
-                              <StatusBadge status={wo.status} map={WO_STATUS} />
-                            </div>
-                            <div className="mt-2 flex items-center justify-between">
-                              <p className="text-xs text-[#7A8898]">{wo.created_at ? fmt(wo.created_at) : '—'}</p>
-                              <p className="text-sm font-bold text-[#0D1B2A]">${Number(wo.grand_total).toFixed(2)}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : repairJobs.length > 0 ? (
-                      <div className="space-y-3">
-                        {repairJobs.map((job) => (
-                          <div key={job.id} className="rounded-xl border border-[#E8ECF0] p-4 border-l-2 border-l-[#B87333]">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <p className="text-sm font-semibold text-[#0D1B2A]">{job.equipment_type}</p>
-                                <p className="text-xs text-[#7A8898] truncate mt-0.5">{job.description || '—'}</p>
-                              </div>
-                              <StatusBadge status={job.status} map={JOB_STATUS} />
-                            </div>
-                            <p className="mt-2 text-xs text-[#7A8898]">{job.created_at ? fmt(job.created_at) : '—'}</p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <EmptyState
-                        icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>}
-                        title="No repair history"
-                        body="Completed and in-progress repairs will appear here."
-                        cta={<Link href="/service-request" className="rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition">Request a repair</Link>}
-                      />
-                    )}
-                  </div>
-                )}
-
-                {/* ── Equipment section ── */}
-                {activeSection === 'equipment' && (
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-sm text-[#7A8898]">{equipment.length} registered</p>
-                      <button
-                        onClick={() => { setShowEqForm((v) => !v); setEqError(null); setEqSuccess(null) }}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-[#B87333] px-3 py-1.5 text-xs font-semibold text-[#B87333] hover:bg-[#B87333]/5 transition"
-                      >
-                        {showEqForm ? 'Cancel' : 'Add equipment'}
-                      </button>
-                    </div>
-
-                    {eqSuccess && (
-                      <div className="mb-4 rounded-xl bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-700">{eqSuccess}</div>
-                    )}
-
-                    {showEqForm && (
-                      <form onSubmit={handleAddEquipment} className="mb-4 rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-4 space-y-3">
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <div>
-                            <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Type</label>
-                            <select value={eqType} onChange={(e) => setEqType(e.target.value)} required
-                              className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none">
-                              <option value="" disabled>Select…</option>
-                              <option value="Espresso Machine">Espresso Machine</option>
-                              <option value="Grinder">Grinder</option>
-                              <option value="Brewer">Brewer</option>
-                              <option value="Other">Other</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Brand</label>
-                            <input type="text" value={eqBrand} onChange={(e) => setEqBrand(e.target.value)} required placeholder="e.g. La Marzocco"
-                              className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none" />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Model</label>
-                            <input type="text" value={eqModel} onChange={(e) => setEqModel(e.target.value)} required placeholder="e.g. Linea Mini"
-                              className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none" />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Serial <span className="font-normal text-[#7A8898]">(optional)</span></label>
-                            <input type="text" value={eqSerial} onChange={(e) => setEqSerial(e.target.value)} placeholder="SN123456"
-                              className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none" />
-                          </div>
-                        </div>
-                        {eqError && <p className="text-xs text-red-600">{eqError}</p>}
-                        <div className="flex gap-2">
-                          <button type="button" onClick={() => { setShowEqForm(false); setEqError(null) }}
-                            className="rounded-xl border border-[#E8ECF0] px-4 py-2 text-sm font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition">
-                            Cancel
-                          </button>
-                          <button type="submit" disabled={eqSaving}
-                            className="rounded-xl bg-[#B87333] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
-                            {eqSaving ? 'Saving…' : 'Save'}
-                          </button>
-                        </div>
-                      </form>
-                    )}
-
-                    {equipment.length > 0 ? (
-                      <div className="space-y-3">
-                        {equipment.map((eq) => (
-                          <div key={eq.id} onClick={() => setSelectedEquipment(eq)} className="rounded-xl border border-[#E8ECF0] p-4 border-l-2 border-l-emerald-500 cursor-pointer hover:shadow-sm transition">
-                            <p className={`${MONO} text-[10px] font-semibold text-[#B87333]`}>{eq.equipment_type}</p>
-                            <p className="mt-0.5 text-sm font-bold text-[#0D1B2A]">{eq.brand} {eq.model}</p>
-                            {eq.serial_number && (
-                              <p className="mt-0.5 text-xs font-mono text-[#7A8898]">S/N: {eq.serial_number}</p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : !showEqForm ? (
-                      <EmptyState
-                        icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18" /></svg>}
-                        title="No equipment yet"
-                        body="Add your coffee equipment to track service history."
-                        cta={
-                          <button onClick={() => { setShowEqForm(true); setEqError(null) }}
-                            className="rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition">
-                            Add Equipment
-                          </button>
-                        }
-                      />
-                    ) : null}
-                  </div>
-                )}
-
-                {/* ── Plan section ── */}
-                {activeSection === 'plan' && (
-                  <div>
-                    {plan ? (
-                      <div className="space-y-4">
-                        <div className="rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-5 space-y-4 cursor-pointer hover:shadow-sm transition" onClick={() => setShowPlanModal(true)}>
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-lg font-bold text-[#0D1B2A]">{plan.plan_name}</p>
-                                {plan.is_custom && (
-                                  <span className="inline-flex rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#B87333]">Custom</span>
-                                )}
-                              </div>
-                              {plan.price ? <p className="text-2xl font-bold text-[#B87333] mt-1">${plan.price}<span className="text-sm font-normal text-[#7A8898]">/mo</span></p> : null}
-                              {plan.description && <p className="mt-1 text-sm text-[#7A8898]">{plan.description}</p>}
-                            </div>
-                            <span className={`shrink-0 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
-                              plan.status === 'active'          ? 'bg-green-100 text-green-700' :
-                              plan.status === 'pending_payment' ? 'bg-amber-100 text-amber-700' :
-                                                                  'bg-[#E8ECF0] text-[#7A8898]'
-                            }`}>
-                              {plan.status === 'pending_payment' ? 'Pending' : plan.status}
-                            </span>
-                          </div>
-
-                          {plan.visit_frequency && (
-                            <div className="text-sm flex justify-between border-t border-white/60 pt-3">
-                              <span className="text-[#7A8898]">Visits per month</span>
-                              <span className="font-medium text-[#0D1B2A]">{plan.visit_frequency}</span>
-                            </div>
-                          )}
-
-                          {plan.features && plan.features.length > 0 && (
-                            <ul className="space-y-1.5 border-t border-white/60 pt-3">
-                              {plan.features.map((f, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-[#7A8898]">
-                                  <span className="mt-0.5 text-[#B87333] shrink-0">•</span>{f}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-
-                          {plan.status !== 'pending_payment' && (
-                            <div className="border-t border-white/60 pt-3 space-y-2">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-[#7A8898]">Next renewal</span>
-                                <span className="font-medium text-[#0D1B2A]">{plan.renewal_date ? fmt(plan.renewal_date) : '—'}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-[#7A8898]">Billing</span>
-                                <span className="font-medium text-[#0D1B2A]">Monthly</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {plan.status === 'pending_payment' && plan.stripe_payment_link ? (
-                          <>
-                            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                              Your plan is ready — complete payment to activate it.
-                            </div>
-                            <a href={plan.stripe_payment_link}
-                              className="flex w-full items-center justify-center rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 transition">
-                              Activate My Plan →
-                            </a>
-                          </>
-                        ) : (
-                          <>
-                            {portalError && <p className="text-sm text-red-600">{portalError}</p>}
-                            <button onClick={handleManagePlan} disabled={portalLoading}
-                              className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
-                              {portalLoading ? 'Opening billing portal…' : 'Manage plan & billing'}
-                            </button>
-                            <p className="text-xs text-center text-[#7A8898]">Update payment, cancel, or change your plan via the Stripe billing portal.</p>
-                          </>
-                        )}
-                      </div>
-                    ) : (
-                      <EmptyState
-                        icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
-                        title="No active plan"
-                        body="Subscribe to a maintenance plan to keep your equipment in peak condition."
-                        cta={<Link href="/pricing" className="rounded-xl bg-[#B87333] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 transition">See plans & pricing</Link>}
-                      />
-                    )}
-                  </div>
-                )}
-
-                {/* ── Invoices section ── */}
-                {activeSection === 'invoices' && (
-                  <div>
-                    {invoices.length > 0 ? (
-                      <div className="space-y-3">
-                        {invoices.map((inv) => {
-                          const payable = (inv.status === 'sent' || inv.status === 'unpaid') && inv.stripe_payment_link
-                          const displayStatus = inv.status === 'sent' && inv.stripe_payment_link ? 'Payment Due' : null
-                          return (
-                            <div key={inv.id} onClick={() => setSelectedInvoice(inv)} className={`rounded-xl border p-4 border-l-2 cursor-pointer hover:shadow-sm transition ${inv.status === 'paid' ? 'border-[#E8ECF0] border-l-green-400' : inv.status === 'overdue' ? 'border-orange-100 border-l-orange-400' : 'border-[#E8ECF0] border-l-red-400'}`}>
-                              <div className="flex items-start justify-between gap-2">
-                                <p className="text-sm font-semibold text-[#0D1B2A]">{inv.description}</p>
-                                {displayStatus
-                                  ? <span className="inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">{displayStatus}</span>
-                                  : <StatusBadge status={inv.status} map={INV_STATUS} />}
-                              </div>
-                              <div className="mt-2 flex items-center justify-between">
-                                <p className="text-xs text-[#7A8898]">{inv.due_date ? `Due ${fmt(inv.due_date)}` : '—'}</p>
-                                <p className="text-sm font-bold text-[#0D1B2A]">${Number(inv.total).toFixed(2)}</p>
-                              </div>
-                              {payable && (
-                                <div className="mt-3">
-                                  <a href={inv.stripe_payment_link!} target="_blank" rel="noopener noreferrer"
-                                    className="inline-flex items-center rounded-full bg-[#B87333] px-4 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition">
-                                    Pay Now
-                                  </a>
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      <EmptyState
-                        icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
-                        title="No invoices yet"
-                        body="Your invoices will appear here when Cafe Works issues them."
-                      />
-                    )}
-                  </div>
-                )}
-
-                {/* ── Account section ── */}
-                {activeSection === 'account' && (
-                  <div>
-                    <form onSubmit={handleSaveProfile} className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Full name</label>
-                        <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} required
-                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Email</label>
-                        <input type="email" value={userEmail ?? ''} disabled
-                          className="block w-full rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-2.5 text-sm text-[#7A8898] cursor-not-allowed" />
-                        <p className="mt-1 text-xs text-[#7A8898]">Email cannot be changed here.</p>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Phone</label>
-                        <input type="tel" value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} placeholder="(555) 000-0000"
-                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Street Address</label>
-                        <input type="text" value={profileStreet} onChange={(e) => setProfileStreet(e.target.value)} placeholder="123 Main St"
-                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">City</label>
-                        <input type="text" value={profileCity} onChange={(e) => setProfileCity(e.target.value)} placeholder="Portland"
-                          className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">State</label>
-                          <input type="text" value={profileState} onChange={(e) => setProfileState(e.target.value)} placeholder="OR" maxLength={2}
-                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">ZIP</label>
-                          <input type="text" value={profileZip} onChange={(e) => setProfileZip(e.target.value)} placeholder="97201" maxLength={10}
-                            className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
-                        </div>
-                      </div>
-                      {profileError && <p className="text-sm text-red-600">{profileError}</p>}
-                      {profileMsg   && <p className="text-sm text-green-600">{profileMsg}</p>}
-                      <button type="submit" disabled={profileSaving}
-                        className="w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
-                        {profileSaving ? 'Saving…' : 'Save changes'}
-                      </button>
-                    </form>
-                    <button
-                      onClick={handleSignOut}
-                      className="mt-4 w-full rounded-full border border-[#E8ECF0] py-3 text-sm font-semibold text-[#7A8898] hover:bg-[#E8ECF0] transition"
-                    >
-                      Sign out
-                    </button>
-                  </div>
-                )}
-
-                {/* ── Contact section ── */}
-                {activeSection === 'contact' && (
-                  <div className="space-y-1">
-                    {/* Phone */}
-                    <a
-                      href={`tel:${siteSettings.phone || '(555) 012-3456'}`}
-                      className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-white px-4 py-4 shadow-sm hover:bg-[#B87333]/5 transition"
-                    >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10">
-                        <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Call or Text</p>
-                        <p className="mt-0.5 text-lg font-bold text-[#0D1B2A]">{siteSettings.phone || '(555) 012-3456'}</p>
-                      </div>
-                    </a>
-
-                    {/* Email */}
-                    <a
-                      href={`mailto:${siteSettings.email || 'hello@cafeworks.com'}`}
-                      className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-white px-4 py-4 shadow-sm hover:bg-[#B87333]/5 transition"
-                    >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10">
-                        <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Email Us</p>
-                        <p className="mt-0.5 text-base font-bold text-[#0D1B2A]">{siteSettings.email || 'hello@cafeworks.com'}</p>
-                      </div>
-                    </a>
-
-                    {/* Hours */}
-                    <div className="flex items-center gap-4 rounded-2xl border-l-4 border-[#B87333] bg-white px-4 py-4 shadow-sm">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B87333]/10">
-                        <svg className="h-5 w-5 text-[#B87333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className={`${MONO} text-[10px] font-semibold uppercase tracking-wide text-[#7A8898]`}>Business Hours</p>
-                        <p className="mt-0.5 text-base font-bold text-[#0D1B2A]">{siteSettings.business_hours || 'Mon–Sat, 7am–6pm'}</p>
-                      </div>
-                    </div>
-
-                    {/* Emergency note */}
-                    <p className="pt-2 text-center text-xs text-[#7A8898]">
-                      <span className="font-semibold text-[#0D1B2A]">Emergency?</span> Call or text anytime for urgent repairs.
-                    </p>
-                  </div>
-                )}
-
-              </div>
-            </div>
+            <DashboardSections
+              activeSection={activeSection}
+              setActiveSection={setActiveSection}
+              sectionRef={sectionRef}
+              workOrders={workOrders}
+              equipment={equipment}
+              showEqForm={showEqForm}
+              setShowEqForm={setShowEqForm}
+              eqType={eqType} setEqType={setEqType}
+              eqBrand={eqBrand} setEqBrand={setEqBrand}
+              eqModel={eqModel} setEqModel={setEqModel}
+              eqSerial={eqSerial} setEqSerial={setEqSerial}
+              eqSaving={eqSaving}
+              eqError={eqError} setEqError={setEqError}
+              eqSuccess={eqSuccess} setEqSuccess={setEqSuccess}
+              handleAddEquipment={handleAddEquipment}
+              setSelectedEquipment={setSelectedEquipment}
+              plan={plan}
+              portalLoading={portalLoading} portalError={portalError}
+              handleManagePlan={handleManagePlan}
+              setShowPlanModal={setShowPlanModal}
+              invoices={invoices}
+              setSelectedInvoice={setSelectedInvoice}
+              userEmail={userEmail}
+              profileName={profileName} setProfileName={setProfileName}
+              profilePhone={profilePhone} setProfilePhone={setProfilePhone}
+              profileStreet={profileStreet} setProfileStreet={setProfileStreet}
+              profileCity={profileCity} setProfileCity={setProfileCity}
+              profileState={profileState} setProfileState={setProfileState}
+              profileZip={profileZip} setProfileZip={setProfileZip}
+              profileSaving={profileSaving} profileMsg={profileMsg} profileError={profileError}
+              handleSaveProfile={handleSaveProfile}
+              handleSignOut={handleSignOut}
+              siteSettings={siteSettings}
+            />
           )}
 
           {/* ── Recent activity ── */}
@@ -1723,348 +1233,26 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ── Repair request bottom sheet ── */}
       {showRepairModal && (
-        <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowRepairModal(false)} />
-          <div className="relative w-full sm:max-w-lg sm:rounded-2xl rounded-t-3xl bg-white max-h-[85vh] sm:max-h-[90vh] flex flex-col z-50">
-            <form onSubmit={handleRepairSubmit} className="flex flex-col flex-1 min-h-0">
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#E8ECF0] shrink-0">
-                <p className="text-base font-bold text-[#0D1B2A]">Request Repair</p>
-                <button type="button" onClick={() => setShowRepairModal(false)} className="text-[#7A8898] hover:text-[#0D1B2A] transition">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="overflow-y-auto flex-1 px-5 pt-3 pb-2 space-y-3">
-
-                {/* Equipment type */}
-                <div>
-                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Equipment type</label>
-                  <select
-                    value={repairEqType}
-                    onChange={(e) => setRepairEqType(e.target.value)}
-                    required
-                    className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                  >
-                    <option value="" disabled>Select type…</option>
-                    {equipment.length > 0 && (
-                      <optgroup label="Your equipment">
-                        {equipment.map((eq) => (
-                          <option key={eq.id} value={eq.equipment_type}>
-                            {eq.brand} {eq.model} ({eq.equipment_type})
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                    <optgroup label="Other">
-                      {REPAIR_EQUIPMENT_TYPES.map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </optgroup>
-                  </select>
-                </div>
-
-                {/* Brand */}
-                <div>
-                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Brand</label>
-                  <input
-                    type="text"
-                    value={repairBrand}
-                    onChange={(e) => setRepairBrand(e.target.value)}
-                    required
-                    placeholder="e.g. La Marzocco"
-                    className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                  />
-                </div>
-
-                {/* Model */}
-                <div>
-                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Model</label>
-                  <input
-                    type="text"
-                    value={repairModel}
-                    onChange={(e) => setRepairModel(e.target.value)}
-                    required
-                    placeholder="e.g. Linea Mini"
-                    className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
-                  />
-                </div>
-
-                {/* Problem description */}
-                <div>
-                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Problem description</label>
-                  <textarea
-                    value={repairDescription}
-                    onChange={(e) => setRepairDescription(e.target.value)}
-                    required
-                    rows={2}
-                    placeholder="Describe what's wrong…"
-                    className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20 resize-none"
-                  />
-                </div>
-
-                {/* Preferred date — inline calendar */}
-                <div>
-                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Preferred date</label>
-                  <div className="rounded-xl border border-[#E8ECF0] bg-white p-2 select-none">
-                    {/* Month nav */}
-                    <div className="flex items-center justify-between mb-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const now = new Date()
-                          const canGo = repairViewYear > now.getFullYear() || (repairViewYear === now.getFullYear() && repairViewMonth > now.getMonth())
-                          if (!canGo) return
-                          if (repairViewMonth === 0) { setRepairViewYear((y) => y - 1); setRepairViewMonth(11) }
-                          else setRepairViewMonth((m) => m - 1)
-                        }}
-                        disabled={repairViewYear === new Date().getFullYear() && repairViewMonth === new Date().getMonth()}
-                        className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#E8ECF0] disabled:opacity-30 disabled:cursor-not-allowed transition"
-                      >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-                      <span className="text-sm font-bold text-[#0D1B2A]">
-                        {R_MONTH_NAMES[repairViewMonth]} {repairViewYear}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (repairViewMonth === 11) { setRepairViewYear((y) => y + 1); setRepairViewMonth(0) }
-                          else setRepairViewMonth((m) => m + 1)
-                        }}
-                        className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#E8ECF0] transition"
-                      >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-                    </div>
-
-                    {/* Day labels */}
-                    <div className="grid grid-cols-7 mb-1">
-                      {R_DAY_LABELS.map((d, i) => (
-                        <div key={d} className={`text-center text-[10px] font-semibold uppercase py-1 ${i === 0 ? 'text-gray-300' : 'text-[#7A8898]'}`}>
-                          {d}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Calendar grid */}
-                    <div className="grid grid-cols-7 gap-0.5">
-                      {rBuildGrid(repairViewYear, repairViewMonth).map((date, i) => {
-                        if (!date) return <div key={`e-${i}`} />
-                        const rToday = new Date(); rToday.setHours(0, 0, 0, 0)
-                        const key        = rPadDate(date.getFullYear(), date.getMonth(), date.getDate())
-                        const isPast     = date < rToday
-                        const isSun      = date.getDay() === 0
-                        const isSelected = repairDate === key
-                        const isToday    = key === rPadDate(rToday.getFullYear(), rToday.getMonth(), rToday.getDate())
-                        const disabled   = isPast || isSun
-
-                        let cls: string
-                        if (isSelected)     cls = 'bg-[#B87333] text-white font-bold ring-2 ring-[#B87333]/30'
-                        else if (disabled)  cls = 'text-gray-300 cursor-not-allowed'
-                        else if (isToday)   cls = 'text-[#B87333] font-bold ring-1 ring-[#B87333]/30 hover:bg-[#B87333]/10'
-                        else                cls = 'text-[#0D1B2A] hover:bg-[#B87333]/10 hover:text-[#B87333]'
-
-                        return (
-                          <button
-                            key={key}
-                            type="button"
-                            disabled={disabled}
-                            onClick={() => handleRepairDateChange(key)}
-                            className={`flex h-7 w-full items-center justify-center rounded-lg text-xs transition ${cls}`}
-                          >
-                            {date.getDate()}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Preferred time */}
-                {repairDate && (
-                  <div>
-                    <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">
-                      Preferred time —{' '}
-                      <span className="font-normal text-[#7A8898]">
-                        {new Date(repairDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                      </span>
-                    </label>
-
-                    {repairAvailLoading ? (
-                      <div className="flex items-center justify-center py-6">
-                        <svg className="h-5 w-5 animate-spin text-[#B87333]" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                      </div>
-                    ) : new Date(repairDate + 'T00:00:00').getDay() === 0 ? (
-                      <p className="rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#7A8898] text-center">
-                        We are closed on Sundays. Please select another day.
-                      </p>
-                    ) : (() => {
-                      const dow   = new Date(repairDate + 'T00:00:00').getDay()
-                      const slots = dow === 6 ? R_SATURDAY_SLOTS : R_WEEKDAY_SLOTS
-                      const allBooked = slots.every((t) => repairBookedTimes.includes(t))
-                      if (allBooked) return (
-                        <p className="rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#7A8898] text-center">
-                          No availability on this date, please select another day.
-                        </p>
-                      )
-                      return (
-                        <div className="grid grid-cols-3 gap-2">
-                          {slots.map((time) => {
-                            const booked   = repairBookedTimes.includes(time)
-                            const selected = repairTime === time
-                            return (
-                              <button
-                                key={time}
-                                type="button"
-                                disabled={booked}
-                                onClick={() => setRepairTime(time)}
-                                className={`flex flex-col items-center justify-center rounded-full border py-1.5 text-xs font-semibold transition ${
-                                  selected ? 'bg-[#B87333] border-[#B87333] text-white'
-                                  : booked  ? 'bg-[#E8ECF0] border-[#E8ECF0] text-[#7A8898] cursor-not-allowed'
-                                           : 'bg-white border-[#0D1B2A] text-[#0D1B2A] hover:bg-[#B87333]/5 hover:border-[#B87333]'
-                                }`}
-                              >
-                                {time}
-                                {booked && <span className="text-[10px] font-normal text-[#7A8898] mt-0.5">Booked</span>}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      )
-                    })()}
-
-                    {repairDate && repairTime && (
-                      <p className="mt-2 text-xs text-green-700 font-medium">
-                        ✓ {new Date(repairDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} at {repairTime}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {repairError && <p className="text-sm text-red-600">{repairError}</p>}
-
-              </div>
-
-              {/* Fixed submit button */}
-              <div className="px-5 py-4 border-t border-[#E8ECF0] bg-white shrink-0">
-                <button
-                  type="submit"
-                  disabled={repairSaving}
-                  className="w-full rounded-full bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
-                >
-                  {repairSaving ? 'Submitting…' : 'Submit repair request'}
-                </button>
-              </div>
-
-            </form>
-          </div>
-        </div>
+        <RepairScheduler
+          onClose={() => setShowRepairModal(false)}
+          onSuccess={() => {
+            setSuccessToast("Repair request submitted! We'll confirm shortly.")
+            setTimeout(() => setSuccessToast(null), 3000)
+          }}
+          equipment={equipment}
+          customer={customer}
+          userEmail={userEmail}
+        />
       )}
 
-      {/* ── DateSlotPicker bottom sheet ── */}
       {showSchedulePicker && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-black/50" onClick={() => { setShowSchedulePicker(false); setActiveNav('home') }} />
-          <div className="relative w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl bg-white max-h-[85vh] sm:max-h-[90vh] flex flex-col z-50 overflow-y-auto">
-            <div className="flex items-center justify-between px-6 pt-6 pb-4">
-              <p className="text-base font-bold text-[#0D1B2A]">Schedule PM Visit</p>
-              <button onClick={() => { setShowSchedulePicker(false); setActiveNav('home') }} className="text-[#7A8898] hover:text-[#0D1B2A] transition">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="px-6 py-4">
-            {/* PM calendar */}
-            {(() => {
-              const pmToday = new Date(); pmToday.setHours(0,0,0,0)
-              const canGoPrev = pmViewYear > pmToday.getFullYear() || (pmViewYear === pmToday.getFullYear() && pmViewMonth > pmToday.getMonth())
-              const firstDow = new Date(pmViewYear, pmViewMonth, 1).getDay()
-              const daysInMonth = new Date(pmViewYear, pmViewMonth + 1, 0).getDate()
-              const cells: (Date | null)[] = []
-              for (let i = 0; i < firstDow; i++) cells.push(null)
-              for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(pmViewYear, pmViewMonth, d))
-              const PM_SLOTS = ['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM']
-              const pad = (y: number, m: number, d: number) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
-              return (
-                <div className="rounded-xl border border-[#E8ECF0] bg-white p-4 select-none">
-                  <div className="flex items-center justify-between mb-3">
-                    <button type="button" onClick={() => { if (!canGoPrev) return; if (pmViewMonth === 0) { setPmViewYear(y => y-1); setPmViewMonth(11) } else setPmViewMonth(m => m-1) }} disabled={!canGoPrev} className="rounded-lg p-2 text-[#7A8898] hover:bg-[#E8ECF0] disabled:opacity-30 disabled:cursor-not-allowed transition">
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
-                    </button>
-                    <span className="text-sm font-bold text-[#0D1B2A]">{R_MONTH_NAMES[pmViewMonth]} {pmViewYear}</span>
-                    <button type="button" onClick={() => { if (pmViewMonth === 11) { setPmViewYear(y => y+1); setPmViewMonth(0) } else setPmViewMonth(m => m+1) }} className="rounded-lg p-2 text-[#7A8898] hover:bg-[#E8ECF0] transition">
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-7 mb-1">
-                    {R_DAY_LABELS.map((d, i) => (
-                      <div key={d} className={`text-center text-[10px] font-semibold uppercase py-1 ${i === 0 || i === 6 ? 'text-red-300' : 'text-[#7A8898]'}`}>{d}</div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-7 gap-0.5">
-                    {cells.map((date, i) => {
-                      if (!date) return <div key={`e-${i}`} />
-                      const key = pad(date.getFullYear(), date.getMonth(), date.getDate())
-                      const isPast = date < pmToday
-                      const dow = date.getDay()
-                      const isWeekend = dow === 0 || dow === 6
-                      const disabled = isPast || isWeekend
-                      const isSelected = pmDate === key
-                      let cls: string
-                      if (isSelected) cls = 'bg-[#B87333] text-white font-bold ring-2 ring-[#B87333]/30'
-                      else if (isWeekend) cls = 'bg-red-50 text-red-300 cursor-not-allowed'
-                      else if (isPast) cls = 'text-gray-300 cursor-not-allowed'
-                      else cls = 'text-[#0D1B2A] hover:bg-[#B87333]/10 hover:text-[#B87333]'
-                      return (
-                        <button key={key} type="button" disabled={disabled} onClick={() => { setPmDate(key); setPmSlot(null) }}
-                          className={`flex h-10 w-full items-center justify-center rounded-lg text-sm transition ${cls}`}>
-                          {date.getDate()}
-                        </button>
-                      )
-                    })}
-                  </div>
-                  {pmDate && (
-                    <div className="mt-4 border-t border-[#E8ECF0] pt-4">
-                      <p className="mb-2 text-xs font-semibold text-[#0D1B2A]">Select an arrival time</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {PM_SLOTS.map((slot) => (
-                          <button key={slot} type="button" onClick={() => setPmSlot(slot)}
-                            className={`flex items-center justify-center rounded-full border py-2 text-xs font-semibold transition ${pmSlot === slot ? 'bg-[#B87333] border-[#B87333] text-white' : 'bg-white border-[#0D1B2A] text-[#0D1B2A] hover:border-[#B87333] hover:bg-[#B87333]/5'}`}>
-                            {slot}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )
-            })()}
-            {pmError && <p className="mt-2 text-xs text-red-600">{pmError}</p>}
-            </div>
-            <div className="px-6 pb-6">
-            <button
-              onClick={handleSchedulePM}
-              disabled={pmSaving || !pmDate || !pmSlot}
-              className="mt-4 w-full rounded-xl bg-[#B87333] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
-            >
-              {pmSaving ? 'Saving…' : 'Confirm appointment'}
-            </button>
-            </div>
-          </div>
-        </div>
+        <PMScheduler
+          onClose={() => { setShowSchedulePicker(false); setActiveNav('home') }}
+          onSave={handleSchedulePM}
+          saving={pmSaving}
+          error={pmError}
+        />
       )}
 
       {/* Work Order Modal */}

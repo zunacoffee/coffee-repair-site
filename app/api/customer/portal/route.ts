@@ -30,24 +30,18 @@ export async function GET(req: NextRequest) {
       customer: null,
       userEmail: user.email,
       equipment: [],
-      repairJobs: [],
       plan: null,
       invoices: [],
       workOrders: [],
     })
   }
 
-  const [equipmentRes, repairJobsRes, planRes, invoicesRes, workOrdersRes] = await Promise.all([
+  const [equipmentRes, planRes, invoicesRes, workOrdersRes] = await Promise.all([
     supabaseAdmin
       .from('equipment_list')
       .select('id, equipment_type, brand, model, serial_number')
       .eq('customer_id', customer.id)
       .order('id', { ascending: true }),
-    supabaseAdmin
-      .from('repair_jobs')
-      .select('id, equipment_type, status, description, created_at, completed_at')
-      .eq('customer_id', customer.id)
-      .order('created_at', { ascending: false }),
     supabaseAdmin
       .from('maintenance_plans')
       .select('id, plan_name, status, price, renewal_date, next_visit_date, next_visit_slot, notes, is_custom, stripe_payment_link, description, visit_frequency, features')
@@ -71,7 +65,6 @@ export async function GET(req: NextRequest) {
     customer,
     userEmail: user.email,
     equipment: equipmentRes.data ?? [],
-    repairJobs: repairJobsRes.data ?? [],
     plan: planRes.data ?? null,
     invoices: invoicesRes.data ?? [],
     workOrders: workOrdersRes.data ?? [],
