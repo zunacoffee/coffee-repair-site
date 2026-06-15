@@ -49,6 +49,9 @@ export default function NewWorkOrderPage() {
   const [error, setError]           = useState('')
   const [weekdayRate, setWeekdayRate] = useState(80)
   const [weekendRate, setWeekendRate] = useState(120)
+  const [showNewCustomer, setShowNewCustomer] = useState(false)
+  const [newCustForm, setNewCustForm] = useState({ full_name: '', email: '', phone: '' })
+  const [creatingCust, setCreatingCust] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -99,6 +102,30 @@ export default function NewWorkOrderPage() {
 
   function removePart(idx: number) {
     setSelectedParts(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  async function handleCreateCustomer(e: React.FormEvent) {
+    e.preventDefault()
+    setCreatingCust(true)
+    try {
+      const res = await fetch('/api/admin/customers', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCustForm),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error ?? 'Failed to create customer.'); setCreatingCust(false); return }
+      const created: Customer = data.customer
+      setCustomers(prev => [...prev, created])
+      setCustomerId(String(created.id))
+      setEquipmentId('')
+      setNewCustForm({ full_name: '', email: '', phone: '' })
+      setShowNewCustomer(false)
+    } catch {
+      setError('Network error.')
+    }
+    setCreatingCust(false)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -162,6 +189,67 @@ export default function NewWorkOrderPage() {
                   <option key={c.id} value={c.id}>{c.full_name} ({c.email})</option>
                 ))}
               </select>
+
+              {/* Inline new customer */}
+              {!showNewCustomer ? (
+                <button
+                  type="button"
+                  onClick={() => setShowNewCustomer(true)}
+                  className="mt-2 text-sm text-[#B87333] hover:opacity-75 transition"
+                >
+                  + New customer
+                </button>
+              ) : (
+                <form onSubmit={handleCreateCustomer} className="mt-3 rounded-xl border border-[#E8ECF0] bg-[#E8ECF0]/40 p-4 space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">New Customer</p>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#7A8898]">Full Name *</label>
+                    <input
+                      type="text"
+                      value={newCustForm.full_name}
+                      onChange={e => setNewCustForm(f => ({ ...f, full_name: e.target.value }))}
+                      required
+                      className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#7A8898]">Email *</label>
+                    <input
+                      type="email"
+                      value={newCustForm.email}
+                      onChange={e => setNewCustForm(f => ({ ...f, email: e.target.value }))}
+                      required
+                      className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#7A8898]">Phone</label>
+                    <input
+                      type="tel"
+                      value={newCustForm.phone}
+                      onChange={e => setNewCustForm(f => ({ ...f, phone: e.target.value }))}
+                      placeholder="(555) 000-0000"
+                      className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3 pt-1">
+                    <button
+                      type="submit"
+                      disabled={creatingCust}
+                      className="rounded-xl bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
+                    >
+                      {creatingCust ? 'Creating…' : 'Create & Select'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowNewCustomer(false); setNewCustForm({ full_name: '', email: '', phone: '' }) }}
+                      className="text-sm text-[#7A8898] hover:text-[#0D1B2A] transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
             <div>
               <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Equipment</label>

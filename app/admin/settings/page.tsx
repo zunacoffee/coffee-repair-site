@@ -19,6 +19,13 @@ const DEFAULTS: Settings = {
   parts_low_stock_threshold: '1',
   public_business_name: 'Cafe Works',
   logo_url:             '',
+  tax_rate:             '0',
+  invoice_due_days:     '30',
+  invoice_footer_notes: '',
+  service_area:         '',
+  online_payments_enabled: 'true',
+  booking_advance_days: '30',
+  blocked_dates:        '',
 }
 
 function ToggleField({ label, description, value, onChange }: {
@@ -70,10 +77,14 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>({ ...DEFAULTS })
   const [loading, setLoading]   = useState(true)
 
-  const [biz,   setBiz]   = useState<SaveState>(IDLE)
-  const [labor, setLabor] = useState<SaveState>(IDLE)
-  const [parts, setParts] = useState<SaveState>(IDLE)
-  const [brand, setBrand] = useState<SaveState>(IDLE)
+  const [biz,         setBiz]         = useState<SaveState>(IDLE)
+  const [labor,       setLabor]       = useState<SaveState>(IDLE)
+  const [parts,       setParts]       = useState<SaveState>(IDLE)
+  const [invoice,     setInvoice]     = useState<SaveState>(IDLE)
+  const [serviceArea, setServiceArea] = useState<SaveState>(IDLE)
+  const [payments,    setPayments]    = useState<SaveState>(IDLE)
+  const [scheduling,  setScheduling]  = useState<SaveState>(IDLE)
+  const [brand,       setBrand]       = useState<SaveState>(IDLE)
 
   useEffect(() => {
     fetch('/api/admin/site-settings', { credentials: 'include' })
@@ -211,6 +222,64 @@ export default function SettingsPage() {
             </Field>
           </div>
           <SaveBtn st={parts} onSave={() => save(['parts_markup_pct','parts_low_stock_threshold'], setParts)} />
+        </div>
+
+        {/* ── Invoice Settings ── */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
+          <h2 className="font-semibold text-[#0D1B2A] text-base">Invoice Settings</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Tax Rate (%)" hint="Applied to all invoices. Set to 0 for no tax.">
+              <Input value={settings.tax_rate} onChange={v => set('tax_rate', v)} type="number" min="0" step="0.01" placeholder="0" />
+            </Field>
+            <Field label="Payment Due (days)" hint="e.g. 30 means payment due 30 days after invoice date.">
+              <Input value={settings.invoice_due_days} onChange={v => set('invoice_due_days', v)} type="number" min="0" step="1" placeholder="30" />
+            </Field>
+          </div>
+          <Field label="Invoice Footer Notes" hint="Appears at the bottom of every invoice.">
+            <textarea
+              value={settings.invoice_footer_notes}
+              onChange={e => set('invoice_footer_notes', e.target.value)}
+              rows={3}
+              placeholder="Thank you for your business!"
+              className="w-full border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-[#0D1B2A] placeholder-[#7A8898] resize-none focus:outline-none focus:ring-2 focus:ring-[#B87333]"
+            />
+          </Field>
+          <SaveBtn st={invoice} onSave={() => save(['tax_rate', 'invoice_due_days', 'invoice_footer_notes'], setInvoice)} />
+        </div>
+
+        {/* ── Service Area ── */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
+          <h2 className="font-semibold text-[#0D1B2A] text-base">Service Area</h2>
+          <Field label="Service Area Description" hint="Shown on the public service request form.">
+            <Input value={settings.service_area} onChange={v => set('service_area', v)} placeholder="Shenandoah Valley, VA — within 50 miles of Harrisonburg" />
+          </Field>
+          <SaveBtn st={serviceArea} onSave={() => save(['service_area'], setServiceArea)} />
+        </div>
+
+        {/* ── Payments ── */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
+          <h2 className="font-semibold text-[#0D1B2A] text-base">Payments</h2>
+          <ToggleField
+            label="Enable Online Payments"
+            description="Allow customers to pay invoices online via Stripe."
+            value={settings.online_payments_enabled === 'true'}
+            onChange={() => toggle('online_payments_enabled')}
+          />
+          <SaveBtn st={payments} onSave={() => save(['online_payments_enabled'], setPayments)} />
+        </div>
+
+        {/* ── Scheduling ── */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
+          <h2 className="font-semibold text-[#0D1B2A] text-base">Scheduling</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Booking Window (days)" hint="How many days ahead customers can schedule appointments.">
+              <Input value={settings.booking_advance_days} onChange={v => set('booking_advance_days', v)} type="number" min="1" step="1" placeholder="30" />
+            </Field>
+            <Field label="Blocked Dates" hint="Comma-separated dates to block from scheduling (YYYY-MM-DD format).">
+              <Input value={settings.blocked_dates} onChange={v => set('blocked_dates', v)} placeholder="2026-12-25, 2026-01-01" />
+            </Field>
+          </div>
+          <SaveBtn st={scheduling} onSave={() => save(['booking_advance_days', 'blocked_dates'], setScheduling)} />
         </div>
 
         {/* ── Branding ── */}
