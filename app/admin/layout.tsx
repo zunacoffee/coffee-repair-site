@@ -380,17 +380,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden flex flex-col">
         {/* Mobile top bar */}
-        <div className="flex items-center gap-3 px-4 py-4 bg-white border-b border-[#E8ECF0] md:hidden">
+        <div className="flex items-center gap-3 px-4 py-4 bg-[#0D1B2A] border-b border-white/10 md:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="rounded-md p-2.5 text-[#0D1B2A] hover:bg-[#E8ECF0] transition"
+            className="rounded-md p-2.5 text-white hover:bg-white/10 transition"
             aria-label="Open menu"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="text-sm font-semibold text-[#0D1B2A]">Cafe Works Admin</span>
+          <span className="text-sm font-semibold text-white">Cafe Works Admin</span>
         </div>
 
         {children}
