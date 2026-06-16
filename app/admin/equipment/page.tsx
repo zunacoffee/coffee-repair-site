@@ -198,8 +198,8 @@ export default function EquipmentPage() {
           <h2 className="text-base font-bold text-[#0D1B2A] mb-4">New Equipment</h2>
           <form onSubmit={handleAdd} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="sm:col-span-2 lg:col-span-3">
-              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Customer</label>
-              <select value={form.customer_id} onChange={set('customer_id')} className={inputCls}>
+              <label htmlFor="equip-customer" className="block text-sm font-semibold text-[#0D1B2A] mb-1">Customer</label>
+              <select id="equip-customer" value={form.customer_id} onChange={set('customer_id')} className={inputCls}>
                 <option value="">Select a customer</option>
                 {customers.map((c) => (
                   <option key={c.id} value={c.id.toString()}>{c.full_name}</option>
@@ -207,22 +207,22 @@ export default function EquipmentPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Equipment type</label>
-              <input value={form.equipment_type} onChange={set('equipment_type')} placeholder="e.g. Espresso Machine" className={inputCls} />
+              <label htmlFor="equip-type" className="block text-sm font-semibold text-[#0D1B2A] mb-1">Equipment type</label>
+              <input id="equip-type" value={form.equipment_type} onChange={set('equipment_type')} placeholder="e.g. Espresso Machine" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Brand</label>
-              <input value={form.brand} onChange={set('brand')} placeholder="e.g. La Marzocco" className={inputCls} />
+              <label htmlFor="equip-brand" className="block text-sm font-semibold text-[#0D1B2A] mb-1">Brand</label>
+              <input id="equip-brand" value={form.brand} onChange={set('brand')} placeholder="e.g. La Marzocco" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">Model</label>
-              <input value={form.model} onChange={set('model')} placeholder="e.g. Linea Mini" className={inputCls} />
+              <label htmlFor="equip-model" className="block text-sm font-semibold text-[#0D1B2A] mb-1">Model</label>
+              <input id="equip-model" value={form.model} onChange={set('model')} placeholder="e.g. Linea Mini" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">
+              <label htmlFor="equip-serial" className="block text-sm font-semibold text-[#0D1B2A] mb-1">
                 Serial number <span className="text-[#7A8898] font-normal">(optional)</span>
               </label>
-              <input value={form.serial_number} onChange={set('serial_number')} placeholder="e.g. LM-12345" className={inputCls} />
+              <input id="equip-serial" value={form.serial_number} onChange={set('serial_number')} placeholder="e.g. LM-12345" className={inputCls} />
             </div>
             {addError && (
               <div className="sm:col-span-2 lg:col-span-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">

@@ -202,8 +202,9 @@ export default function NewWorkOrderPage() {
           <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
             <h2 className="font-semibold text-[#0D1B2A] text-base">Customer & Equipment</h2>
             <div>
-              <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Customer *</label>
+              <label htmlFor="wo-customer" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Customer *</label>
               <select
+                id="wo-customer"
                 value={customerId}
                 onChange={e => { setCustomerId(e.target.value); setEquipmentId('') }}
                 className="w-full border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]"
@@ -231,8 +232,9 @@ export default function NewWorkOrderPage() {
                 >
                   <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">New Customer</p>
                   <div>
-                    <label className="block text-xs font-semibold text-[#7A8898]">Full Name *</label>
+                    <label htmlFor="wo-new-cust-name" className="block text-xs font-semibold text-[#7A8898]">Full Name *</label>
                     <input
+                      id="wo-new-cust-name"
                       type="text"
                       value={newCustForm.full_name}
                       onChange={e => setNewCustForm(f => ({ ...f, full_name: e.target.value }))}
@@ -241,8 +243,9 @@ export default function NewWorkOrderPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#7A8898]">Email *</label>
+                    <label htmlFor="wo-new-cust-email" className="block text-xs font-semibold text-[#7A8898]">Email *</label>
                     <input
+                      id="wo-new-cust-email"
                       type="email"
                       value={newCustForm.email}
                       onChange={e => setNewCustForm(f => ({ ...f, email: e.target.value }))}
@@ -251,8 +254,9 @@ export default function NewWorkOrderPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#7A8898]">Phone *</label>
+                    <label htmlFor="wo-new-cust-phone" className="block text-xs font-semibold text-[#7A8898]">Phone *</label>
                     <input
+                      id="wo-new-cust-phone"
                       type="tel"
                       value={newCustForm.phone}
                       onChange={e => setNewCustForm(f => ({ ...f, phone: e.target.value }))}
@@ -262,8 +266,9 @@ export default function NewWorkOrderPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#7A8898]">Street Address *</label>
+                    <label htmlFor="wo-new-cust-street" className="block text-xs font-semibold text-[#7A8898]">Street Address *</label>
                     <input
+                      id="wo-new-cust-street"
                       type="text"
                       value={newCustForm.street}
                       onChange={e => setNewCustForm(f => ({ ...f, street: e.target.value }))}
@@ -273,8 +278,9 @@ export default function NewWorkOrderPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#7A8898]">City *</label>
+                    <label htmlFor="wo-new-cust-city" className="block text-xs font-semibold text-[#7A8898]">City *</label>
                     <input
+                      id="wo-new-cust-city"
                       type="text"
                       value={newCustForm.city}
                       onChange={e => setNewCustForm(f => ({ ...f, city: e.target.value }))}
@@ -285,8 +291,9 @@ export default function NewWorkOrderPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-[#7A8898]">State</label>
+                      <label htmlFor="wo-new-cust-state" className="block text-xs font-semibold text-[#7A8898]">State</label>
                       <input
+                        id="wo-new-cust-state"
                         type="text"
                         value={newCustForm.state}
                         onChange={e => setNewCustForm(f => ({ ...f, state: e.target.value }))}
@@ -296,8 +303,9 @@ export default function NewWorkOrderPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#7A8898]">ZIP Code</label>
+                      <label htmlFor="wo-new-cust-zip" className="block text-xs font-semibold text-[#7A8898]">ZIP Code</label>
                       <input
+                        id="wo-new-cust-zip"
                         type="text"
                         value={newCustForm.zip}
                         onChange={e => setNewCustForm(f => ({ ...f, zip: e.target.value }))}
@@ -328,8 +336,9 @@ export default function NewWorkOrderPage() {
               )}
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Equipment</label>
+              <label htmlFor="wo-equipment" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Equipment</label>
               <select
+                id="wo-equipment"
                 value={equipmentId}
                 onChange={e => setEquipmentId(e.target.value)}
                 disabled={!customerId}
@@ -359,8 +368,9 @@ export default function NewWorkOrderPage() {
                 >
                     <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">New Equipment</p>
                     <div>
-                      <label className="block text-xs font-semibold text-[#7A8898]">Equipment Type *</label>
+                      <label htmlFor="wo-new-equip-type" className="block text-xs font-semibold text-[#7A8898]">Equipment Type *</label>
                       <input
+                        id="wo-new-equip-type"
                         type="text"
                         value={newEquipForm.equipment_type}
                         onChange={e => setNewEquipForm(f => ({ ...f, equipment_type: e.target.value }))}
@@ -370,8 +380,9 @@ export default function NewWorkOrderPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#7A8898]">Brand *</label>
+                      <label htmlFor="wo-new-equip-brand" className="block text-xs font-semibold text-[#7A8898]">Brand *</label>
                       <input
+                        id="wo-new-equip-brand"
                         type="text"
                         value={newEquipForm.brand}
                         onChange={e => setNewEquipForm(f => ({ ...f, brand: e.target.value }))}
@@ -380,8 +391,9 @@ export default function NewWorkOrderPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#7A8898]">Model *</label>
+                      <label htmlFor="wo-new-equip-model" className="block text-xs font-semibold text-[#7A8898]">Model *</label>
                       <input
+                        id="wo-new-equip-model"
                         type="text"
                         value={newEquipForm.model}
                         onChange={e => setNewEquipForm(f => ({ ...f, model: e.target.value }))}
@@ -390,8 +402,9 @@ export default function NewWorkOrderPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#7A8898]">Serial Number</label>
+                      <label htmlFor="wo-new-equip-serial" className="block text-xs font-semibold text-[#7A8898]">Serial Number</label>
                       <input
+                        id="wo-new-equip-serial"
                         type="text"
                         value={newEquipForm.serial_number}
                         onChange={e => setNewEquipForm(f => ({ ...f, serial_number: e.target.value }))}
@@ -448,8 +461,9 @@ export default function NewWorkOrderPage() {
               ))}
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Hours</label>
+              <label htmlFor="wo-labor-hours" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Hours</label>
               <input
+                id="wo-labor-hours"
                 type="number"
                 value={laborHours}
                 onChange={e => setLaborHours(e.target.value)}
@@ -534,8 +548,9 @@ export default function NewWorkOrderPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Date</label>
+                <label htmlFor="wo-scheduled-date" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Date</label>
                 <input
+                  id="wo-scheduled-date"
                   type="date"
                   value={scheduledDate}
                   onChange={e => setScheduledDate(e.target.value)}
@@ -543,8 +558,9 @@ export default function NewWorkOrderPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Time</label>
+                <label htmlFor="wo-scheduled-time" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Time</label>
                 <TimePickerSelect
+                  id="wo-scheduled-time"
                   value={scheduledTime}
                   onChange={e => setScheduledTime(e.target.value)}
                   className="w-full border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]"

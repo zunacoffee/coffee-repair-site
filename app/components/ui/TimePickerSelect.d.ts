@@ -9,6 +9,7 @@ export declare const TIME_OPTIONS: TimeOption[]
 export declare function formatTime(hhmm: string | null | undefined): string
 
 export interface TimePickerSelectProps {
+  id?: string
   value: string
   onChange: (e: ChangeEvent<HTMLSelectElement>) => void
   className?: string

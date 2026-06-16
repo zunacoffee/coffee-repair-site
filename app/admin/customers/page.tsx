@@ -139,8 +139,9 @@ function CustomersPageInner() {
             <h2 className="text-lg font-semibold text-[#0D1B2A] mb-4">New customer</h2>
             <form onSubmit={handleAddCustomer} className="grid gap-4 lg:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-[#7A8898]">Full name</label>
+                <label htmlFor="newcust-fullname" className="block text-sm font-medium text-[#7A8898]">Full name</label>
                 <input
+                  id="newcust-fullname"
                   value={fullName}
                   onChange={(event) => setFullName(event.target.value)}
                   className="mt-2 block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
@@ -148,8 +149,9 @@ function CustomersPageInner() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#7A8898]">Email</label>
+                <label htmlFor="newcust-email" className="block text-sm font-medium text-[#7A8898]">Email</label>
                 <input
+                  id="newcust-email"
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
@@ -158,8 +160,9 @@ function CustomersPageInner() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#7A8898]">Phone</label>
+                <label htmlFor="newcust-phone" className="block text-sm font-medium text-[#7A8898]">Phone</label>
                 <input
+                  id="newcust-phone"
                   value={phone}
                   onChange={(event) => setPhone(event.target.value)}
                   className="mt-2 block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
@@ -167,8 +170,9 @@ function CustomersPageInner() {
                 />
               </div>
               <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-[#7A8898]">Street Address</label>
+                <label htmlFor="newcust-street" className="block text-sm font-medium text-[#7A8898]">Street Address</label>
                 <input
+                  id="newcust-street"
                   value={street}
                   onChange={(event) => setStreet(event.target.value)}
                   className="mt-2 block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
@@ -176,8 +180,9 @@ function CustomersPageInner() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#7A8898]">City</label>
+                <label htmlFor="newcust-city" className="block text-sm font-medium text-[#7A8898]">City</label>
                 <input
+                  id="newcust-city"
                   value={city}
                   onChange={(event) => setCity(event.target.value)}
                   className="mt-2 block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
@@ -186,8 +191,9 @@ function CustomersPageInner() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-[#7A8898]">State</label>
+                  <label htmlFor="newcust-state" className="block text-sm font-medium text-[#7A8898]">State</label>
                   <input
+                    id="newcust-state"
                     value={addrState}
                     onChange={(event) => setAddrState(event.target.value)}
                     maxLength={2}
@@ -196,8 +202,9 @@ function CustomersPageInner() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#7A8898]">ZIP Code</label>
+                  <label htmlFor="newcust-zip" className="block text-sm font-medium text-[#7A8898]">ZIP Code</label>
                   <input
+                    id="newcust-zip"
                     value={zip}
                     onChange={(event) => setZip(event.target.value)}
                     maxLength={10}

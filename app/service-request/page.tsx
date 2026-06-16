@@ -216,16 +216,16 @@ export default function ServiceRequestPage() {
                 <h2 className="text-base font-semibold text-cafe-navy mb-4">Your information</h2>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label className={labelClass}>Full name</label>
-                    <input type="text" value={form.full_name} onChange={set('full_name')} required placeholder="Jane Smith" className={inputClass} />
+                    <label htmlFor="sr-full-name" className={labelClass}>Full name</label>
+                    <input id="sr-full-name" type="text" value={form.full_name} onChange={set('full_name')} required placeholder="Jane Smith" className={inputClass} />
                   </div>
                   <div>
-                    <label className={labelClass}>Email</label>
-                    <input type="email" value={form.email} onChange={set('email')} required placeholder="jane@example.com" className={inputClass} />
+                    <label htmlFor="sr-email" className={labelClass}>Email</label>
+                    <input id="sr-email" type="email" value={form.email} onChange={set('email')} required placeholder="jane@example.com" className={inputClass} />
                   </div>
                   <div>
-                    <label className={labelClass}>Phone</label>
-                    <input type="tel" value={form.phone} onChange={set('phone')} required placeholder="(555) 000-0000" className={inputClass} />
+                    <label htmlFor="sr-phone" className={labelClass}>Phone</label>
+                    <input id="sr-phone" type="tel" value={form.phone} onChange={set('phone')} required placeholder="(555) 000-0000" className={inputClass} />
                   </div>
                   {serviceArea && (
                     <p className="sm:col-span-2 -mt-1 text-xs text-cafe-steel">
@@ -233,21 +233,21 @@ export default function ServiceRequestPage() {
                     </p>
                   )}
                   <div className="sm:col-span-2">
-                    <label className={labelClass}>Street Address</label>
-                    <input type="text" value={form.street} onChange={set('street')} placeholder="123 Main St" className={inputClass} />
+                    <label htmlFor="sr-street" className={labelClass}>Street Address</label>
+                    <input id="sr-street" type="text" value={form.street} onChange={set('street')} placeholder="123 Main St" className={inputClass} />
                   </div>
                   <div>
-                    <label className={labelClass}>City</label>
-                    <input type="text" value={form.city} onChange={set('city')} placeholder="Portland" className={inputClass} />
+                    <label htmlFor="sr-city" className={labelClass}>City</label>
+                    <input id="sr-city" type="text" value={form.city} onChange={set('city')} placeholder="Portland" className={inputClass} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className={labelClass}>State</label>
-                      <input type="text" value={form.state} onChange={set('state')} placeholder="OR" maxLength={2} className={inputClass} />
+                      <label htmlFor="sr-state" className={labelClass}>State</label>
+                      <input id="sr-state" type="text" value={form.state} onChange={set('state')} placeholder="OR" maxLength={2} className={inputClass} />
                     </div>
                     <div>
-                      <label className={labelClass}>ZIP</label>
-                      <input type="text" value={form.zip} onChange={set('zip')} placeholder="97201" maxLength={10} className={inputClass} />
+                      <label htmlFor="sr-zip" className={labelClass}>ZIP</label>
+                      <input id="sr-zip" type="text" value={form.zip} onChange={set('zip')} placeholder="97201" maxLength={10} className={inputClass} />
                     </div>
                   </div>
                   <div>
@@ -271,19 +271,19 @@ export default function ServiceRequestPage() {
                 <h2 className="text-base font-semibold text-cafe-navy mb-4">Equipment details</h2>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label className={labelClass}>Equipment type</label>
-                    <select value={form.equipment_type} onChange={set('equipment_type')} required className={inputClass}>
+                    <label htmlFor="sr-equip-type" className={labelClass}>Equipment type</label>
+                    <select id="sr-equip-type" value={form.equipment_type} onChange={set('equipment_type')} required className={inputClass}>
                       <option value="" disabled>Select type…</option>
                       {EQUIPMENT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className={labelClass}>Brand</label>
-                    <input type="text" value={form.brand} onChange={set('brand')} required placeholder="e.g. La Marzocco" className={inputClass} />
+                    <label htmlFor="sr-brand" className={labelClass}>Brand</label>
+                    <input id="sr-brand" type="text" value={form.brand} onChange={set('brand')} required placeholder="e.g. La Marzocco" className={inputClass} />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className={labelClass}>Model</label>
-                    <input type="text" value={form.model} onChange={set('model')} required placeholder="e.g. Linea Mini" className={inputClass} />
+                    <label htmlFor="sr-model" className={labelClass}>Model</label>
+                    <input id="sr-model" type="text" value={form.model} onChange={set('model')} required placeholder="e.g. Linea Mini" className={inputClass} />
                   </div>
                 </div>
               </div>
@@ -292,8 +292,8 @@ export default function ServiceRequestPage() {
               <div className="border-t border-[#D4D8DC] pt-6">
                 <h2 className="text-base font-semibold text-cafe-navy mb-4">Describe the issue</h2>
                 <div>
-                  <label className={labelClass}>Issue description</label>
-                  <textarea value={form.issue_description} onChange={set('issue_description')} required rows={4} placeholder="Describe the problem in as much detail as possible…" className={inputClass} />
+                  <label htmlFor="sr-issue-description" className={labelClass}>Issue description</label>
+                  <textarea id="sr-issue-description" value={form.issue_description} onChange={set('issue_description')} required rows={4} placeholder="Describe the problem in as much detail as possible…" className={inputClass} />
                 </div>
               </div>
 
@@ -426,8 +426,9 @@ export default function ServiceRequestPage() {
 
               {/* Notes */}
               <div className="border-t border-[#D4D8DC] pt-6">
-                <label className={labelClass}>Additional notes <span className="text-cafe-steel font-normal">(optional)</span></label>
+                <label htmlFor="sr-notes" className={labelClass}>Additional notes <span className="text-cafe-steel font-normal">(optional)</span></label>
                 <textarea
+                  id="sr-notes"
                   value={form.notes}
                   onChange={set('notes')}
                   rows={2}

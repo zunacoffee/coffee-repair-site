@@ -85,8 +85,9 @@ function LaborRow({
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Rate Type</label>
+          <label htmlFor={`labor-rate-type-${item.localId}`} className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Rate Type</label>
           <select
+            id={`labor-rate-type-${item.localId}`}
             value={item.rate_type ?? 'weekday'}
             onChange={(e) => handleRateChange(e.target.value as 'weekday' | 'weekend')}
             className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm focus:border-[#B87333] focus:outline-none"
@@ -96,8 +97,9 @@ function LaborRow({
           </select>
         </div>
         <div>
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Hours</label>
+          <label htmlFor={`labor-hours-${item.localId}`} className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Hours</label>
           <input
+            id={`labor-hours-${item.localId}`}
             type="number" min="0" step="0.25"
             value={item.quantity || ''}
             placeholder="0.0"
@@ -106,8 +108,9 @@ function LaborRow({
           />
         </div>
         <div>
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Description</label>
+          <label htmlFor={`labor-description-${item.localId}`} className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Description</label>
           <input
+            id={`labor-description-${item.localId}`}
             type="text"
             value={item.description}
             placeholder="e.g. Group head rebuild"
@@ -179,8 +182,9 @@ function PartRow({
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="sm:col-span-2">
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Part</label>
+          <label htmlFor={`part-select-${item.localId}`} className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Part</label>
           <select
+            id={`part-select-${item.localId}`}
             value={item.part_id ?? ''}
             onChange={(e) => handlePartSelect(e.target.value)}
             className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm focus:border-[#B87333] focus:outline-none"
@@ -194,8 +198,9 @@ function PartRow({
           </select>
         </div>
         <div>
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Quantity</label>
+          <label htmlFor={`part-qty-${item.localId}`} className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Quantity</label>
           <input
+            id={`part-qty-${item.localId}`}
             type="number" min="1" step="1"
             value={item.quantity || ''}
             placeholder="1"
@@ -389,10 +394,11 @@ export default function NewInvoicePage() {
         <h2 className="text-sm font-bold text-[#0D1B2A] uppercase tracking-wide">Invoice Details</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">
+            <label htmlFor="invoice-customer" className="block text-sm font-semibold text-[#0D1B2A] mb-1">
               Customer <span className="text-red-500">*</span>
             </label>
             <select
+              id="invoice-customer"
               value={customerId ?? ''}
               onChange={(e) => {
                 setCustomerId(e.target.value ? Number(e.target.value) : null)
@@ -407,10 +413,11 @@ export default function NewInvoicePage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-[#0D1B2A] mb-1">
+            <label htmlFor="invoice-repair-job" className="block text-sm font-semibold text-[#0D1B2A] mb-1">
               Linked Repair Job <span className="text-[#7A8898] font-normal text-xs">(optional)</span>
             </label>
             <select
+              id="invoice-repair-job"
               value={repairJobId ?? ''}
               onChange={(e) => setRepairJobId(e.target.value ? Number(e.target.value) : null)}
               disabled={!customerId}
@@ -504,10 +511,11 @@ export default function NewInvoicePage() {
 
       {/* Notes */}
       <div className="rounded-2xl border border-[#E8ECF0] bg-white p-6 shadow-sm">
-        <label className="block text-sm font-bold text-[#0D1B2A] uppercase tracking-wide mb-2">
+        <label htmlFor="invoice-notes" className="block text-sm font-bold text-[#0D1B2A] uppercase tracking-wide mb-2">
           Notes <span className="text-[#7A8898] text-xs font-normal normal-case">(included in the invoice email)</span>
         </label>
         <textarea
+          id="invoice-notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}

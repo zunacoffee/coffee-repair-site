@@ -84,8 +84,9 @@ export default function NotificationsPage() {
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
           {/* Notification email */}
           <div>
-            <label className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">Admin Notification Email</label>
+            <label htmlFor="notify-email" className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">Admin Notification Email</label>
             <input
+              id="notify-email"
               type="email"
               value={settings.notify_email ?? ''}
               onChange={e => set('notify_email', e.target.value)}

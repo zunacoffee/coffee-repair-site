@@ -287,33 +287,33 @@ export default function CustomerDetailPage() {
                   {editing ? (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-[#0D1B2A]">Full name</label>
-                        <input value={contactForm.full_name} onChange={(e) => updateFormField('full_name', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <label htmlFor="cust-full-name" className="block text-sm font-medium text-[#0D1B2A]">Full name</label>
+                        <input id="cust-full-name" value={contactForm.full_name} onChange={(e) => updateFormField('full_name', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-[#0D1B2A]">Email</label>
-                        <input type="email" value={contactForm.email} onChange={(e) => updateFormField('email', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <label htmlFor="cust-email" className="block text-sm font-medium text-[#0D1B2A]">Email</label>
+                        <input id="cust-email" type="email" value={contactForm.email} onChange={(e) => updateFormField('email', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-[#0D1B2A]">Phone</label>
-                        <input value={contactForm.phone} onChange={(e) => updateFormField('phone', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <label htmlFor="cust-phone" className="block text-sm font-medium text-[#0D1B2A]">Phone</label>
+                        <input id="cust-phone" value={contactForm.phone} onChange={(e) => updateFormField('phone', e.target.value)} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="block text-sm font-medium text-[#0D1B2A]">Street Address</label>
-                        <input value={contactForm.street} onChange={(e) => updateFormField('street', e.target.value)} placeholder="123 Main St" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <label htmlFor="cust-street" className="block text-sm font-medium text-[#0D1B2A]">Street Address</label>
+                        <input id="cust-street" value={contactForm.street} onChange={(e) => updateFormField('street', e.target.value)} placeholder="123 Main St" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-[#0D1B2A]">City</label>
-                        <input value={contactForm.city} onChange={(e) => updateFormField('city', e.target.value)} placeholder="Portland" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <label htmlFor="cust-city" className="block text-sm font-medium text-[#0D1B2A]">City</label>
+                        <input id="cust-city" value={contactForm.city} onChange={(e) => updateFormField('city', e.target.value)} placeholder="Portland" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-sm font-medium text-[#0D1B2A]">State</label>
-                          <input value={contactForm.state} onChange={(e) => updateFormField('state', e.target.value)} placeholder="OR" maxLength={2} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                          <label htmlFor="cust-state" className="block text-sm font-medium text-[#0D1B2A]">State</label>
+                          <input id="cust-state" value={contactForm.state} onChange={(e) => updateFormField('state', e.target.value)} placeholder="OR" maxLength={2} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-[#0D1B2A]">ZIP</label>
-                          <input value={contactForm.zip} onChange={(e) => updateFormField('zip', e.target.value)} placeholder="97201" maxLength={10} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                          <label htmlFor="cust-zip" className="block text-sm font-medium text-[#0D1B2A]">ZIP</label>
+                          <input id="cust-zip" value={contactForm.zip} onChange={(e) => updateFormField('zip', e.target.value)} placeholder="97201" maxLength={10} className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                         </div>
                       </div>
                     </>
@@ -387,20 +387,20 @@ export default function CustomerDetailPage() {
                   <form onSubmit={handleAddEquipment} className="mt-6 space-y-4 rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-6">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="block text-sm font-medium text-[#0D1B2A]">Equipment type</label>
-                        <input value={equipmentForm.equipment_type} onChange={(e) => updateEquipmentField('equipment_type', e.target.value)} placeholder="e.g., Espresso Machine" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <label htmlFor="equip-type" className="block text-sm font-medium text-[#0D1B2A]">Equipment type</label>
+                        <input id="equip-type" value={equipmentForm.equipment_type} onChange={(e) => updateEquipmentField('equipment_type', e.target.value)} placeholder="e.g., Espresso Machine" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-[#0D1B2A]">Brand</label>
-                        <input value={equipmentForm.brand} onChange={(e) => updateEquipmentField('brand', e.target.value)} placeholder="e.g., La Marzocco" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <label htmlFor="equip-brand" className="block text-sm font-medium text-[#0D1B2A]">Brand</label>
+                        <input id="equip-brand" value={equipmentForm.brand} onChange={(e) => updateEquipmentField('brand', e.target.value)} placeholder="e.g., La Marzocco" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-[#0D1B2A]">Model</label>
-                        <input value={equipmentForm.model} onChange={(e) => updateEquipmentField('model', e.target.value)} placeholder="e.g., Linea Mini" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <label htmlFor="equip-model" className="block text-sm font-medium text-[#0D1B2A]">Model</label>
+                        <input id="equip-model" value={equipmentForm.model} onChange={(e) => updateEquipmentField('model', e.target.value)} placeholder="e.g., Linea Mini" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-[#0D1B2A]">Serial number <span className="text-[#7A8898] font-normal">(optional)</span></label>
-                        <input value={equipmentForm.serial_number} onChange={(e) => updateEquipmentField('serial_number', e.target.value)} placeholder="e.g., LM-12345" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
+                        <label htmlFor="equip-serial" className="block text-sm font-medium text-[#0D1B2A]">Serial number <span className="text-[#7A8898] font-normal">(optional)</span></label>
+                        <input id="equip-serial" value={equipmentForm.serial_number} onChange={(e) => updateEquipmentField('serial_number', e.target.value)} placeholder="e.g., LM-12345" className="mt-2 w-full rounded-2xl border border-[#E8ECF0] bg-white px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                       </div>
                     </div>
                     <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-end">
@@ -593,8 +593,9 @@ export default function CustomerDetailPage() {
               <form id="custom-plan-form" onSubmit={handleCustomPlanSubmit} className="space-y-4">
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Plan Name *</label>
+                  <label htmlFor="plan-name" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Plan Name *</label>
                   <input
+                    id="plan-name"
                     required
                     value={customPlanForm.plan_name}
                     onChange={(e) => setCustomPlanForm((f) => ({ ...f, plan_name: e.target.value }))}
@@ -604,8 +605,9 @@ export default function CustomerDetailPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Description</label>
+                  <label htmlFor="plan-description" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Description</label>
                   <textarea
+                    id="plan-description"
                     rows={2}
                     value={customPlanForm.description}
                     onChange={(e) => setCustomPlanForm((f) => ({ ...f, description: e.target.value }))}
@@ -616,10 +618,11 @@ export default function CustomerDetailPage() {
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Monthly Price ($) *</label>
+                    <label htmlFor="plan-price" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Monthly Price ($) *</label>
                     <div className="relative">
                       <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#7A8898]">$</span>
                       <input
+                        id="plan-price"
                         required
                         type="number"
                         min="0.50"
@@ -633,8 +636,9 @@ export default function CustomerDetailPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Visits / Month</label>
+                    <label htmlFor="plan-visits" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Visits / Month</label>
                     <input
+                      id="plan-visits"
                       type="number"
                       min="1"
                       step="1"
@@ -649,9 +653,10 @@ export default function CustomerDetailPage() {
 
                 {/* Features list */}
                 <div>
-                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Features</label>
+                  <label htmlFor="plan-feature-input" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Features</label>
                   <div className="flex gap-2 mb-2">
                     <input
+                      id="plan-feature-input"
                       type="text"
                       value={featureInput}
                       onChange={(e) => setFeatureInput(e.target.value)}
@@ -690,8 +695,9 @@ export default function CustomerDetailPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Notes <span className="font-normal text-[#7A8898]">(admin only)</span></label>
+                  <label htmlFor="plan-notes" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Notes <span className="font-normal text-[#7A8898]">(admin only)</span></label>
                   <textarea
+                    id="plan-notes"
                     rows={2}
                     value={customPlanForm.notes}
                     onChange={(e) => setCustomPlanForm((f) => ({ ...f, notes: e.target.value }))}

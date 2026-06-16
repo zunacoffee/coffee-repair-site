@@ -198,8 +198,8 @@ export function DashboardSections({
               <form onSubmit={handleAddEquipment} className="mb-4 rounded-2xl border border-[#E8ECF0] bg-[#E8ECF0] p-4 space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Type</label>
-                    <select value={eqType} onChange={(e) => setEqType(e.target.value)} required
+                    <label htmlFor="ds-eq-type" className="block text-xs font-semibold text-[#0D1B2A] mb-1">Type</label>
+                    <select id="ds-eq-type" value={eqType} onChange={(e) => setEqType(e.target.value)} required
                       className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none">
                       <option value="" disabled>Select…</option>
                       <option value="Espresso Machine">Espresso Machine</option>
@@ -209,18 +209,18 @@ export function DashboardSections({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Brand</label>
-                    <input type="text" value={eqBrand} onChange={(e) => setEqBrand(e.target.value)} required placeholder="e.g. La Marzocco"
+                    <label htmlFor="ds-eq-brand" className="block text-xs font-semibold text-[#0D1B2A] mb-1">Brand</label>
+                    <input id="ds-eq-brand" type="text" value={eqBrand} onChange={(e) => setEqBrand(e.target.value)} required placeholder="e.g. La Marzocco"
                       className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Model</label>
-                    <input type="text" value={eqModel} onChange={(e) => setEqModel(e.target.value)} required placeholder="e.g. Linea Mini"
+                    <label htmlFor="ds-eq-model" className="block text-xs font-semibold text-[#0D1B2A] mb-1">Model</label>
+                    <input id="ds-eq-model" type="text" value={eqModel} onChange={(e) => setEqModel(e.target.value)} required placeholder="e.g. Linea Mini"
                       className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#0D1B2A] mb-1">Serial <span className="font-normal text-[#7A8898]">(optional)</span></label>
-                    <input type="text" value={eqSerial} onChange={(e) => setEqSerial(e.target.value)} placeholder="SN123456"
+                    <label htmlFor="ds-eq-serial" className="block text-xs font-semibold text-[#0D1B2A] mb-1">Serial <span className="font-normal text-[#7A8898]">(optional)</span></label>
+                    <input id="ds-eq-serial" type="text" value={eqSerial} onChange={(e) => setEqSerial(e.target.value)} placeholder="SN123456"
                       className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none" />
                   </div>
                 </div>
@@ -402,40 +402,40 @@ export function DashboardSections({
           <div>
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Full name</label>
-                <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} required
+                <label htmlFor="ds-profile-name" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Full name</label>
+                <input id="ds-profile-name" type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} required
                   className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Email</label>
-                <input type="email" value={userEmail ?? ''} disabled
+                <label htmlFor="ds-profile-email" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Email</label>
+                <input id="ds-profile-email" type="email" value={userEmail ?? ''} disabled
                   className="block w-full rounded-xl border border-[#E8ECF0] bg-[#E8ECF0] px-4 py-2.5 text-sm text-[#7A8898] cursor-not-allowed" />
                 <p className="mt-1 text-xs text-[#7A8898]">Email cannot be changed here.</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Phone</label>
-                <input type="tel" value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} placeholder="(555) 000-0000"
+                <label htmlFor="ds-profile-phone" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Phone</label>
+                <input id="ds-profile-phone" type="tel" value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} placeholder="(555) 000-0000"
                   className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Street Address</label>
-                <input type="text" value={profileStreet} onChange={(e) => setProfileStreet(e.target.value)} placeholder="123 Main St"
+                <label htmlFor="ds-profile-street" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Street Address</label>
+                <input id="ds-profile-street" type="text" value={profileStreet} onChange={(e) => setProfileStreet(e.target.value)} placeholder="123 Main St"
                   className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">City</label>
-                <input type="text" value={profileCity} onChange={(e) => setProfileCity(e.target.value)} placeholder="Portland"
+                <label htmlFor="ds-profile-city" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">City</label>
+                <input id="ds-profile-city" type="text" value={profileCity} onChange={(e) => setProfileCity(e.target.value)} placeholder="Portland"
                   className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">State</label>
-                  <input type="text" value={profileState} onChange={(e) => setProfileState(e.target.value)} placeholder="OR" maxLength={2}
+                  <label htmlFor="ds-profile-state" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">State</label>
+                  <input id="ds-profile-state" type="text" value={profileState} onChange={(e) => setProfileState(e.target.value)} placeholder="OR" maxLength={2}
                     className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">ZIP</label>
-                  <input type="text" value={profileZip} onChange={(e) => setProfileZip(e.target.value)} placeholder="97201" maxLength={10}
+                  <label htmlFor="ds-profile-zip" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">ZIP</label>
+                  <input id="ds-profile-zip" type="text" value={profileZip} onChange={(e) => setProfileZip(e.target.value)} placeholder="97201" maxLength={10}
                     className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                 </div>
               </div>

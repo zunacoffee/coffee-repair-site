@@ -321,16 +321,18 @@ export default function PartsPage() {
             <div className="overflow-y-auto flex-1 px-5 py-5">
               <form id="part-form" onSubmit={handleSubmit} className="grid gap-4 grid-cols-2">
                 <div className="col-span-2">
-                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Part Name *</label>
+                  <label htmlFor="part-name" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Part Name *</label>
                   <input
+                    id="part-name"
                     required value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                     className="block w-full rounded-xl border border-[#E8ECF0] px-4 py-3 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Part Number</label>
+                  <label htmlFor="part-number" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Part Number</label>
                   <input
+                    id="part-number"
                     value={form.part_number}
                     onChange={(e) => setForm((f) => ({ ...f, part_number: e.target.value }))}
                     placeholder="e.g. P-001"
@@ -338,8 +340,9 @@ export default function PartsPage() {
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Supplier</label>
+                  <label htmlFor="part-supplier" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Supplier</label>
                   <input
+                    id="part-supplier"
                     value={form.supplier}
                     onChange={(e) => setForm((f) => ({ ...f, supplier: e.target.value }))}
                     placeholder="e.g. Rocket Espresso Supply"
@@ -347,8 +350,9 @@ export default function PartsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Cost Price ($)</label>
+                  <label htmlFor="part-cost-price" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Cost Price ($)</label>
                   <input
+                    id="part-cost-price"
                     type="number" min="0" step="0.01" value={form.cost_price}
                     onChange={(e) => handleCostChange(e.target.value)}
                     inputMode="decimal"
@@ -356,11 +360,12 @@ export default function PartsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">
+                  <label htmlFor="part-sell-price" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">
                     Sell Price ($)
                     <span className="ml-1 text-[10px] font-normal text-[#7A8898]">auto = cost × {(1 + markupPct / 100).toFixed(2)}</span>
                   </label>
                   <input
+                    id="part-sell-price"
                     type="number" min="0" step="0.01" value={form.sell_price}
                     onChange={(e) => setForm((f) => ({ ...f, sell_price: e.target.value }))}
                     inputMode="decimal"
@@ -368,8 +373,9 @@ export default function PartsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Quantity</label>
+                  <label htmlFor="part-quantity" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Quantity</label>
                   <input
+                    id="part-quantity"
                     type="number" min="0" value={form.quantity}
                     onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
                     inputMode="numeric"
@@ -377,8 +383,9 @@ export default function PartsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Low Stock Threshold</label>
+                  <label htmlFor="part-low-stock" className="block text-sm font-semibold text-[#0D1B2A] mb-1.5">Low Stock Threshold</label>
                   <input
+                    id="part-low-stock"
                     type="number" min="0" value={form.low_stock_threshold}
                     onChange={(e) => setForm((f) => ({ ...f, low_stock_threshold: e.target.value }))}
                     inputMode="numeric"

@@ -202,8 +202,9 @@ export default function PlanSettingsPage() {
                     <div className="grid grid-cols-2 gap-4">
                       {/* Name */}
                       <div>
-                        <label className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">Plan Name</label>
+                        <label htmlFor={`plan-name-${plan.id}`} className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">Plan Name</label>
                         <input
+                          id={`plan-name-${plan.id}`}
                           type="text"
                           value={edit.name ?? ''}
                           onChange={e => setField(plan.id, 'name', e.target.value)}
@@ -213,13 +214,14 @@ export default function PlanSettingsPage() {
 
                       {/* Price */}
                       <div>
-                        <label className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">
+                        <label htmlFor={`plan-price-${plan.id}`} className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">
                           Price ($/month)
                           {Number(edit.price) !== Number(plan.price) && (
                             <span className="ml-2 text-amber-600 font-normal normal-case">⚠ Will create new Stripe price</span>
                           )}
                         </label>
                         <input
+                          id={`plan-price-${plan.id}`}
                           type="number"
                           min="1"
                           step="0.01"
@@ -232,8 +234,9 @@ export default function PlanSettingsPage() {
 
                     {/* Description */}
                     <div>
-                      <label className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">Description</label>
+                      <label htmlFor={`plan-description-${plan.id}`} className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">Description</label>
                       <textarea
+                        id={`plan-description-${plan.id}`}
                         value={edit.description ?? ''}
                         onChange={e => setField(plan.id, 'description', e.target.value)}
                         rows={2}

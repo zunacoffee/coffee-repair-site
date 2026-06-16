@@ -264,8 +264,9 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                 <h2 className="font-semibold text-[#0D1B2A]">Work Order Details</h2>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Status</label>
+                  <label htmlFor="wo-status" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Status</label>
                   <select
+                    id="wo-status"
                     value={status}
                     onChange={e => setStatus(e.target.value as WorkOrder['status'])}
                     className="w-full border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]"
@@ -278,8 +279,9 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Problem Description</label>
+                  <label htmlFor="wo-problem" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Problem Description</label>
                   <textarea
+                    id="wo-problem"
                     value={problem}
                     onChange={e => setProblem(e.target.value)}
                     rows={3}
@@ -288,8 +290,9 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Technician Notes</label>
+                  <label htmlFor="wo-notes" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Technician Notes</label>
                   <textarea
+                    id="wo-notes"
                     value={notes}
                     onChange={e => setNotes(e.target.value)}
                     rows={3}
@@ -300,8 +303,9 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Scheduled Date</label>
+                    <label htmlFor="wo-scheduled-date" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Scheduled Date</label>
                     <input
+                      id="wo-scheduled-date"
                       type="date"
                       value={scheduledDate}
                       onChange={e => setScheduledDate(e.target.value)}
@@ -309,8 +313,9 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Scheduled Time</label>
+                    <label htmlFor="wo-scheduled-time" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Scheduled Time</label>
                     <TimePickerSelect
+                      id="wo-scheduled-time"
                       value={scheduledTime}
                       onChange={e => setScheduledTime(e.target.value)}
                       className="w-full border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]"
@@ -320,8 +325,9 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Labor Type</label>
+                    <label htmlFor="wo-labor-type" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Labor Type</label>
                     <select
+                      id="wo-labor-type"
                       value={laborType}
                       onChange={e => setLaborType(e.target.value as 'weekday' | 'weekend')}
                       className="w-full border border-[#E8ECF0] rounded-xl px-3 py-2.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]"
@@ -331,8 +337,9 @@ export default function WorkOrderDetailPage({ params }: { params: Promise<{ id: 
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Labor Hours</label>
+                    <label htmlFor="wo-labor-hours" className="block text-xs font-semibold text-[#7A8898] mb-1 uppercase tracking-wide">Labor Hours</label>
                     <input
+                      id="wo-labor-hours"
                       type="number"
                       value={laborHours}
                       onChange={e => setLaborHours(e.target.value)}

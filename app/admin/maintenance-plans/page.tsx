@@ -495,8 +495,9 @@ export default function MaintenancePlansPage() {
                   <div className="space-y-4">
                     {/* Date */}
                     <div>
-                      <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Visit date</label>
+                      <label htmlFor="mp-visit-date" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Visit date</label>
                       <input
+                        id="mp-visit-date"
                         type="date"
                         value={visitDate}
                         onChange={(e) => setVisitDate(e.target.value)}
@@ -506,8 +507,9 @@ export default function MaintenancePlansPage() {
 
                     {/* Notes */}
                     <div>
-                      <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Notes</label>
+                      <label htmlFor="mp-visit-notes" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Notes</label>
                       <textarea
+                        id="mp-visit-notes"
                         value={visitNotes}
                         onChange={(e) => setVisitNotes(e.target.value)}
                         rows={3}

@@ -380,8 +380,9 @@ export default function ServiceRequestsPage() {
 
               {/* Status */}
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-2">Status</label>
+                <label htmlFor="sr-status" className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-2">Status</label>
                 <select
+                  id="sr-status"
                   value={modalStatus}
                   onChange={(e) => setModalStatus(e.target.value)}
                   className="block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20"
@@ -395,8 +396,9 @@ export default function ServiceRequestsPage() {
 
               {/* Internal notes */}
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-2">Internal notes</label>
+                <label htmlFor="sr-notes" className="block text-[11px] font-semibold uppercase tracking-wide text-[#7A8898] mb-2">Internal notes</label>
                 <textarea
+                  id="sr-notes"
                   value={modalNotes}
                   onChange={(e) => setModalNotes(e.target.value)}
                   rows={3}
@@ -422,18 +424,18 @@ export default function ServiceRequestsPage() {
                           <p className="text-xs font-semibold text-[#0D1B2A]">Create Customer</p>
                           <div className="grid grid-cols-2 gap-2">
                             <div>
-                              <label className="block text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Full Name</label>
-                              <input type="text" value={ccName} onChange={(e) => setCcName(e.target.value)} required
+                              <label htmlFor="sr-cc-name" className="block text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Full Name</label>
+                              <input id="sr-cc-name" type="text" value={ccName} onChange={(e) => setCcName(e.target.value)} required
                                 className="w-full rounded-lg border border-[#E8ECF0] px-2.5 py-1.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Email</label>
-                              <input type="email" value={ccEmail} onChange={(e) => setCcEmail(e.target.value)} required
+                              <label htmlFor="sr-cc-email" className="block text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Email</label>
+                              <input id="sr-cc-email" type="email" value={ccEmail} onChange={(e) => setCcEmail(e.target.value)} required
                                 className="w-full rounded-lg border border-[#E8ECF0] px-2.5 py-1.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                             </div>
                             <div className="col-span-2">
-                              <label className="block text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Phone</label>
-                              <input type="tel" value={ccPhone} onChange={(e) => setCcPhone(e.target.value)} placeholder="(555) 000-0000"
+                              <label htmlFor="sr-cc-phone" className="block text-[10px] font-semibold uppercase tracking-wide text-[#7A8898] mb-1">Phone</label>
+                              <input id="sr-cc-phone" type="tel" value={ccPhone} onChange={(e) => setCcPhone(e.target.value)} placeholder="(555) 000-0000"
                                 className="w-full rounded-lg border border-[#E8ECF0] px-2.5 py-1.5 text-sm text-[#0D1B2A] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20" />
                             </div>
                           </div>

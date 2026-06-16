@@ -141,8 +141,9 @@ export function RepairScheduler({ onClose, onSuccess, equipment, customer, userE
 
             {/* Equipment type */}
             <div>
-              <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Equipment type</label>
+              <label htmlFor="repair-eq-type" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Equipment type</label>
               <select
+                id="repair-eq-type"
                 value={repairEqType}
                 onChange={(e) => setRepairEqType(e.target.value)}
                 required
@@ -168,8 +169,9 @@ export function RepairScheduler({ onClose, onSuccess, equipment, customer, userE
 
             {/* Brand */}
             <div>
-              <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Brand</label>
+              <label htmlFor="repair-brand" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Brand</label>
               <input
+                id="repair-brand"
                 type="text"
                 value={repairBrand}
                 onChange={(e) => setRepairBrand(e.target.value)}
@@ -181,8 +183,9 @@ export function RepairScheduler({ onClose, onSuccess, equipment, customer, userE
 
             {/* Model */}
             <div>
-              <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Model</label>
+              <label htmlFor="repair-model" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Model</label>
               <input
+                id="repair-model"
                 type="text"
                 value={repairModel}
                 onChange={(e) => setRepairModel(e.target.value)}
@@ -194,8 +197,9 @@ export function RepairScheduler({ onClose, onSuccess, equipment, customer, userE
 
             {/* Problem description */}
             <div>
-              <label className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Problem description</label>
+              <label htmlFor="repair-description" className="block text-xs font-semibold text-[#0D1B2A] mb-1.5">Problem description</label>
               <textarea
+                id="repair-description"
                 value={repairDescription}
                 onChange={(e) => setRepairDescription(e.target.value)}
                 required

@@ -174,33 +174,33 @@ export default function AddCustomerModal({ open, onClose, onAdded }: Props) {
 
               {/* Customer fields */}
               <div>
-                <label className={labelCls}>Full name <span className="text-red-500">*</span></label>
-                <input ref={firstInputRef} required value={form.full_name} onChange={setField('full_name')} placeholder="Jane Smith" className={inputCls} />
+                <label htmlFor="addcust-full-name" className={labelCls}>Full name <span className="text-red-500">*</span></label>
+                <input id="addcust-full-name" ref={firstInputRef} required value={form.full_name} onChange={setField('full_name')} placeholder="Jane Smith" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Email <span className="text-red-500">*</span></label>
-                <input required type="email" value={form.email} onChange={setField('email')} placeholder="jane@example.com" className={inputCls} />
+                <label htmlFor="addcust-email" className={labelCls}>Email <span className="text-red-500">*</span></label>
+                <input id="addcust-email" required type="email" value={form.email} onChange={setField('email')} placeholder="jane@example.com" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Phone <span className="text-red-500">*</span></label>
-                <input required type="tel" value={form.phone} onChange={setField('phone')} placeholder="(555) 000-0000" className={inputCls} />
+                <label htmlFor="addcust-phone" className={labelCls}>Phone <span className="text-red-500">*</span></label>
+                <input id="addcust-phone" required type="tel" value={form.phone} onChange={setField('phone')} placeholder="(555) 000-0000" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Street Address <span className="text-red-500">*</span></label>
-                <input required value={form.street} onChange={setField('street')} placeholder="123 Main St" className={inputCls} />
+                <label htmlFor="addcust-street" className={labelCls}>Street Address <span className="text-red-500">*</span></label>
+                <input id="addcust-street" required value={form.street} onChange={setField('street')} placeholder="123 Main St" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>City <span className="text-red-500">*</span></label>
-                <input required value={form.city} onChange={setField('city')} placeholder="Portland" className={inputCls} />
+                <label htmlFor="addcust-city" className={labelCls}>City <span className="text-red-500">*</span></label>
+                <input id="addcust-city" required value={form.city} onChange={setField('city')} placeholder="Portland" className={inputCls} />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className={labelCls}>State</label>
-                  <input value={form.state} onChange={setField('state')} placeholder="OR" maxLength={2} className={inputCls} />
+                  <label htmlFor="addcust-state" className={labelCls}>State</label>
+                  <input id="addcust-state" value={form.state} onChange={setField('state')} placeholder="OR" maxLength={2} className={inputCls} />
                 </div>
                 <div>
-                  <label className={labelCls}>ZIP</label>
-                  <input value={form.zip} onChange={setField('zip')} placeholder="97201" maxLength={10} className={inputCls} />
+                  <label htmlFor="addcust-zip" className={labelCls}>ZIP</label>
+                  <input id="addcust-zip" value={form.zip} onChange={setField('zip')} placeholder="97201" maxLength={10} className={inputCls} />
                 </div>
               </div>
 
@@ -232,20 +232,20 @@ export default function AddCustomerModal({ open, onClose, onAdded }: Props) {
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="block text-xs font-medium text-[#7A8898] mb-1">Type</label>
-                            <input value={row.equipment_type} onChange={setEqField(i, 'equipment_type')} placeholder="Espresso Machine" className={eqInputCls} />
+                            <label htmlFor={`addcust-eq-type-${i}`} className="block text-xs font-medium text-[#7A8898] mb-1">Type</label>
+                            <input id={`addcust-eq-type-${i}`} value={row.equipment_type} onChange={setEqField(i, 'equipment_type')} placeholder="Espresso Machine" className={eqInputCls} />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-[#7A8898] mb-1">Brand</label>
-                            <input value={row.brand} onChange={setEqField(i, 'brand')} placeholder="La Marzocco" className={eqInputCls} />
+                            <label htmlFor={`addcust-eq-brand-${i}`} className="block text-xs font-medium text-[#7A8898] mb-1">Brand</label>
+                            <input id={`addcust-eq-brand-${i}`} value={row.brand} onChange={setEqField(i, 'brand')} placeholder="La Marzocco" className={eqInputCls} />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-[#7A8898] mb-1">Model</label>
-                            <input value={row.model} onChange={setEqField(i, 'model')} placeholder="Linea Mini" className={eqInputCls} />
+                            <label htmlFor={`addcust-eq-model-${i}`} className="block text-xs font-medium text-[#7A8898] mb-1">Model</label>
+                            <input id={`addcust-eq-model-${i}`} value={row.model} onChange={setEqField(i, 'model')} placeholder="Linea Mini" className={eqInputCls} />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-[#7A8898] mb-1">Serial # <span className="font-normal">(optional)</span></label>
-                            <input value={row.serial_number} onChange={setEqField(i, 'serial_number')} placeholder="LM-12345" className={eqInputCls} />
+                            <label htmlFor={`addcust-eq-serial-${i}`} className="block text-xs font-medium text-[#7A8898] mb-1">Serial # <span className="font-normal">(optional)</span></label>
+                            <input id={`addcust-eq-serial-${i}`} value={row.serial_number} onChange={setEqField(i, 'serial_number')} placeholder="LM-12345" className={eqInputCls} />
                           </div>
                         </div>
                       </div>

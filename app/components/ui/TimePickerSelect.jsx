@@ -23,9 +23,10 @@ const DEFAULT_CLS =
   'block w-full rounded-xl border border-[#E8ECF0] bg-white px-4 py-2.5 text-sm text-[#0D1B2A] ' +
   'focus:border-[#B87333] focus:outline-none focus:ring-2 focus:ring-[#B87333]/20'
 
-export default function TimePickerSelect({ value, onChange, className, placeholder = '— No time —' }) {
+export default function TimePickerSelect({ id, value, onChange, className, placeholder = '— No time —' }) {
   return (
     <select
+      id={id}
       value={value ?? ''}
       onChange={onChange}
       className={className ?? DEFAULT_CLS}

@@ -531,8 +531,9 @@ export default function CalendarPage() {
             </div>
             <form onSubmit={handleBlockDate} className="px-6 py-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <label htmlFor="cal-block-date" className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                 <input
+                  id="cal-block-date"
                   type="date"
                   value={blockDate}
                   onChange={(e) => setBlockDate(e.target.value)}
@@ -541,8 +542,9 @@ export default function CalendarPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reason <span className="text-gray-400 font-normal">(optional)</span></label>
+                <label htmlFor="cal-block-reason" className="block text-sm font-medium text-gray-700 mb-1">Reason <span className="text-gray-400 font-normal">(optional)</span></label>
                 <input
+                  id="cal-block-reason"
                   type="text"
                   value={blockReason}
                   onChange={(e) => setBlockReason(e.target.value)}

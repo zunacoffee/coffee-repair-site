@@ -1,7 +1,7 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, isValidElement, cloneElement } from 'react'
 
 type Settings = Record<string, string>
 
@@ -48,10 +48,11 @@ function ToggleField({ label, description, value, onChange }: {
 }
 
 function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
+  const id = 'settings-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
   return (
     <div>
-      <label className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">{label}</label>
-      {children}
+      <label htmlFor={id} className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">{label}</label>
+      {isValidElement(children) ? cloneElement(children as React.ReactElement<{ id?: string }>, { id }) : children}
       {hint && <p className="text-xs text-[#7A8898] mt-1">{hint}</p>}
     </div>
   )
