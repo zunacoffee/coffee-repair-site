@@ -7,13 +7,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const [customersRes, plansRes, serviceRequestsRes] = await Promise.all([
+  const [customersRes, plansRes, serviceRequestsRes, repairJobsRes] = await Promise.all([
     supabaseAdmin.from('customers').select('id, full_name, email, phone'),
     supabaseAdmin.from('maintenance_plans').select('id, plan_name, status, renewal_date').order('created_at', { ascending: false }),
     supabaseAdmin.from('service_requests').select('id, full_name, email, equipment_type, brand, issue_description, status, contact_preference, created_at').order('created_at', { ascending: false }).limit(20),
+    supabaseAdmin.from('repair_jobs').select('id, customer_id, equipment_type, status, description, created_at').order('created_at', { ascending: false }),
   ])
 
-  const errors = [customersRes.error, plansRes.error, serviceRequestsRes.error].filter(Boolean)
+  const errors = [customersRes.error, plansRes.error, serviceRequestsRes.error, repairJobsRes.error].filter(Boolean)
   if (errors.length > 0) {
     return NextResponse.json({ error: errors[0]?.message ?? 'Failed to load admin data.' }, { status: 500 })
   }
@@ -22,6 +23,7 @@ export async function GET(req: NextRequest) {
     customers: customersRes.data,
     plans: plansRes.data,
     serviceRequests: serviceRequestsRes.data,
+    repairJobs: repairJobsRes.data,
   })
 }
 

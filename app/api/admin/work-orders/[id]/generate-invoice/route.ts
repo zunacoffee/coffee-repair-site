@@ -35,7 +35,6 @@ export async function POST(
     quantity: number
     unit_price: number
     total: number
-    part_id?: number | null
   }[] = []
 
   if (Number(wo.labor_hours) > 0) {
@@ -57,7 +56,6 @@ export async function POST(
       quantity:    p.quantity_used,
       unit_price:  Number(p.unit_price),
       total:       Number(p.total),
-      part_id:     (p as Record<string, unknown>).part_id as number ?? null,
     })
   }
 
@@ -102,9 +100,10 @@ export async function POST(
   if (invErr) return NextResponse.json({ error: invErr.message }, { status: 500 })
 
   if (lineItems.length > 0) {
-    await supabaseAdmin.from('invoice_line_items').insert(
+    const { error: liErr } = await supabaseAdmin.from('invoice_line_items').insert(
       lineItems.map(li => ({ ...li, invoice_id: invoice.id }))
     )
+    if (liErr) console.error('Error inserting invoice line items:', liErr.message)
   }
 
   return NextResponse.json({ invoice }, { status: 201 })

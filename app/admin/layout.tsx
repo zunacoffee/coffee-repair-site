@@ -264,7 +264,7 @@ function Sidebar({
         />
       )}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-[#0D1B2A] transition-transform duration-200 md:relative md:translate-x-0 md:z-auto md:shrink-0 ${
+        className={`no-print fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-[#0D1B2A] transition-transform duration-200 md:relative md:translate-x-0 md:z-auto md:shrink-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -380,7 +380,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden flex flex-col">
         {/* Mobile top bar */}
-        <div className="flex items-center gap-3 px-4 py-4 bg-[#0D1B2A] border-b border-white/10 md:hidden">
+        <div className="no-print flex items-center gap-3 px-4 py-4 bg-[#0D1B2A] border-b border-white/10 md:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
             className="rounded-md p-2.5 text-white hover:bg-white/10 transition"

@@ -140,6 +140,6 @@ export async function POST(
     html,
   })
 
-  if (emailErr) return NextResponse.json({ error: 'Failed to send email.' }, { status: 500 })
+  if (emailErr) return NextResponse.json({ error: emailErr.message ?? 'Failed to send email.' }, { status: 500 })
   return NextResponse.json({ ok: true })
 }
