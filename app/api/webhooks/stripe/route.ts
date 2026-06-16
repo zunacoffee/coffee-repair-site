@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin'
-import { computeNextVisitDate } from '../../../../lib/visitScheduling'
+import { computeNextVisitDate, findFirstAvailableSlot } from '../../../../lib/visitScheduling'
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -81,6 +81,9 @@ export async function POST(req: NextRequest) {
             : { data: null }
 
           if (pendingPlan) {
+            const nextVisitDate = computeNextVisitDate(pendingPlan.visit_frequency as number | null)
+            const firstSlot = await findFirstAvailableSlot(nextVisitDate)
+
             const { error } = await supabaseAdmin
               .from('maintenance_plans')
               .update({
@@ -88,7 +91,8 @@ export async function POST(req: NextRequest) {
                 stripe_subscription_id: subscriptionId,
                 stripe_customer_id: subscription.customer as string,
                 renewal_date: renewalDate,
-                next_visit_date: computeNextVisitDate(pendingPlan.visit_frequency as number | null),
+                next_visit_date: firstSlot?.date ?? nextVisitDate,
+                next_visit_slot: firstSlot?.slot ?? null,
               })
               .eq('id', pendingPlan.id)
 
@@ -103,6 +107,8 @@ export async function POST(req: NextRequest) {
             else if (priceAmount === 5900) planName = 'Standard Plan'
             else if (priceAmount === 9900) planName = 'Premium Plan'
 
+            const nextVisitDate = computeNextVisitDate(null)
+            const firstSlot = await findFirstAvailableSlot(nextVisitDate)
             const customerId = session.metadata?.customer_id
             const { error } = await supabaseAdmin.from('maintenance_plans').insert([
               {
@@ -113,7 +119,8 @@ export async function POST(req: NextRequest) {
                 stripe_subscription_id: subscriptionId,
                 stripe_customer_id: subscription.customer as string,
                 renewal_date: renewalDate,
-                next_visit_date: computeNextVisitDate(null),
+                next_visit_date: firstSlot?.date ?? nextVisitDate,
+                next_visit_slot: firstSlot?.slot ?? null,
               },
             ])
 
