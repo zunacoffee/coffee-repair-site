@@ -3,13 +3,6 @@ import { Resend } from 'resend'
 import { supabaseAdmin } from '../../../lib/supabaseAdmin'
 import { getSiteSettings, getBool } from '../../../lib/siteSettings'
 
-function fmtTime(t: string): string {
-  const [h, m] = t.split(':').map(Number)
-  const suffix = h >= 12 ? 'pm' : 'am'
-  const hr = h > 12 ? h - 12 : h === 0 ? 12 : h
-  return m ? `${hr}:${String(m).padStart(2, '0')}${suffix}` : `${hr}${suffix}`
-}
-
 export async function POST(req: NextRequest) {
   let body: unknown
   try {
@@ -67,9 +60,7 @@ export async function POST(req: NextRequest) {
     const settings = await getSiteSettings()
     const businessName = settings.public_business_name || settings.business_name || 'Coffee Service'
     const fromField = `${businessName} <onboarding@resend.dev>`
-    const morningLabel = `Morning (${fmtTime(settings.morning_slot_start || '08:00')}–${fmtTime(settings.morning_slot_end || '12:00')})`
-    const afternoonLabel = `Afternoon (${fmtTime(settings.afternoon_slot_start || '12:00')}–${fmtTime(settings.afternoon_slot_end || '17:00')})`
-    const slotLabel = time_slot === 'morning' ? morningLabel : time_slot === 'afternoon' ? afternoonLabel : null
+    const slotLabel = time_slot || null
     const dateLabel = scheduled_date
       ? new Date(scheduled_date + 'T00:00:00').toLocaleDateString('en-US', {
           weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',

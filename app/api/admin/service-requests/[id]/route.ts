@@ -27,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (body.scheduled_date !== undefined) updates.scheduled_date = body.scheduled_date || null
   if (body.time_slot !== undefined) {
-    if (body.time_slot && !['morning', 'afternoon'].includes(body.time_slot as string)) {
+    if (body.time_slot && !/^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(body.time_slot as string)) {
       return NextResponse.json({ error: 'Invalid time slot.' }, { status: 400 })
     }
     updates.time_slot = body.time_slot || null
