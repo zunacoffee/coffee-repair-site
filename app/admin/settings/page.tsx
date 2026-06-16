@@ -25,7 +25,6 @@ const DEFAULTS: Settings = {
   service_area:         '',
   online_payments_enabled: 'true',
   booking_advance_days: '30',
-  blocked_dates:        '',
 }
 
 function ToggleField({ label, description, value, onChange }: {
@@ -271,15 +270,14 @@ export default function SettingsPage() {
         {/* ── Scheduling ── */}
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-[#0D1B2A] text-base">Scheduling</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Booking Window (days)" hint="How many days ahead customers can schedule appointments.">
-              <Input value={settings.booking_advance_days} onChange={v => set('booking_advance_days', v)} type="number" min="1" step="1" placeholder="30" />
-            </Field>
-            <Field label="Blocked Dates" hint="Comma-separated dates to block from scheduling (YYYY-MM-DD format).">
-              <Input value={settings.blocked_dates} onChange={v => set('blocked_dates', v)} placeholder="2026-12-25, 2026-01-01" />
-            </Field>
-          </div>
-          <SaveBtn st={scheduling} onSave={() => save(['booking_advance_days', 'blocked_dates'], setScheduling)} />
+          <Field label="Booking Window (days)" hint="How many days ahead customers can schedule appointments.">
+            <Input value={settings.booking_advance_days} onChange={v => set('booking_advance_days', v)} type="number" min="1" step="1" placeholder="30" />
+          </Field>
+          <SaveBtn st={scheduling} onSave={() => save(['booking_advance_days'], setScheduling)} />
+          <p className="text-xs text-[#7A8898]">
+            To block specific dates from scheduling, use the{' '}
+            <Link href="/admin/calendar" className="text-[#B87333] font-medium hover:underline">Calendar</Link> page.
+          </p>
         </div>
 
         {/* ── Branding ── */}

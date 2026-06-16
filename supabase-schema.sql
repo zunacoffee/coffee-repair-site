@@ -72,7 +72,9 @@ CREATE TABLE IF NOT EXISTS invoices (
   status               TEXT NOT NULL DEFAULT 'draft'
                          CHECK (status IN ('draft','sent','paid')),
   subtotal             DECIMAL(10,2) NOT NULL DEFAULT 0,
+  tax_amount           DECIMAL(10,2) NOT NULL DEFAULT 0,
   total                DECIMAL(10,2) NOT NULL DEFAULT 0,
+  due_date             DATE,
   stripe_payment_link  TEXT,
   notes                TEXT,
   created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()

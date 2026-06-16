@@ -61,7 +61,12 @@ export async function POST(
     })
   }
 
-  const subtotal = lineItems.reduce((s, li) => s + li.total, 0)
+  const subtotal  = lineItems.reduce((s, li) => s + li.total, 0)
+  const taxRate   = getNum(settings, 'tax_rate')
+  const dueDays   = getNum(settings, 'invoice_due_days')
+  const taxAmount = Math.round(subtotal * (taxRate / 100) * 100) / 100
+  const total     = Math.round((subtotal + taxAmount) * 100) / 100
+  const dueDate   = new Date(Date.now() + dueDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
 
   const { data: lastInvoice } = await supabaseAdmin
     .from('invoices')
@@ -82,7 +87,9 @@ export async function POST(
     invoice_number: invoiceNumber,
     status:         'draft',
     subtotal:       Math.round(subtotal * 100) / 100,
-    total:          Math.round(subtotal * 100) / 100,
+    tax_amount:     taxAmount,
+    total,
+    due_date:       dueDays > 0 ? dueDate : null,
     notes:          `Generated from work order ${wo.work_order_number}`,
   }
 

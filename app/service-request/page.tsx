@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import PublicNavbar from '../components/PublicNavbar'
 import PublicFooter from '../components/PublicFooter'
 
@@ -84,6 +84,21 @@ export default function ServiceRequestPage() {
   const [viewYear,  setViewYear]  = useState(todayRef.getFullYear())
   const [viewMonth, setViewMonth] = useState(todayRef.getMonth())
 
+  const [serviceArea,        setServiceArea]        = useState('')
+  const [bookingAdvanceDays, setBookingAdvanceDays]  = useState(0)
+
+  useEffect(() => {
+    fetch('/api/public-settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.settings) {
+          setServiceArea(data.settings.service_area || '')
+          setBookingAdvanceDays(Number(data.settings.booking_advance_days) || 0)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   const set = (field: keyof FormState) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
@@ -126,8 +141,16 @@ export default function ServiceRequestPage() {
   }
 
   // Calendar derived values
+  const maxBookingDate = bookingAdvanceDays > 0
+    ? new Date(todayRef.getFullYear(), todayRef.getMonth(), todayRef.getDate() + bookingAdvanceDays)
+    : null
+
   const canGoPrev = viewYear > todayRef.getFullYear() ||
     (viewYear === todayRef.getFullYear() && viewMonth > todayRef.getMonth())
+
+  const canGoNext = !maxBookingDate ||
+    viewYear < maxBookingDate.getFullYear() ||
+    (viewYear === maxBookingDate.getFullYear() && viewMonth < maxBookingDate.getMonth())
 
   const prevMonth = () => {
     if (!canGoPrev) return
@@ -135,6 +158,7 @@ export default function ServiceRequestPage() {
     else setViewMonth((m) => m - 1)
   }
   const nextMonth = () => {
+    if (!canGoNext) return
     if (viewMonth === 11) { setViewYear((y) => y + 1); setViewMonth(0) }
     else setViewMonth((m) => m + 1)
   }
@@ -203,6 +227,11 @@ export default function ServiceRequestPage() {
                     <label className={labelClass}>Phone</label>
                     <input type="tel" value={form.phone} onChange={set('phone')} required placeholder="(555) 000-0000" className={inputClass} />
                   </div>
+                  {serviceArea && (
+                    <p className="sm:col-span-2 -mt-1 text-xs text-cafe-steel">
+                      We currently service: <span className="font-medium text-cafe-navy">{serviceArea}</span>
+                    </p>
+                  )}
                   <div className="sm:col-span-2">
                     <label className={labelClass}>Street Address</label>
                     <input type="text" value={form.street} onChange={set('street')} placeholder="123 Main St" className={inputClass} />
@@ -295,7 +324,8 @@ export default function ServiceRequestPage() {
                     <button
                       type="button"
                       onClick={nextMonth}
-                      className="rounded-lg p-2 text-[#7A8898] hover:bg-[#E8ECF0] transition"
+                      disabled={!canGoNext}
+                      className="rounded-lg p-2 text-[#7A8898] hover:bg-[#E8ECF0] disabled:opacity-30 disabled:cursor-not-allowed transition"
                       aria-label="Next month"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -323,9 +353,10 @@ export default function ServiceRequestPage() {
 
                       const key        = padDate(date.getFullYear(), date.getMonth(), date.getDate())
                       const isPast     = date < todayRef
+                      const isTooFar   = !!maxBookingDate && date > maxBookingDate
                       const dow        = date.getDay()
                       const isWeekend  = dow === 0 || dow === 6
-                      const disabled   = isPast || isWeekend
+                      const disabled   = isPast || isWeekend || isTooFar
                       const isSelected = selectedDate === key
                       const isToday    = key === padDate(todayRef.getFullYear(), todayRef.getMonth(), todayRef.getDate())
 
@@ -334,7 +365,7 @@ export default function ServiceRequestPage() {
                         cls = 'bg-[#B87333] text-white font-bold ring-2 ring-[#B87333]/30'
                       } else if (isWeekend) {
                         cls = 'bg-red-50 text-red-300 cursor-not-allowed'
-                      } else if (isPast) {
+                      } else if (isPast || isTooFar) {
                         cls = 'text-gray-300 cursor-not-allowed'
                       } else if (isToday) {
                         cls = 'text-[#B87333] font-bold ring-1 ring-[#B87333]/30 hover:bg-[#B87333]/10'

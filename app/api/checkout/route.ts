@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { supabaseAdmin } from '../../../lib/supabaseAdmin'
+import { getSiteSettings, getBool } from '../../../lib/siteSettings'
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 
@@ -15,6 +16,11 @@ export async function POST(req: NextRequest) {
 
   if (!body.planId) {
     return NextResponse.json({ error: 'Invalid plan selected.' }, { status: 400 })
+  }
+
+  const settings = await getSiteSettings()
+  if (!getBool(settings, 'online_payments_enabled')) {
+    return NextResponse.json({ error: 'Online payments are currently unavailable. Please contact us to sign up.' }, { status: 400 })
   }
 
   // Look up live price from plan_settings

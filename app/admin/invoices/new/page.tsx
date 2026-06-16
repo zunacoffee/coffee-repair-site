@@ -234,6 +234,7 @@ export default function NewInvoicePage() {
   const [loadError,   setLoadError]   = useState<string | null>(null)
   const [weekdayRate, setWeekdayRate] = useState(80)
   const [weekendRate, setWeekendRate] = useState(120)
+  const [taxRate,     setTaxRate]     = useState(0)
 
   const [customerId,  setCustomerId]  = useState<number | null>(null)
   const [repairJobId, setRepairJobId] = useState<number | null>(null)
@@ -258,6 +259,7 @@ export default function NewInvoicePage() {
         if (sData.settings) {
           setWeekdayRate(Number(sData.settings.labor_rate_weekday) || 80)
           setWeekendRate(Number(sData.settings.labor_rate_weekend) || 120)
+          setTaxRate(Number(sData.settings.tax_rate) || 0)
         }
       })
       .catch(() => setLoadError('Failed to load form data'))
@@ -296,8 +298,9 @@ export default function NewInvoicePage() {
     }])
   }
 
-  const subtotal = lineItems.reduce((s, i) => s + i.total, 0)
-  const total    = subtotal
+  const subtotal  = lineItems.reduce((s, i) => s + i.total, 0)
+  const taxAmount = Math.round(subtotal * (taxRate / 100) * 100) / 100
+  const total     = Math.round((subtotal + taxAmount) * 100) / 100
 
   const customerRepairJobs = customerId
     ? repairJobs.filter((j) => j.customer_id === customerId)
@@ -482,6 +485,12 @@ export default function NewInvoicePage() {
                     <td className="pr-8 py-0.5 text-[#7A8898]">Subtotal</td>
                     <td className="text-right font-semibold text-[#0D1B2A]">${subtotal.toFixed(2)}</td>
                   </tr>
+                  {taxAmount > 0 && (
+                    <tr>
+                      <td className="pr-8 py-0.5 text-[#7A8898]">Tax ({taxRate}%)</td>
+                      <td className="text-right font-semibold text-[#0D1B2A]">${taxAmount.toFixed(2)}</td>
+                    </tr>
+                  )}
                   <tr className="border-t border-[#E8ECF0]">
                     <td className="pr-8 pt-2 text-base font-bold text-[#0D1B2A]">Total</td>
                     <td className="text-right pt-2 text-xl font-bold text-[#B87333]">${total.toFixed(2)}</td>

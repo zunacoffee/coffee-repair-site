@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../supabase'
 
@@ -57,6 +57,22 @@ export function RepairScheduler({ onClose, onSuccess, equipment, customer, userE
   const [repairError,        setRepairError]        = useState<string | null>(null)
   const [repairViewYear,     setRepairViewYear]     = useState(() => new Date().getFullYear())
   const [repairViewMonth,    setRepairViewMonth]    = useState(() => new Date().getMonth())
+  const [bookingAdvanceDays, setBookingAdvanceDays]  = useState(0)
+
+  useEffect(() => {
+    fetch('/api/public-settings')
+      .then((res) => res.json())
+      .then((data) => setBookingAdvanceDays(Number(data.settings?.booking_advance_days) || 0))
+      .catch(() => {})
+  }, [])
+
+  const repairToday = new Date(); repairToday.setHours(0, 0, 0, 0)
+  const repairMaxDate = bookingAdvanceDays > 0
+    ? new Date(repairToday.getFullYear(), repairToday.getMonth(), repairToday.getDate() + bookingAdvanceDays)
+    : null
+  const repairCanGoNext = !repairMaxDate ||
+    repairViewYear < repairMaxDate.getFullYear() ||
+    (repairViewYear === repairMaxDate.getFullYear() && repairViewMonth < repairMaxDate.getMonth())
 
   const handleRepairDateChange = async (d: string) => {
     setRepairDate(d)
@@ -217,10 +233,12 @@ export function RepairScheduler({ onClose, onSuccess, equipment, customer, userE
                   <button
                     type="button"
                     onClick={() => {
+                      if (!repairCanGoNext) return
                       if (repairViewMonth === 11) { setRepairViewYear((y) => y + 1); setRepairViewMonth(0) }
                       else setRepairViewMonth((m) => m + 1)
                     }}
-                    className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#E8ECF0] transition"
+                    disabled={!repairCanGoNext}
+                    className="rounded-lg p-1.5 text-[#7A8898] hover:bg-[#E8ECF0] disabled:opacity-30 disabled:cursor-not-allowed transition"
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -244,10 +262,11 @@ export function RepairScheduler({ onClose, onSuccess, equipment, customer, userE
                     const rToday = new Date(); rToday.setHours(0, 0, 0, 0)
                     const key        = rPadDate(date.getFullYear(), date.getMonth(), date.getDate())
                     const isPast     = date < rToday
+                    const isTooFar   = !!repairMaxDate && date > repairMaxDate
                     const isSun      = date.getDay() === 0
                     const isSelected = repairDate === key
                     const isToday    = key === rPadDate(rToday.getFullYear(), rToday.getMonth(), rToday.getDate())
-                    const disabled   = isPast || isSun
+                    const disabled   = isPast || isSun || isTooFar
 
                     let cls: string
                     if (isSelected)     cls = 'bg-[#B87333] text-white font-bold ring-2 ring-[#B87333]/30'

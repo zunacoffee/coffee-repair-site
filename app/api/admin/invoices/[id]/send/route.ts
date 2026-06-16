@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { Resend } from 'resend'
 import { supabaseAdmin } from '../../../../../../lib/supabaseAdmin'
 import { authenticateAdminRequest } from '../../../../../../lib/adminAuth'
-import { getSiteSettings } from '../../../../../../lib/siteSettings'
+import { getSiteSettings, getBool } from '../../../../../../lib/siteSettings'
 
 function fmt(n: number) { return `$${n.toFixed(2)}` }
 
@@ -121,7 +121,7 @@ export async function POST(
   let paymentLinkUrl = invoice.stripe_payment_link as string | null
 
   // Create Stripe Payment Link if not already created
-  if (!paymentLinkUrl && process.env.STRIPE_SECRET_KEY && invoice.total > 0) {
+  if (!paymentLinkUrl && process.env.STRIPE_SECRET_KEY && invoice.total > 0 && getBool(settings, 'online_payments_enabled')) {
     try {
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
       const product = await stripe.products.create({

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin'
 import { authenticateAdminRequest } from '../../../../lib/adminAuth'
 import { Resend } from 'resend'
-import { getSiteSettings, getBool } from '../../../../lib/siteSettings'
+import { getSiteSettings, getBool, getNum } from '../../../../lib/siteSettings'
 
 // Low-stock alert helper (re-used after inventory deduction)
 async function maybeSendLowStockAlert(part: {
@@ -86,8 +86,14 @@ export async function POST(req: NextRequest) {
   }
   const invoiceNumber = `INV-${String(nextNum).padStart(4, '0')}`
 
-  const subtotal = lineItems.reduce((s, item) => s + Number(item.total), 0)
-  const total    = subtotal
+  const settings  = await getSiteSettings()
+  const taxRate   = getNum(settings, 'tax_rate')
+  const dueDays   = getNum(settings, 'invoice_due_days')
+
+  const subtotal  = lineItems.reduce((s, item) => s + Number(item.total), 0)
+  const taxAmount = Math.round(subtotal * (taxRate / 100) * 100) / 100
+  const total     = Math.round((subtotal + taxAmount) * 100) / 100
+  const dueDate   = new Date(Date.now() + dueDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
 
   // Insert invoice
   const { data: invoice, error: invError } = await supabaseAdmin
@@ -98,7 +104,9 @@ export async function POST(req: NextRequest) {
       repair_job_id:  body.repair_job_id ?? null,
       status:         'draft',
       subtotal:       Math.round(subtotal * 100) / 100,
-      total:          Math.round(total * 100) / 100,
+      tax_amount:     taxAmount,
+      total,
+      due_date:       dueDays > 0 ? dueDate : null,
       notes:          body.notes ?? null,
     }])
     .select()

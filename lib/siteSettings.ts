@@ -31,6 +31,14 @@ export const SETTING_DEFAULTS: Record<string, string> = {
   // Branding
   public_business_name:        'Cafe Works',
   logo_url:                    '',
+  // Billing
+  tax_rate:                    '0',
+  invoice_due_days:            '0',
+  invoice_footer_notes:        '',
+  online_payments_enabled:     'true',
+  // Service Area / Booking
+  service_area:                '',
+  booking_advance_days:        '0',
 }
 
 export type SiteSettings = Record<string, string>

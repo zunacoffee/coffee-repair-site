@@ -3,14 +3,16 @@
 import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 
-type BizInfo = { name: string; address: string; phone: string; email: string }
+type BizInfo = { name: string; address: string; phone: string; email: string; footerNotes: string }
 
 type Invoice = {
   id: number
   invoice_number: string
   status: 'draft' | 'sent' | 'paid'
   subtotal: number
+  tax_amount: number
   total: number
+  due_date?: string | null
   notes?: string | null
   created_at: string
   stripe_payment_link?: string | null
@@ -43,7 +45,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
 
   const [invoice,   setInvoice]   = useState<Invoice | null>(null)
   const [lineItems, setLineItems] = useState<LineItem[]>([])
-  const [biz,       setBiz]       = useState<BizInfo>({ name: 'Cafe Works', address: '', phone: '', email: '' })
+  const [biz,       setBiz]       = useState<BizInfo>({ name: 'Cafe Works', address: '', phone: '', email: '', footerNotes: '' })
   const [loading,   setLoading]   = useState(true)
   const [error,     setError]     = useState<string | null>(null)
 
@@ -65,10 +67,11 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
         const j = await settingsResult.value.json()
         if (j?.settings) {
           setBiz({
-            name:    j.settings.public_business_name || j.settings.business_name || 'Cafe Works',
-            address: j.settings.address || '',
-            phone:   j.settings.phone   || '',
-            email:   j.settings.email   || '',
+            name:        j.settings.public_business_name || j.settings.business_name || 'Cafe Works',
+            address:     j.settings.address || '',
+            phone:       j.settings.phone   || '',
+            email:       j.settings.email   || '',
+            footerNotes: j.settings.invoice_footer_notes || '',
           })
         }
       }
@@ -167,6 +170,11 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
                     </span>
                   </div>
                   <p className="text-xs text-[#7A8898] mt-1.5">Date: {dateStr}</p>
+                  {invoice.due_date && (
+                    <p className="text-xs text-[#7A8898] mt-0.5">
+                      Due: {new Date(invoice.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -241,6 +249,12 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
                       <span>Subtotal</span>
                       <span className="tabular-nums">{fmt(invoice.subtotal)}</span>
                     </div>
+                    {Number(invoice.tax_amount) > 0 && (
+                      <div className="flex w-64 items-center justify-between text-sm text-[#7A8898]">
+                        <span>Tax</span>
+                        <span className="tabular-nums">{fmt(invoice.tax_amount)}</span>
+                      </div>
+                    )}
                     <div className="flex w-64 items-center justify-between border-t-2 border-[#0D1B2A] pt-2.5">
                       <span className="text-base font-bold text-[#0D1B2A]">Total Due</span>
                       <span className="text-2xl font-bold text-[#B87333] tabular-nums">{fmt(invoice.total)}</span>
@@ -304,7 +318,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
             {/* ── Footer ──────────────────────────────────────────────── */}
             <div className="border-t border-[#E8ECF0] bg-[#E8ECF0] px-10 py-5 text-center">
               <p className="text-sm font-semibold text-[#0D1B2A]">{biz.name}</p>
-              <p className="text-xs text-[#7A8898] mt-0.5">Thank you for your business!</p>
+              <p className="text-xs text-[#7A8898] mt-0.5 whitespace-pre-wrap">{biz.footerNotes || 'Thank you for your business!'}</p>
               <div className="mt-1 flex items-center justify-center gap-4 text-xs text-[#7A8898]">
                 {biz.phone && <span>{biz.phone}</span>}
                 {biz.email && <span>{biz.email}</span>}

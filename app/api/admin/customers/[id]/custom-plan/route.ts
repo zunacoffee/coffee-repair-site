@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { Resend } from 'resend'
 import { supabaseAdmin } from '../../../../../../lib/supabaseAdmin'
 import { authenticateAdminRequest } from '../../../../../../lib/adminAuth'
-import { getSiteSettings } from '../../../../../../lib/siteSettings'
+import { getSiteSettings, getBool } from '../../../../../../lib/siteSettings'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -55,6 +55,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   try {
     const settings = await getSiteSettings()
+    if (!getBool(settings, 'online_payments_enabled')) {
+      return NextResponse.json({ error: 'Online payments are disabled in Settings.' }, { status: 400 })
+    }
     const businessName = settings.public_business_name || 'Cafe Works'
     const origin = new URL(req.url).origin
 
