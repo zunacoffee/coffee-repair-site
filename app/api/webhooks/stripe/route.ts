@@ -101,10 +101,10 @@ export async function POST(req: NextRequest) {
             else if (priceAmount === 5900) planName = 'Standard Plan'
             else if (priceAmount === 9900) planName = 'Premium Plan'
 
-            // Note: regular (non-custom) plan checkout doesn't yet pass a
-            // customer_id, so this row isn't linked to a customer.
+            const customerId = session.metadata?.customer_id
             const { error } = await supabaseAdmin.from('maintenance_plans').insert([
               {
+                customer_id: customerId ? Number(customerId) : null,
                 plan_name: planName,
                 status: 'active',
                 price: (priceAmount ?? 5900) / 100, // Convert to dollars

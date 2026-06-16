@@ -1,11 +1,20 @@
 "use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../supabase'
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -28,7 +37,8 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
+    const redirect = searchParams.get('redirect')
+    router.push(redirect && redirect.startsWith('/') ? redirect : '/dashboard')
   }
 
   return (

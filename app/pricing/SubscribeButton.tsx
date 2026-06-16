@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { supabase } from '../supabase'
 
 export default function SubscribeButton({ planKey }: { planKey: string }) {
   const [loading, setLoading] = useState(false)
@@ -10,9 +11,18 @@ export default function SubscribeButton({ planKey }: { planKey: string }) {
     setError(null)
     setLoading(true)
 
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      window.location.href = '/login?redirect=/pricing'
+      return
+    }
+
     const res = await fetch('/api/checkout', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
       body: JSON.stringify({ planId: planKey }),
     })
 
