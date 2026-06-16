@@ -52,6 +52,9 @@ export default function NewWorkOrderPage() {
   const [showNewCustomer, setShowNewCustomer] = useState(false)
   const [newCustForm, setNewCustForm] = useState({ full_name: '', email: '', phone: '', street: '', city: '', state: '', zip: '' })
   const [creatingCust, setCreatingCust] = useState(false)
+  const [showNewEquipment, setShowNewEquipment] = useState(false)
+  const [newEquipForm, setNewEquipForm] = useState({ equipment_type: '', brand: '', model: '', serial_number: '' })
+  const [creatingEquip, setCreatingEquip] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -125,6 +128,29 @@ export default function NewWorkOrderPage() {
       setError('Network error.')
     }
     setCreatingCust(false)
+  }
+
+  async function handleCreateEquipment() {
+    if (!customerId) return
+    setCreatingEquip(true)
+    try {
+      const res = await fetch(`/api/admin/customers/${customerId}/equipment`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newEquipForm),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error ?? 'Failed to create equipment.'); setCreatingEquip(false); return }
+      const created: Equipment = { ...data.equipment, customer_id: parseInt(customerId) }
+      setEquipment(prev => [...prev, created])
+      setEquipmentId(String(created.id))
+      setNewEquipForm({ equipment_type: '', brand: '', model: '', serial_number: '' })
+      setShowNewEquipment(false)
+    } catch {
+      setError('Network error.')
+    }
+    setCreatingEquip(false)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -314,6 +340,83 @@ export default function NewWorkOrderPage() {
                   <option key={e.id} value={e.id}>{e.brand} {e.model} ({e.equipment_type})</option>
                 ))}
               </select>
+
+              {/* Inline new equipment */}
+              {customerId && (
+                !showNewEquipment ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowNewEquipment(true)}
+                    className="mt-2 text-sm text-[#B87333] hover:opacity-75 transition"
+                  >
+                    + New equipment
+                  </button>
+                ) : (
+                  <div
+                    className="mt-3 rounded-xl border border-[#E8ECF0] bg-[#E8ECF0]/40 p-4 space-y-3"
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCreateEquipment() } }}
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">New Equipment</p>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#7A8898]">Equipment Type *</label>
+                      <input
+                        type="text"
+                        value={newEquipForm.equipment_type}
+                        onChange={e => setNewEquipForm(f => ({ ...f, equipment_type: e.target.value }))}
+                        placeholder="e.g., Espresso Machine"
+                        required
+                        className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#7A8898]">Brand *</label>
+                      <input
+                        type="text"
+                        value={newEquipForm.brand}
+                        onChange={e => setNewEquipForm(f => ({ ...f, brand: e.target.value }))}
+                        required
+                        className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#7A8898]">Model *</label>
+                      <input
+                        type="text"
+                        value={newEquipForm.model}
+                        onChange={e => setNewEquipForm(f => ({ ...f, model: e.target.value }))}
+                        required
+                        className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#7A8898]">Serial Number</label>
+                      <input
+                        type="text"
+                        value={newEquipForm.serial_number}
+                        onChange={e => setNewEquipForm(f => ({ ...f, serial_number: e.target.value }))}
+                        className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleCreateEquipment}
+                        disabled={creatingEquip}
+                        className="rounded-xl bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
+                      >
+                        {creatingEquip ? 'Creating…' : 'Create & Select'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowNewEquipment(false); setNewEquipForm({ equipment_type: '', brand: '', model: '', serial_number: '' }) }}
+                        className="text-sm text-[#7A8898] hover:text-[#0D1B2A] transition"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )
+              )}
             </div>
           </div>
 
