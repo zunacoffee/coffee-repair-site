@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../../../lib/supabaseAdmin'
 import { authenticateAdminRequest } from '../../../../../lib/adminAuth'
+import { computeNextVisitDate } from '../../../../../lib/visitScheduling'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -23,10 +24,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: fetchErr?.message ?? 'Plan not found.' }, { status: 404 })
     }
 
-    const freq = (plan.visit_frequency as number) ?? 1
-    const today = new Date()
-    const next = new Date(today.getFullYear(), today.getMonth() + freq, today.getDate())
-    const nextDateISO = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`
+    const nextDateISO = computeNextVisitDate(plan.visit_frequency as number | null)
 
     const { data: updated, error: updateErr } = await supabaseAdmin
       .from('maintenance_plans')

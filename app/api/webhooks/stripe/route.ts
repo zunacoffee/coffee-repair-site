@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin'
+import { computeNextVisitDate } from '../../../../lib/visitScheduling'
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
           const { data: pendingPlan } = priceId
             ? await supabaseAdmin
                 .from('maintenance_plans')
-                .select('id')
+                .select('id, visit_frequency')
                 .eq('stripe_price_id', priceId)
                 .eq('status', 'pending_payment')
                 .eq('is_custom', true)
@@ -87,6 +88,7 @@ export async function POST(req: NextRequest) {
                 stripe_subscription_id: subscriptionId,
                 stripe_customer_id: subscription.customer as string,
                 renewal_date: renewalDate,
+                next_visit_date: computeNextVisitDate(pendingPlan.visit_frequency as number | null),
               })
               .eq('id', pendingPlan.id)
 
@@ -111,6 +113,7 @@ export async function POST(req: NextRequest) {
                 stripe_subscription_id: subscriptionId,
                 stripe_customer_id: subscription.customer as string,
                 renewal_date: renewalDate,
+                next_visit_date: computeNextVisitDate(null),
               },
             ])
 
