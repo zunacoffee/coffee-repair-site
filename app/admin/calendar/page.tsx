@@ -12,7 +12,7 @@ type CalendarEvent = {
   status: string
   customerName: string
   detail: string
-  time_slot?: 'morning' | 'afternoon' | null
+  time_slot?: string | null
   scheduled_time?: string | null
 }
 
@@ -52,11 +52,6 @@ const PILL_LABEL: Record<CalendarEvent['type'], string> = {
   work_order:      'Work Order',
 }
 
-const SLOT_TIME: Record<string, string> = {
-  morning:   'AM',
-  afternoon: 'PM',
-}
-
 const STATUS_STYLE: Record<string, string> = {
   pending:     'bg-amber-100 text-amber-800',
   open:        'bg-amber-100 text-amber-800',
@@ -64,11 +59,6 @@ const STATUS_STYLE: Record<string, string> = {
   completed:   'bg-green-100 text-green-800',
   active:      'bg-green-100 text-green-800',
   cancelled:   'bg-gray-100 text-gray-500',
-}
-
-const SLOT_LABEL: Record<string, string> = {
-  morning:   'AM (8am–12pm)',
-  afternoon: 'PM (12pm–5pm)',
 }
 
 function formatTime(hhmm: string): string {
@@ -79,12 +69,29 @@ function formatTime(hhmm: string): string {
 }
 
 function pillTime(ev: CalendarEvent): string {
-  if (ev.type === 'maintenance') {
-    return ev.time_slot ? ` · ${SLOT_TIME[ev.time_slot]}` : ''
-  }
   if (ev.scheduled_time) return ` · ${formatTime(ev.scheduled_time)}`
-  if (ev.time_slot)      return ` · ${SLOT_TIME[ev.time_slot]}`
+  if (ev.time_slot)      return ` · ${ev.time_slot}`
   return ''
+}
+
+function timeSlotMinutes(label: string): number | null {
+  const m = label.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (!m) return null
+  let h = parseInt(m[1], 10)
+  const min = parseInt(m[2], 10)
+  const ampm = m[3].toUpperCase()
+  if (ampm === 'PM' && h !== 12) h += 12
+  if (ampm === 'AM' && h === 12) h = 0
+  return h * 60 + min
+}
+
+function eventMinutes(ev: CalendarEvent): number {
+  if (ev.scheduled_time) {
+    const [h, m] = ev.scheduled_time.split(':').map(Number)
+    return h * 60 + m
+  }
+  if (ev.time_slot) return timeSlotMinutes(ev.time_slot) ?? Infinity
+  return Infinity
 }
 
 function buildGrid(year: number, month: number): Date[] {
@@ -196,13 +203,8 @@ export default function CalendarPage() {
   const selectedBlocked     = selected ? blockedMap[selected] ?? null : null
   const selectedDateObj     = selected ? new Date(selected + 'T12:00:00') : null
 
-  // Sort events: morning first, then afternoon, then no slot
-  const sortedEvents = [...selectedEvents].sort((a, b) => {
-    const order = { morning: 0, afternoon: 1 }
-    const aOrder = a.time_slot ? (order[a.time_slot] ?? 2) : 2
-    const bOrder = b.time_slot ? (order[b.time_slot] ?? 2) : 2
-    return aOrder - bOrder
-  })
+  // Sort events by time of day, earliest first; events with no time last
+  const sortedEvents = [...selectedEvents].sort((a, b) => eventMinutes(a) - eventMinutes(b))
 
   return (
     <div className="flex-1 bg-[#E8ECF0]">
@@ -346,7 +348,7 @@ export default function CalendarPage() {
                             console.log('pill data:', ev.type, ev.id, ev.scheduled_time)
                             const timeLabel = ev.scheduled_time
                               ? formatTime(ev.scheduled_time)
-                              : ev.time_slot ? SLOT_LABEL[ev.time_slot] : ''
+                              : ev.time_slot ?? ''
                             return (
                               <span
                                 key={ev.id}
@@ -458,7 +460,7 @@ export default function CalendarPage() {
                     )}
                     {ev.time_slot && (
                       <span className="mt-1 inline-flex items-center rounded-full bg-[#B87333]/10 px-2 py-0.5 text-[10px] font-semibold text-[#B87333]">
-                        {SLOT_LABEL[ev.time_slot]}
+                        {ev.time_slot}
                       </span>
                     )}
                     {ev.detail && (

@@ -10,7 +10,7 @@ export type CalendarEvent = {
   status: string
   customerName: string
   detail: string
-  time_slot?: 'morning' | 'afternoon' | null
+  time_slot?: string | null
   scheduled_time?: string | null
 }
 
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
   const startDate = `${year}-${mm}-01`
   const endDate   = `${year}-${mm}-${String(lastDay).padStart(2, '0')}`
 
-  const [jobsRes, customersRes, plansRes, serviceReqRes, blockedRes, workOrdersRes] = await Promise.all([
+  const [jobsRes, customersRes, plansRes, visitsRes, serviceReqRes, blockedRes, workOrdersRes] = await Promise.all([
     supabaseAdmin
       .from('repair_jobs')
       .select('id, equipment_type, status, description, customer_id, created_at, scheduled_date, scheduled_time, is_emergency')
@@ -53,6 +53,13 @@ export async function GET(req: NextRequest) {
       .gte('renewal_date', startDate)
       .lte('renewal_date', endDate)
       .not('renewal_date', 'is', null),
+    supabaseAdmin
+      .from('maintenance_plans')
+      .select('id, plan_name, status, customer_id, next_visit_date, next_visit_slot')
+      .gte('next_visit_date', startDate)
+      .lte('next_visit_date', endDate)
+      .not('next_visit_date', 'is', null)
+      .then((r) => ({ data: r.data ?? [], error: r.error })),
     supabaseAdmin
       .from('service_requests')
       .select('id, full_name, equipment_type, issue_description, status, scheduled_date')
@@ -99,6 +106,7 @@ export async function GET(req: NextRequest) {
     jobsData,
     customersData,
     plansRes.data ?? [],
+    visitsRes.data ?? [],
     serviceReqRes.data ?? [],
     blockedRes.data ?? [],
     workOrdersRes.data ?? [],
@@ -109,6 +117,7 @@ function buildResponse(
   jobs: Record<string, unknown>[],
   customers: Record<string, unknown>[],
   plans: Record<string, unknown>[],
+  visits: Record<string, unknown>[],
   serviceRequests: Record<string, unknown>[],
   blockedDates: Record<string, unknown>[],
   workOrders: Record<string, unknown>[] = [],
@@ -145,6 +154,19 @@ function buildResponse(
       status: String(plan.status),
       customerName: '',
       detail: 'Maintenance plan renewal',
+    })
+  }
+
+  for (const visit of visits) {
+    events.push({
+      id: `visit-${visit.id}`,
+      title: String(visit.plan_name ?? `Plan #${visit.id}`),
+      date: String(visit.next_visit_date),
+      type: 'maintenance',
+      status: String(visit.status),
+      customerName: customerMap[String(visit.customer_id)] ?? '',
+      detail: 'Scheduled PM visit',
+      time_slot: (visit.next_visit_slot as string | null) ?? null,
     })
   }
 
