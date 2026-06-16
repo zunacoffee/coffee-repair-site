@@ -50,7 +50,7 @@ export default function NewWorkOrderPage() {
   const [weekdayRate, setWeekdayRate] = useState(80)
   const [weekendRate, setWeekendRate] = useState(120)
   const [showNewCustomer, setShowNewCustomer] = useState(false)
-  const [newCustForm, setNewCustForm] = useState({ full_name: '', email: '', phone: '' })
+  const [newCustForm, setNewCustForm] = useState({ full_name: '', email: '', phone: '', street: '', city: '', state: '', zip: '' })
   const [creatingCust, setCreatingCust] = useState(false)
 
   useEffect(() => {
@@ -104,8 +104,7 @@ export default function NewWorkOrderPage() {
     setSelectedParts(prev => prev.filter((_, i) => i !== idx))
   }
 
-  async function handleCreateCustomer(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleCreateCustomer() {
     setCreatingCust(true)
     try {
       const res = await fetch('/api/admin/customers', {
@@ -120,7 +119,7 @@ export default function NewWorkOrderPage() {
       setCustomers(prev => [...prev, created])
       setCustomerId(String(created.id))
       setEquipmentId('')
-      setNewCustForm({ full_name: '', email: '', phone: '' })
+      setNewCustForm({ full_name: '', email: '', phone: '', street: '', city: '', state: '', zip: '' })
       setShowNewCustomer(false)
     } catch {
       setError('Network error.')
@@ -200,7 +199,10 @@ export default function NewWorkOrderPage() {
                   + New customer
                 </button>
               ) : (
-                <form onSubmit={handleCreateCustomer} className="mt-3 rounded-xl border border-[#E8ECF0] bg-[#E8ECF0]/40 p-4 space-y-3">
+                <div
+                  className="mt-3 rounded-xl border border-[#E8ECF0] bg-[#E8ECF0]/40 p-4 space-y-3"
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCreateCustomer() } }}
+                >
                   <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">New Customer</p>
                   <div>
                     <label className="block text-xs font-semibold text-[#7A8898]">Full Name *</label>
@@ -223,18 +225,66 @@ export default function NewWorkOrderPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#7A8898]">Phone</label>
+                    <label className="block text-xs font-semibold text-[#7A8898]">Phone *</label>
                     <input
                       type="tel"
                       value={newCustForm.phone}
                       onChange={e => setNewCustForm(f => ({ ...f, phone: e.target.value }))}
                       placeholder="(555) 000-0000"
+                      required
                       className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
                     />
                   </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#7A8898]">Street Address *</label>
+                    <input
+                      type="text"
+                      value={newCustForm.street}
+                      onChange={e => setNewCustForm(f => ({ ...f, street: e.target.value }))}
+                      placeholder="123 Main St"
+                      required
+                      className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#7A8898]">City *</label>
+                    <input
+                      type="text"
+                      value={newCustForm.city}
+                      onChange={e => setNewCustForm(f => ({ ...f, city: e.target.value }))}
+                      placeholder="Portland"
+                      required
+                      className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#7A8898]">State</label>
+                      <input
+                        type="text"
+                        value={newCustForm.state}
+                        onChange={e => setNewCustForm(f => ({ ...f, state: e.target.value }))}
+                        placeholder="OR"
+                        maxLength={2}
+                        className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#7A8898]">ZIP Code</label>
+                      <input
+                        type="text"
+                        value={newCustForm.zip}
+                        onChange={e => setNewCustForm(f => ({ ...f, zip: e.target.value }))}
+                        placeholder="97201"
+                        maxLength={10}
+                        className="mt-1 w-full rounded-xl border border-[#E8ECF0] bg-white px-3 py-2 text-sm text-[#0D1B2A] focus:border-[#B87333] focus:outline-none"
+                      />
+                    </div>
+                  </div>
                   <div className="flex items-center gap-3 pt-1">
                     <button
-                      type="submit"
+                      type="button"
+                      onClick={handleCreateCustomer}
                       disabled={creatingCust}
                       className="rounded-xl bg-[#B87333] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
                     >
@@ -242,13 +292,13 @@ export default function NewWorkOrderPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => { setShowNewCustomer(false); setNewCustForm({ full_name: '', email: '', phone: '' }) }}
+                      onClick={() => { setShowNewCustomer(false); setNewCustForm({ full_name: '', email: '', phone: '', street: '', city: '', state: '', zip: '' }) }}
                       className="text-sm text-[#7A8898] hover:text-[#0D1B2A] transition"
                     >
                       Cancel
                     </button>
                   </div>
-                </form>
+                </div>
               )}
             </div>
             <div>
