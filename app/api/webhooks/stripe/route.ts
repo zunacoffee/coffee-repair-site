@@ -59,36 +59,65 @@ export async function POST(req: NextRequest) {
           const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription.id
 
           const subscription = (await stripe.subscriptions.retrieve(subscriptionId)) as Stripe.Subscription
-
-          // Determine plan type based on amount
+          const priceId = subscription.items.data[0]?.price?.id
           const priceAmount = subscription.items.data[0]?.price?.unit_amount
 
-          let planName = 'Standard Plan'
-          if (priceAmount === 2900) planName = 'Basic Plan'
-          else if (priceAmount === 5900) planName = 'Standard Plan'
-          else if (priceAmount === 9900) planName = 'Premium Plan'
-
-          // Create maintenance plan record
-          // Note: We need customer_id from the session metadata or we need to associate it differently
-          // For now, we'll store the subscription ID and stripe customer ID for reference
           const renewalDate = new Date(
             ((subscription as unknown as Record<string, unknown>).current_period_end as number) * 1000
           ).toISOString()
 
-          const { error } = await supabaseAdmin.from('maintenance_plans').insert([
-            {
-              plan_name: planName,
-              status: 'active',
-              price: (priceAmount ?? 5900) / 100, // Convert to dollars
-              stripe_subscription_id: subscriptionId,
-              stripe_customer_id: subscription.customer as string,
-              renewal_date: renewalDate,
-            },
-          ])
+          // Custom plans are created ahead of payment as a 'pending_payment' row
+          // (see app/api/admin/customers/[id]/custom-plan/route.ts) — activate that
+          // row instead of inserting a duplicate.
+          const { data: pendingPlan } = priceId
+            ? await supabaseAdmin
+                .from('maintenance_plans')
+                .select('id')
+                .eq('stripe_price_id', priceId)
+                .eq('status', 'pending_payment')
+                .eq('is_custom', true)
+                .maybeSingle()
+            : { data: null }
 
-          if (error) {
-            console.error('Error creating maintenance plan:', error)
-            return NextResponse.json({ error: error.message }, { status: 500 })
+          if (pendingPlan) {
+            const { error } = await supabaseAdmin
+              .from('maintenance_plans')
+              .update({
+                status: 'active',
+                stripe_subscription_id: subscriptionId,
+                stripe_customer_id: subscription.customer as string,
+                renewal_date: renewalDate,
+              })
+              .eq('id', pendingPlan.id)
+
+            if (error) {
+              console.error('Error activating custom maintenance plan:', error)
+              return NextResponse.json({ error: error.message }, { status: 500 })
+            }
+          } else {
+            // Determine plan type based on amount
+            let planName = 'Standard Plan'
+            if (priceAmount === 2900) planName = 'Basic Plan'
+            else if (priceAmount === 5900) planName = 'Standard Plan'
+            else if (priceAmount === 9900) planName = 'Premium Plan'
+
+            // Note: regular (non-custom) plan checkout doesn't yet pass a
+            // customer_id, so this row isn't linked to a customer.
+            const { error } = await supabaseAdmin.from('maintenance_plans').insert([
+              {
+                plan_name: planName,
+                status: 'active',
+                price: (priceAmount ?? 5900) / 100, // Convert to dollars
+                stripe_subscription_id: subscriptionId,
+                stripe_customer_id: subscription.customer as string,
+                renewal_date: renewalDate,
+              },
+            ])
+
+            if (error) {
+              console.error('Error creating maintenance plan:', error)
+              return NextResponse.json({ error: error.message }, { status: 500 })
+            }
           }
         }
         break
