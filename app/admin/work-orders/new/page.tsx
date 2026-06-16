@@ -342,20 +342,21 @@ export default function NewWorkOrderPage() {
               </select>
 
               {/* Inline new equipment */}
-              {customerId && (
-                !showNewEquipment ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowNewEquipment(true)}
-                    className="mt-2 text-sm text-[#B87333] hover:opacity-75 transition"
-                  >
-                    + New equipment
-                  </button>
-                ) : (
-                  <div
-                    className="mt-3 rounded-xl border border-[#E8ECF0] bg-[#E8ECF0]/40 p-4 space-y-3"
-                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCreateEquipment() } }}
-                  >
+              {(!showNewEquipment || !customerId) ? (
+                <button
+                  type="button"
+                  onClick={() => setShowNewEquipment(true)}
+                  disabled={!customerId}
+                  title={!customerId ? 'Select a customer first' : undefined}
+                  className="mt-2 text-sm text-[#B87333] hover:opacity-75 transition disabled:text-[#7A8898] disabled:cursor-not-allowed disabled:hover:opacity-100"
+                >
+                  + New equipment
+                </button>
+              ) : (
+                <div
+                  className="mt-3 rounded-xl border border-[#E8ECF0] bg-[#E8ECF0]/40 p-4 space-y-3"
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCreateEquipment() } }}
+                >
                     <p className="text-xs font-semibold uppercase tracking-wide text-[#7A8898]">New Equipment</p>
                     <div>
                       <label className="block text-xs font-semibold text-[#7A8898]">Equipment Type *</label>
@@ -414,8 +415,7 @@ export default function NewWorkOrderPage() {
                         Cancel
                       </button>
                     </div>
-                  </div>
-                )
+                </div>
               )}
             </div>
           </div>
