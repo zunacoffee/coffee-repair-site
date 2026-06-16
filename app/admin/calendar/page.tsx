@@ -143,7 +143,6 @@ export default function CalendarPage() {
     const res = await fetch(`/api/admin/calendar?year=${year}&month=${month + 1}`)
     if (res.status === 401) { router.replace('/admin/login'); return }
     const json = await res.json()
-    console.log('calendar API response:', json)
     setEvents(json.events ?? [])
     setBlockedDates(json.blockedDates ?? [])
     setLoading(false)
@@ -345,7 +344,6 @@ export default function CalendarPage() {
                         {/* Event pills — sm+ */}
                         <div className="hidden sm:flex w-full flex-col gap-0.5">
                           {visible.map((ev) => {
-                            console.log('pill data:', ev.type, ev.id, ev.scheduled_time)
                             const timeLabel = ev.scheduled_time
                               ? formatTime(ev.scheduled_time)
                               : ev.time_slot ?? ''
