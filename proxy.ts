@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { authenticateAdminRequest } from './lib/adminAuth'
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
-  const isAuthenticated = req.cookies.get('admin_session')?.value === '1'
+  const isAuthenticated = authenticateAdminRequest(req)
 
   if (pathname === '/admin/login') {
     return isAuthenticated

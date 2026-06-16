@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS parts_inventory (
   id               BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name             TEXT NOT NULL,
   part_number      TEXT,
+  supplier         TEXT,
   cost_price       DECIMAL(10,2) NOT NULL DEFAULT 0,
   sell_price       DECIMAL(10,2) NOT NULL DEFAULT 0,
   quantity         INTEGER NOT NULL DEFAULT 0,
@@ -103,13 +104,15 @@ CREATE TABLE IF NOT EXISTS blocked_dates (
 );
 
 -- Add scheduling fields to service_requests
+-- time_slot stores an hourly label (e.g. "8:00 AM"), not a half-day slot
 ALTER TABLE service_requests ADD COLUMN IF NOT EXISTS scheduled_date DATE;
-ALTER TABLE service_requests ADD COLUMN IF NOT EXISTS time_slot TEXT CHECK (time_slot IN ('morning', 'afternoon'));
+ALTER TABLE service_requests ADD COLUMN IF NOT EXISTS time_slot TEXT;
 ALTER TABLE service_requests ADD COLUMN IF NOT EXISTS notes TEXT;
 
 -- Add scheduling/notes fields to maintenance_plans
+-- next_visit_slot stores an hourly label (e.g. "8:00 AM"), not a half-day slot
 ALTER TABLE maintenance_plans ADD COLUMN IF NOT EXISTS next_visit_date DATE;
-ALTER TABLE maintenance_plans ADD COLUMN IF NOT EXISTS next_visit_slot TEXT CHECK (next_visit_slot IN ('morning', 'afternoon'));
+ALTER TABLE maintenance_plans ADD COLUMN IF NOT EXISTS next_visit_slot TEXT;
 ALTER TABLE maintenance_plans ADD COLUMN IF NOT EXISTS notes TEXT;
 
 -- Add notes to repair_jobs
@@ -132,6 +135,8 @@ CREATE TABLE IF NOT EXISTS work_orders (
   labor_total         NUMERIC(10,2) NOT NULL DEFAULT 0,
   parts_total         NUMERIC(10,2) NOT NULL DEFAULT 0,
   grand_total         NUMERIC(10,2) NOT NULL DEFAULT 0,
+  scheduled_date       DATE,
+  scheduled_time       TEXT,
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   completed_at        TIMESTAMPTZ
 );
