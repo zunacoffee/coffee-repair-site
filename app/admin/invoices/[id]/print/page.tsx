@@ -100,7 +100,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
       `}</style>
 
       {/* Action bar — hidden when printing */}
-      <div className="no-print sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[#E8ECF0] bg-white px-6 py-3 shadow-sm">
+      <div className="no-print sticky top-0 z-10 flex flex-col gap-3 border-b border-[#E8ECF0] bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
         <Link
           href="/admin/invoices"
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#7A8898] hover:text-[#0D1B2A] transition"
@@ -111,13 +111,13 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
           Back to Invoices
         </Link>
         {invoice && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
             <span className="text-sm text-[#7A8898]">
               {invoice.invoice_number} — {invoice.customers?.full_name ?? 'Unknown'}
             </span>
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#0D1B2A] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#152436] transition"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0D1B2A] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#152436] transition"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -146,8 +146,8 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
           <div className="mx-auto max-w-3xl bg-white shadow-lg rounded-2xl overflow-hidden">
 
             {/* ── Invoice header ───────────────────────────────────────── */}
-            <div className="bg-[#0D1B2A] px-10 py-8">
-              <div className="flex items-start justify-between">
+            <div className="bg-[#0D1B2A] px-5 py-6 sm:px-10 sm:py-8">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 {/* Business info */}
                 <div>
                   <h1 className="text-2xl font-bold text-white tracking-tight">{biz.name}</h1>
@@ -161,7 +161,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
                   </div>
                 </div>
                 {/* Invoice number */}
-                <div className="text-right">
+                <div className="sm:text-right">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#7A8898]">Invoice</p>
                   <p className="font-mono text-3xl font-bold text-[#B87333] mt-0.5">{invoice.invoice_number}</p>
                   <div className="mt-2">
@@ -180,8 +180,8 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
             </div>
 
             {/* ── Bill To + Amount ─────────────────────────────────────── */}
-            <div className="border-b border-[#E8ECF0] bg-[#E8ECF0] px-10 py-6">
-              <div className="grid grid-cols-2 gap-12">
+            <div className="border-b border-[#E8ECF0] bg-[#E8ECF0] px-5 py-6 sm:px-10">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-12">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#7A8898] mb-2">Bill To</p>
                   {invoice.customers ? (
@@ -196,7 +196,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
                     <p className="text-sm text-[#7A8898]">—</p>
                   )}
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#7A8898] mb-2">Amount Due</p>
                   <p className="text-4xl font-bold text-[#B87333]">{fmt(invoice.total)}</p>
                   {invoice.status === 'paid' && (
@@ -207,9 +207,10 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
             </div>
 
             {/* ── Line items ───────────────────────────────────────────── */}
-            <div className="px-10 py-6">
+            <div className="px-5 py-6 sm:px-10">
               {lineItems.length > 0 ? (
                 <>
+                  <div className="overflow-x-auto">
                   <table className="w-full text-sm border-collapse">
                     <thead>
                       <tr className="border-b-2 border-[#0D1B2A]">
@@ -242,6 +243,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
                       ))}
                     </tbody>
                   </table>
+                  </div>
 
                   {/* Totals */}
                   <div className="mt-5 flex flex-col items-end gap-1.5">
@@ -275,7 +277,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
             </div>
 
             {/* ── Payment section ─────────────────────────────────────── */}
-            <div className="px-10 pb-10">
+            <div className="px-5 pb-8 sm:px-10 sm:pb-10">
               {invoice.status === 'paid' ? (
                 <div className="rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-center">
                   <svg className="mx-auto h-6 w-6 text-green-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -316,10 +318,10 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
             </div>
 
             {/* ── Footer ──────────────────────────────────────────────── */}
-            <div className="border-t border-[#E8ECF0] bg-[#E8ECF0] px-10 py-5 text-center">
+            <div className="border-t border-[#E8ECF0] bg-[#E8ECF0] px-5 py-5 text-center sm:px-10">
               <p className="text-sm font-semibold text-[#0D1B2A]">{biz.name}</p>
               <p className="text-xs text-[#7A8898] mt-0.5 whitespace-pre-wrap">{biz.footerNotes || 'Thank you for your business!'}</p>
-              <div className="mt-1 flex items-center justify-center gap-4 text-xs text-[#7A8898]">
+              <div className="mt-1 flex flex-wrap items-center justify-center gap-3 text-xs text-[#7A8898] sm:gap-4">
                 {biz.phone && <span>{biz.phone}</span>}
                 {biz.email && <span>{biz.email}</span>}
                 {biz.address && <span>{biz.address}</span>}

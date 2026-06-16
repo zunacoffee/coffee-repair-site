@@ -133,7 +133,7 @@ export default function PlanSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#E8ECF0] p-6">
+    <div className="min-h-screen bg-[#E8ECF0] p-4 sm:p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <Link href="/admin/settings" className="inline-flex items-center gap-1 text-sm font-medium text-[#7A8898] hover:text-[#0D1B2A] transition">
@@ -158,10 +158,10 @@ export default function PlanSettingsPage() {
               <div key={plan.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
                 {/* Header */}
                 <div
-                  className="flex items-center justify-between px-6 py-4 cursor-pointer select-none"
+                  className="flex items-center justify-between gap-3 px-4 py-4 cursor-pointer select-none sm:px-6"
                   onClick={() => setExpanded(isOpen ? null : plan.id)}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <span className={`w-2 h-2 rounded-full ${plan.is_active ? 'bg-green-500' : 'bg-gray-300'}`} />
                     <div>
                       <span className="font-semibold text-[#0D1B2A]">{plan.name}</span>
@@ -173,7 +173,7 @@ export default function PlanSettingsPage() {
                     )}
                   </div>
                   <svg
-                    className={`h-5 w-5 text-[#7A8898] transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                    className={`h-5 w-5 flex-shrink-0 text-[#7A8898] transition-transform ${isOpen ? 'rotate-180' : ''}`}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -182,7 +182,7 @@ export default function PlanSettingsPage() {
 
                 {/* Body */}
                 {isOpen && (
-                  <div className="px-6 pb-6 border-t border-[#E8ECF0] pt-5 space-y-5">
+                  <div className="px-4 pb-6 border-t border-[#E8ECF0] pt-5 space-y-5 sm:px-6">
 
                     {/* Active toggle */}
                     <div className="flex items-center justify-between">
@@ -199,7 +199,7 @@ export default function PlanSettingsPage() {
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       {/* Name */}
                       <div>
                         <label htmlFor={`plan-name-${plan.id}`} className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">Plan Name</label>

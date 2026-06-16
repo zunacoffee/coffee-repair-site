@@ -69,7 +69,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#E8ECF0] p-6">
+    <div className="min-h-screen bg-[#E8ECF0] p-4 sm:p-6">
       <div className="max-w-3xl mx-auto space-y-6">
         <div>
           <Link href="/admin/settings" className="inline-flex items-center gap-1 text-sm font-medium text-[#7A8898] hover:text-[#0D1B2A] transition">
@@ -81,7 +81,7 @@ export default function NotificationsPage() {
           <p className="text-sm text-[#7A8898] mt-1">Configure which events trigger email notifications and where they are sent.</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 space-y-5">
           {/* Notification email */}
           <div>
             <label htmlFor="notify-email" className="block text-xs font-semibold text-[#7A8898] uppercase tracking-wide mb-1">Admin Notification Email</label>
